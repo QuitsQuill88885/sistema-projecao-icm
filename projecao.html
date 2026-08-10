@@ -4,35 +4,36 @@
 @font-face{font-family:'Bebas';src:url('fontes/bebas.otf');font-display:swap}
 /* AS CINCO FONTES DO SISTEMA
    ---------------------------------------------------------------------
-   Tudo o que a projecao precisa vem DENTRO do pacote. O programa nao
-   pergunta nada ao Windows, nao procura fonte instalada, nao depende de
-   nada estar presente na maquina. Instalou, funciona -- igual em todo
-   computador, o novo e o mais fraquinho.
+   Tudo o que a projecao precisa vem DENTRO do pacote: o programa nao
+   pergunta nada ao Windows e nao depende de fonte instalada.
 
-   O desenho e a JOST, da indestructible type: uma geometrica classica
-   redesenhada do zero, sob a SIL Open Font License. Pode ser copiada, embutida
-   e distribuida de graca e para sempre. A licenca vai junto, em
-   fontes/OFL-Jost.txt, como a propria licenca exige.
+   O desenho e a OUTFIT, sob SIL Open Font License. Escolhida depois de
+   comparar seis geometricas livres com a Futura Hv BT -- a fonte que os
+   PowerPoints da igreja declaram 21.168 vezes -- linha por linha, na tela
+   real, no fundo real.
 
-   A Jost e VARIAVEL (peso 100 a 900), entao dois arquivos cobrem os
-   cinco estilos. O peso 800 foi escolhido por medicao: reproduz a
-   espessura da haste do padrao do presbiterio, e as quebras de linha
-   caem nos mesmos pontos.
+   E O ESPACAMENTO E PARTE DA FONTE AQUI. A Outfit e' 5,3% mais estreita
+   que a Futura; sem o letter-spacing a linha encolhe, quebra em outro
+   ponto e o louvor muda de numero de slides. Com ele, as cinco linhas da
+   pagina batem os alvos de 777, 796, 755, 836 e 662 pixels com 2 pixels de
+   diferenca. NAO MEXA no valor sem medir de novo: ele nao e' estetica, e'
+   o que faz a quebra de linha cair onde a igreja esta acostumada.
 
-   As familias no fim de cada lista ('Segoe UI', sans-serif) sao apenas
-   a rede de seguranca do navegador -- nunca entram em uso, porque o
-   arquivo embutido sempre carrega.
+   A escolha foi confirmada em consulta -- Isaias 34:1, Mateus 27:54 e
+   Daniel 2:20 -- e esta registrada no memorial.
    --------------------------------------------------------------------- */
 @font-face{font-family:'Sistema A1';font-weight:400;font-style:normal;font-display:block;
-  src:url('fontes/Jost.ttf') format('truetype-variations');}
+  src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A2';font-weight:400;font-style:italic;font-display:block;
-  src:url('fontes/JostItalic.ttf') format('truetype-variations');}
+  src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A3';font-weight:800 900;font-style:normal;font-display:block;
-  src:url('fontes/Jost.ttf') format('truetype-variations');}
+  src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A4';font-weight:800 900;font-style:italic;font-display:block;
-  src:url('fontes/JostItalic.ttf') format('truetype-variations');}
+  src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A5';font-weight:500;font-style:normal;font-display:block;
-  src:url('fontes/Jost.ttf') format('truetype-variations');}
+  src:url('fontes/Outfit.ttf') format('truetype-variations');}
+/* o espacamento que faz a linha ocupar o mesmo tanto que a do presbiterio */
+#lou-txt,#bib-txt,#livre,#bib-multi,#fim-tag{letter-spacing:.034em}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */

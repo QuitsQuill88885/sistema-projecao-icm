@@ -8,8 +8,8 @@
 # de uma autoridade certificadora. Nao da para resolver por aqui.
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(2, 4, 2, 0),
-    prodvers=(2, 4, 2, 0),
+    filevers=(2, 5, 0, 0),
+    prodvers=(2, 5, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -23,13 +23,13 @@ VSVersionInfo(
         '041604b0',                      # portugues do Brasil, Unicode
         [StringStruct('CompanyName', 'Samuel Mariano Ribeiro'),
          StringStruct('FileDescription', 'Sistema - Projecao da igreja'),
-         StringStruct('FileVersion', '2.4.2'),
+         StringStruct('FileVersion', '2.5.0'),
          StringStruct('InternalName', 'Sistema'),
          StringStruct('LegalCopyright', 'Copyright (c) 2026 Samuel Mariano Ribeiro - MIT / CC BY 4.0'),
          StringStruct('LegalTrademarks', 'Sistema, de Samuel Mariano Ribeiro'),
          StringStruct('OriginalFilename', 'Sistema.exe'),
          StringStruct('ProductName', 'Sistema'),
-         StringStruct('ProductVersion', '2.4.2')])
+         StringStruct('ProductVersion', '2.5.0')])
     ]),
     VarFileInfo([VarStruct('Translation', [1046, 1200])])
   ]

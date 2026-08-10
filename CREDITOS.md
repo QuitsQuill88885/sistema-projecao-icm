@@ -37,10 +37,10 @@ licenças acima. Está aqui para uso da própria igreja.
 
 | Fonte | Autor | Licença | Texto |
 |---|---|---|---|
-| **Jost** | indestructible type | SIL Open Font License 1.1 | `fontes/OFL-Jost.txt` |
+| **Outfit** | Smartsheet Inc. | SIL Open Font License 1.1 | `fontes/OFL-Outfit.txt` |
 | **Bebas Neue** | Dharma Type | SIL Open Font License 1.1 | `fontes/OFL-Bebas.txt` |
 
-A Jost é o desenho de toda a projeção. Foi escolhida por medição: reproduz a
+A Outfit é o desenho de toda a projeção. Foi escolhida por medição: reproduz a
 espessura de haste do padrão tipográfico usado pelo presbitério, e as quebras
 de linha caem nos mesmos pontos — o operador não percebe diferença.
 

@@ -76,11 +76,17 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* ---- CIFRA: a tela de quem está tocando ---- */
 .cifra-agora{font-size:12px;color:#7f9ac0;padding:2px 2px 8px}
 .cifra-agora b{color:var(--ouro)}
-.cifra-quadro{position:fixed;inset:0;background:var(--fundo);z-index:20;display:flex;flex-direction:column}
+/* NAO e' tela cheia: fica dentro da aba e rola junto com ela. Foi testado no
+   celular e e' o que o musico quer -- ele desliza e ve tudo, sem uma camada por
+   cima escondendo o resto do controle. */
+.cifra-quadro{display:flex;flex-direction:column;margin-top:8px}
 /* `display:flex` VENCE o atributo hidden — sem esta linha o quadro do PDF ficava
    aberto o tempo todo e a aba Cifra aparecia como uma tela branca vazia. */
 .cifra-quadro[hidden]{display:none}
-.cifra-topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;background:#101d33;border-bottom:1px solid var(--borda)}
+/* o topo gruda: o botao de voltar e o seletor de tom seguem o musico enquanto
+   ele desliza a cifra, em vez de ficarem la em cima fora de alcance */
+.cifra-topo{position:sticky;top:0;z-index:7;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:9px 10px;background:#101d33;border:1px solid var(--borda);border-radius:9px}
 .cifra-volta{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
              padding:8px 12px;font-size:13px;font-weight:600}
 .cifra-nome{font-size:12.5px;color:#9db3d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -100,8 +106,9 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .inst-trocar{background:none;border:none;color:#7f9ac0;font-size:11.5px;text-decoration:underline;
   padding:4px 2px;cursor:pointer}
 /* ---- a cifra desenhada, no lugar do PDF ---- */
-.folha{flex:1;overflow:auto;padding:12px 13px 30px;background:var(--fundo);
-  -webkit-overflow-scrolling:touch}
+/* SEM overflow proprio: dois containers rolaveis aninhados travam a rolagem no
+   Safari do iPhone. Quem rola e' a pagina. */
+.folha{padding:12px 2px 30px;background:var(--fundo)}
 /* monoespacada de proposito: e' o que mantem o acorde em cima da silaba certa.
    Com fonte proporcional o alinhamento vai embora e a cifra perde a serventia. */
 .folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
@@ -113,10 +120,20 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .cifra-zoom{display:flex;gap:6px;align-items:center}
 /* o seletor de tom: dois botoes e o tom no meio, como o musico ja conhece */
 .tom-cx{display:flex;gap:4px;align-items:center;margin-left:auto}
-.tom-cx button{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
-  border-radius:7px;width:29px;height:29px;font-size:15px;cursor:pointer;line-height:1}
-.tom-cx b{color:var(--ouro);font-size:14px;min-width:34px;text-align:center;
-  font-variant-numeric:tabular-nums}
+.tom-btn{background:#16233c;border:1px solid var(--ouro);color:var(--ouro);border-radius:8px;
+  padding:6px 14px;font-size:14px;font-weight:700;cursor:pointer;min-width:46px}
+/* o painel de tons, no formato que o musico ja conhece do Cifra Club */
+.tom-painel{background:#101d33;border:1px solid var(--borda);border-radius:10px;
+  padding:10px;margin:8px 0 4px;display:flex;flex-direction:column;gap:7px}
+.tom-linha{display:flex;gap:7px}
+.tom-linha button{flex:1;background:#1b2941;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer}
+.tom-grade{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.tom-op{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
+  padding:10px 2px;font-size:13px;font-weight:600;cursor:pointer}
+.tom-op.on{background:var(--ouro);color:#101d33;border-color:var(--ouro)}
+.tom-restaura{background:none;border:1px solid var(--borda);color:#9db3d6;border-radius:8px;
+  padding:9px;font-size:12.5px;cursor:pointer}
 .cifra-zoom button{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
   border-radius:7px;width:30px;height:30px;font-size:15px;cursor:pointer}
 
@@ -135,12 +152,31 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
   padding:7px 12px;font-size:15px;font-weight:700;flex:none;line-height:1}
 .tom{background:#a8570f;color:#fff;border-radius:5px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:6px}
 
-/* o texto do versículo, pra ele conferir ANTES de jogar no telão.
-   sticky porque ela nasce DEPOIS da grade: em Salmos 119 caía mil pixels
-   abaixo do que cabe na tela e o recurso simplesmente não existia. */
-.leitura{position:sticky;bottom:0;z-index:4;margin-top:10px;padding:11px 13px;
-         background:#101d33;border-left:3px solid var(--ouro);box-shadow:0 -6px 12px #0a142699;
+/* o rodapé da grade de versículos: a leitura e a barra de marcar vários.
+   sticky porque ele nasce DEPOIS da grade: em Salmos 119 caía mil pixels
+   abaixo do que cabe na tela e o recurso simplesmente não existia.
+   sticky e NÃO fixed: dentro do <main>, que tem -webkit-overflow-scrolling,
+   o Safari do iPhone rebaixa position:fixed para absolute e isto sumiria. */
+.rodape-vers{position:sticky;bottom:0;z-index:4;margin-top:10px;box-shadow:0 -6px 12px #0a142699}
+/* o texto do versículo, pra ele conferir ANTES de jogar no telão */
+.leitura{padding:11px 13px;background:#101d33;border-left:3px solid var(--ouro);
          border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5}
+.leitura b{color:var(--ouro)}
+/* ---- marcar vários versículos e projetar numa tela só (como no computador) ---- */
+.sec-vers{display:flex;align-items:center;gap:8px;margin:14px 0 7px}
+.sec-vers .sec{margin:0;flex:1}
+.btn-juntar{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
+  padding:8px 12px;font-size:12.5px;font-weight:600;flex:none;white-space:nowrap}
+.btn-juntar.on{background:var(--ouro);color:#101d33;border-color:var(--ouro)}
+.barra-juntar{display:flex;gap:7px;padding:9px 10px;background:#101d33;border-top:1px solid var(--borda)}
+/* `display:flex` VENCE o atributo hidden — sem esta linha a barra ficava
+   aparecendo fora do modo de marcar */
+.barra-juntar[hidden]{display:none}
+.bj-limpar{background:var(--painel2);color:var(--txt);border-radius:9px;padding:11px 14px;
+  font-size:12.5px;font-weight:600;flex:none}
+.bj-ok{flex:1;background:var(--verde);color:#fff;border-radius:9px;padding:11px 10px;
+  font-size:14px;font-weight:700}
+.bj-ok:disabled{background:#22314c;color:#6f86a8}
 .sec{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--suave);
   font-weight:700;margin:14px 0 7px}
 .slide{padding:12px 14px;border-radius:10px;background:var(--painel);font-size:13.5px;line-height:1.45}
@@ -196,7 +232,8 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
     <div class="lista-cab">Ordem do culto</div>
     <div class="lista" id="fila-cel"></div>
     <div class="lista-dica">Toque num item para projetar. Guarde louvores pelo <b>+</b> na aba Louvores,
-      e versículos segurando o dedo no número.</div>
+      e versículos segurando o dedo no número. Para vários versículos numa tela só,
+      use <b>Marcar vários</b> na aba Bíblia.</div>
   </div>
   <!-- CIFRA — a tela do músico. Ela é INDEPENDENTE de propósito: ele repete um
        coro, volta um refrão, procura outro louvor, e nada disso mexe no telão.
@@ -210,13 +247,14 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
     <div class="cifra-agora" id="cifra-agora"></div>
     <div class="lista" id="lista-cifras"></div>
     <div class="cifra-quadro" id="cifra-quadro" hidden>
-      <div class="cifra-topo">
+      <div class="cifra-topo" id="cifra-topo-linha">
         <button class="cifra-volta" id="cifra-volta">‹ Escolher outra</button>
         <span class="cifra-nome" id="cifra-nome"></span>
         <span class="tom-cx" id="tom-cx"></span>
         <span class="cifra-zoom"><button id="cf-menos" title="Letra menor">A−</button><button id="cf-mais" title="Letra maior">A+</button></span>
       </div>
       <div class="folha" id="folha"></div>
+    
     </div>
   </div>
   <!-- BÍBLIA -->
@@ -261,13 +299,28 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
 const $ = s => document.querySelector(s);
 const LOUVORES = window.LOUVORES || [], BIBLIA = window.BIBLIA || {livros:{},ordem:[]};
 let livroSel = null, capSel = null, louvorSel = -1, falhas = 0;
+/* marcar vários versículos (aba Bíblia). Declarados aqui em cima porque a
+   primeira leitura do estado chega antes de o resto do arquivo rodar. */
+let modoJuntar = false;      // toque MARCA em vez de projetar
+let escolhidos = [];         // [{livro,cap,v}] na ordem em que foram tocados
+let ultimaFila = [];         // a Lista de Projeção como o computador publicou
+let juntosNoAr = new Set();  // chaveV dos versículos MARCADOS na lista do computador
+let juntosTxt = null;        // o mesmo conjunto em texto, só para não repintar à toa
+let juntosMeuAte = 0;        // até quando o meu toque manda na pintura
 
 const semAcento = t => (t||'').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-async function enviar(cmd, extra) {
+// Diz se o comando chegou ao servidor. Quem manda muitos seguidos (projetar os
+// versiculos juntos) precisa saber disso E precisa esperar um antes do outro:
+// a ordem na fila do servidor e' a ordem em que o computador executa, e ela
+// decide a ordem dos versiculos na tela.
+async function mandar(cmd, extra) {
   try {
     await fetch('/api/comando', {method:'POST', body: JSON.stringify(Object.assign({cmd}, extra||{}))});
-    if (navigator.vibrate) navigator.vibrate(12);
-  } catch(e) {}
+    return true;
+  } catch(e) { return false; }
+}
+async function enviar(cmd, extra) {
+  if (await mandar(cmd, extra) && navigator.vibrate) navigator.vibrate(12);
 }
 
 /* ---------- estado vindo do computador ---------- */
@@ -332,8 +385,10 @@ setInterval(ouvir, 900); ouvir();
    Ver o que está montado e acrescentar. O grupo de louvor precisa dizer o que
    vai ser cantado sem depender de quem opera o computador. */
 function pintarFila(e) {
-  const c = $('#fila-cel'); if (!c) return;
   const fila = e.fila || [];
+  ultimaFila = fila;          // a aba Bíblia usa para saber o que já está marcado
+  lerJuntosDaFila(fila);
+  const c = $('#fila-cel'); if (!c) return;
   c.innerHTML = '';
   if (!fila.length) {
     c.innerHTML = '<div class="vazio">A lista está vazia.</div>';
@@ -525,17 +580,50 @@ function transporTom(tom, passos, bemol) {
 
 function pintarTom() {
   const cx = document.querySelector('#tom-cx');
-  if (!cx || !folhaAtual) { if (cx) cx.innerHTML = ''; return; }
+  if (!cx) return;
+  if (!folhaAtual || !tomOriginal) { cx.innerHTML = ''; return; }
   const bemol = usaBemol(transporTom(tomOriginal, desloc, usaBemol(tomOriginal)));
-  const agora = transporTom(tomOriginal, desloc, bemol) || '—';
-  cx.innerHTML = '<button id="tom-menos" title="Meio tom abaixo">−</button>' +
-    '<b id="tom-agora">' + agora + '</b>' +
-    '<button id="tom-mais" title="Meio tom acima">+</button>' +
-    (desloc ? '<button id="tom-zero" title="Voltar ao tom impresso">↺</button>' : '');
-  document.querySelector('#tom-menos').onclick = () => { desloc--; redesenhar(); };
-  document.querySelector('#tom-mais').onclick = () => { desloc++; redesenhar(); };
-  const z = document.querySelector('#tom-zero');
-  if (z) z.onclick = () => { desloc = 0; redesenhar(); };
+  const agora = transporTom(tomOriginal, desloc, bemol);
+  cx.innerHTML = '<button class="tom-btn" id="tom-btn">' + agora + '</button>';
+  document.querySelector('#tom-btn').onclick = abrirTons;
+}
+
+/* O painel de tons, como no Cifra Club: os doze tons numa grade, mais meio tom
+   para cada lado e o restaurar. Escolher "Bb" direto é uma tacada; chegar nele
+   apertando "+" seis vezes é seis. */
+function abrirTons() {
+  if (document.querySelector('#tom-painel')) { fecharTons(); return; }
+  const menor = /m$/.test(tomOriginal || '');
+  const escala = ['A','Bb','B','C','Db','D','Eb','E','F','F#','G','Ab'];
+  const atual = transporTom(tomOriginal, desloc,
+                            usaBemol(transporTom(tomOriginal, desloc, usaBemol(tomOriginal))));
+  const raizAtual = (atual || '').replace(/m$/, '');
+  let h = '<div class="tom-painel" id="tom-painel"><div class="tom-linha">' +
+          '<button data-d="-1">−½ tom</button><button data-d="1">+½ tom</button></div>' +
+          '<div class="tom-grade">';
+  for (const t of escala) {
+    const nome = t + (menor ? 'm' : '');
+    // mesma nota escrita de outro jeito ainda é a mesma tecla
+    const igual = SEMI[t] === SEMI[raizAtual];
+    h += '<button class="tom-op' + (igual ? ' on' : '') + '" data-t="' + t + '">' + nome + '</button>';
+  }
+  h += '</div>' + (desloc ? '<button class="tom-restaura" data-z="1">↺ Restaurar</button>' : '') + '</div>';
+  document.querySelector('#cifra-topo-linha').insertAdjacentHTML('afterend', h);
+  const pn = document.querySelector('#tom-painel');
+  pn.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.d) { desloc += parseInt(b.dataset.d, 10); }
+    else if (b.dataset.z) { desloc = 0; }
+    else if (b.dataset.t) {
+      const raiz = (tomOriginal || '').replace(/m$/, '');
+      desloc = ((SEMI[b.dataset.t] - SEMI[raiz]) % 12 + 12) % 12;
+      if (desloc > 6) desloc -= 12;          // -2 em vez de +10: o musico lê melhor
+    }
+    fecharTons(); redesenhar();
+  };
+}
+function fecharTons() {
+  const p = document.querySelector('#tom-painel'); if (p) p.remove();
 }
 
 function redesenhar() { if (folhaAtual) desenharFolha(folhaAtual); }
@@ -576,6 +664,12 @@ function desenharFolha(d) {
   pintarTom();
 }
 
+/* A previa do telao NAO para quando a cifra abre.
+   Cheguei a pausa-la para poupar bateria, e estava errado duas vezes: criou o
+   bug da previa preta ao voltar, e a economia nao existe -- a resposta inteira
+   tem 2 KB, menos do que trafega no barramento de um carro. E o dono quer o
+   contrario: ver a cifra E o telao ao mesmo tempo, para saber o que a
+   congregacao esta lendo enquanto ele toca. */
 async function abrirCifra(s) {
   $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
   $('#folha').innerHTML = '<p class="cab">Carregando…</p>';
@@ -838,16 +932,19 @@ function passoBiblia(voltando) {
   }
   if (capSel) {
     const c = $('#passo-vers');
-    c.innerHTML = '<div class="sec">Toque para projetar · segure para juntar</div>';
-    const g = document.createElement('div'); g.className = 'grid';
+    c.innerHTML = '';
+    // a dica e o botão mudam conforme o modo, por isso não são texto fixo
+    const cab = document.createElement('div'); cab.className = 'sec-vers';
+    cab.innerHTML = '<span class="sec" id="vers-dica"></span>' +
+                    '<button class="btn-juntar" id="btn-juntar"></button>';
+    c.appendChild(cab);
+    const g = document.createElement('div'); g.className = 'grid'; g.id = 'grade-vers';
     const versos = BIBLIA.livros[livroSel][capSel - 1] || {};
-    // o operador escolhia no escuro: só uma grade de números. Agora o texto
-    // aparece aqui embaixo antes de ir pro telão.
-    const leitura = document.createElement('div'); leitura.className = 'leitura';
-    leitura.textContent = 'Toque num número para ler aqui antes de projetar.';
     Object.keys(versos).map(Number).sort((a, b) => a - b).forEach(v => {
       const b = document.createElement('div'); b.className = 'g'; b.textContent = v;
-      const mostrar = () => { leitura.textContent = capSel + ':' + v + '  ' + (versos[v] || ''); };
+      b.dataset.v = v;                                // a pintura em ouro procura por aqui
+      const mostrar = () => { const l = $('#leitura');
+        if (l) l.textContent = capSel + ':' + v + '  ' + (versos[v] || ''); };
       // Marca em vez de cronômetro: medir "faz quanto tempo" errava, porque o
       // clique que o navegador inventa depois do toque chega tarde demais quando
       // o dedo demora. Segurando mais de ~1,2s saíam DOIS comandos (guardar E
@@ -855,15 +952,25 @@ function passoBiblia(voltando) {
       let foiLongo = false, t = null;
       b.onclick = () => {
         if (foiLongo) { foiLongo = false; return; }   // já tratado como toque longo
-        [...g.children].forEach(x => x.classList.remove('sel', 'junto'));
+        // marcando vários: o toque MARCA, não projeta. Nada vai pro telão até o
+        // botão verde — é o que separa este modo do toque de sempre.
+        if (modoJuntar) { alternarEscolhido(livroSel, capSel, v); return; }
+        // tira só o azul dos outros: o ouro é o grupo que está montado e não é
+        // um toque solto que o desfaz
+        [...g.children].forEach(x => x.classList.remove('sel'));
         b.classList.add('sel'); mostrar();
         enviar('verso', {livro: livroSel, cap: capSel, v});
       };
       b.oncontextmenu = e => e.preventDefault();     // segurar não abre menu do navegador
-      // segurar = guardar na lista; com 2 ou mais marcados o Sistema já projeta juntos
-      const comecou = () => { foiLongo = false; t = setTimeout(() => {
+      // segurar = guardar na lista, já marcado: com 2 ou mais marcados o Sistema
+      // projeta juntos. No modo de marcar não vale — lá o toque já faz isso.
+      const comecou = () => { if (modoJuntar) return; foiLongo = false; t = setTimeout(() => {
         foiLongo = true; t = null;
-        b.classList.add('junto'); mostrar();
+        mostrar();
+        // pinta AGORA e segura a pintura: o estado que chega nos próximos
+        // segundos ainda é anterior ao comando e apagaria a marca recém-feita
+        juntosNoAr.add(chaveV({livro: livroSel, cap: capSel, v}));
+        juntosTxt = null; juntosMeuAte = Date.now() + 2500; pintarGradeVersos();
         if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
         enviar('guardar', {livro: livroSel, cap: capSel, v});
       }, 500); };
@@ -876,7 +983,19 @@ function passoBiblia(voltando) {
       b.addEventListener('mouseleave', parou);
       g.appendChild(b);
     });
-    c.appendChild(g); c.appendChild(leitura);
+    c.appendChild(g);
+    // o operador escolhia no escuro: só uma grade de números. Aqui embaixo ele lê
+    // o versículo — e, marcando vários, vê a tela inteira que vai projetar.
+    const rod = document.createElement('div'); rod.className = 'rodape-vers';
+    rod.innerHTML = '<div class="leitura" id="leitura"></div>' +
+      '<div class="barra-juntar" id="barra-juntar" hidden>' +
+      '<button class="bj-limpar" id="bj-limpar">Limpar</button>' +
+      '<button class="bj-ok" id="bj-ok"></button></div>';
+    c.appendChild(rod);
+    $('#btn-juntar').onclick = alternarModoJuntar;
+    $('#bj-limpar').onclick = () => { escolhidos = []; atualizarJuntar(); };
+    $('#bj-ok').onclick = projetarJuntos;
+    atualizarJuntar();
   }
   // indo pra frente começa do topo; voltando, devolve onde o operador parou
   const agora = passoAtual();
@@ -885,6 +1004,174 @@ function passoBiblia(voltando) {
 }
 $('#qb').oninput = e => listarLivros(e.target.value);
 listarLivros('');
+
+/* ---------- vários versículos numa tela só ----------
+   No computador o operador dá dois cliques em cada versículo, eles entram na
+   Lista de Projeção MARCADOS (✓) e o Sistema projeta todos os marcados numa
+   tela só. No celular não existe duplo-clique: aqui é um botão que liga o modo
+   de marcar, e daí em diante o TOQUE marca. Nada vai pro telão até o botão
+   verde — a congregação não vê o operador escolhendo.
+
+   Quem guarda a verdade é a Lista do computador, exatamente como lá: o ouro na
+   grade é o que o computador diz estar marcado, não um palpite do celular. */
+const MAX_JUNTOS = 12;       // acima disso a letra encolhe até ninguém ler do banco
+const chaveV = x => x.livro + '|' + x.cap + '|' + x.v;
+// o rótulo que o computador publica é "Livro cap:versículo" ("1 João 3:16")
+function refDoRotulo(r) {
+  const m = /^(.+) (\d+):(\d+)$/.exec(r || '');
+  if (!m || !BIBLIA.livros[m[1]]) return null;
+  return {livro: m[1], cap: +m[2], v: +m[3]};
+}
+function textoDoVerso(x) {
+  const cap = BIBLIA.livros[x.livro] && BIBLIA.livros[x.livro][x.cap - 1];
+  return (cap && cap[x.v]) || '';
+}
+function lerJuntosDaFila(fila) {
+  // por ~2,5s depois do meu toque a pintura é minha: o estado que chega ainda é
+  // anterior ao comando e faria as marcas piscarem de volta
+  if (Date.now() < juntosMeuAte) return;
+  const novo = [];
+  (fila || []).forEach(it => {
+    if (it.tipo !== 'verso' || !it.on) return;
+    const x = refDoRotulo(it.rotulo); if (x) novo.push(chaveV(x));
+  });
+  const txt = novo.join(',');
+  if (txt === juntosTxt) return;
+  juntosTxt = txt; juntosNoAr = new Set(novo);
+  pintarGradeVersos();
+}
+/* ouro = vai aparecer junto. Marcando, mostra o que EU escolhi; fora do modo,
+   mostra o grupo que está montado no computador. */
+function pintarGradeVersos() {
+  const g = $('#grade-vers'); if (!g || !capSel) return;
+  const marcados = modoJuntar ? new Set(escolhidos.map(chaveV)) : juntosNoAr;
+  [...g.children].forEach(b => {
+    b.classList.toggle('junto', marcados.has(livroSel + '|' + capSel + '|' + b.dataset.v));
+  });
+}
+function alternarModoJuntar() {
+  modoJuntar = !modoJuntar;
+  // Entrando, já vem marcado o que a Lista do computador tem marcado: quem
+  // acabou de projetar três versículos e quer o quarto não remarca os três.
+  escolhidos = [];
+  if (modoJuntar) ultimaFila.forEach(it => {
+    if (it.tipo !== 'verso' || !it.on) return;
+    const x = refDoRotulo(it.rotulo); if (x) escolhidos.push(x);
+  });
+  atualizarJuntar();
+}
+function alternarEscolhido(livro, cap, v) {
+  const k = livro + '|' + cap + '|' + v;
+  const i = escolhidos.findIndex(x => chaveV(x) === k);
+  if (i >= 0) escolhidos.splice(i, 1);
+  else if (escolhidos.length >= MAX_JUNTOS) { recado('Cabem até ' + MAX_JUNTOS + ' versículos numa tela só.'); return; }
+  else escolhidos.push({livro, cap, v});
+  if (navigator.vibrate) navigator.vibrate(10);
+  atualizarJuntar();
+}
+// a tela que vai ser projetada, para ele conferir antes. Mais de quatro não cabe
+// no rodapé do celular, então os últimos viram uma contagem.
+function previaEscolha() {
+  if (!escolhidos.length) return 'Toque nos números que devem aparecer juntos na mesma tela.';
+  const linhas = escolhidos.slice(0, 4).map(x => {
+    const t = textoDoVerso(x);
+    return '<b>' + escapar(x.livro + ' ' + x.cap + ':' + x.v) + '</b> ' +
+           escapar(t.length > 90 ? t.slice(0, 90) + '…' : t);
+  });
+  if (escolhidos.length > 4) linhas.push('… e mais ' + (escolhidos.length - 4));
+  return linhas.join('<br>');
+}
+function recado(t) {
+  const l = $('#leitura'); if (!l) return;
+  l.textContent = t;
+  setTimeout(atualizarJuntar, 1800);
+}
+function atualizarJuntar() {
+  const bt = $('#btn-juntar'); if (!bt) return;      // não estamos na tela dos versículos
+  const n = escolhidos.length;
+  bt.textContent = modoJuntar ? 'Cancelar' : '✓ Marcar vários';
+  bt.classList.toggle('on', modoJuntar);
+  $('#vers-dica').textContent = modoJuntar ? 'Toque nos versículos que vão aparecer juntos'
+                                           : 'Toque para projetar · segure para guardar';
+  $('#barra-juntar').hidden = !modoJuntar;
+  // o botão volta ao normal mesmo com a barra escondida: senão ele reaparecia
+  // escrito "Mandando…" e apagado na próxima vez que a barra abrisse
+  const ok = $('#bj-ok');
+  ok.disabled = !n;
+  ok.textContent = !n ? 'Marque os versículos'
+                      : (n === 1 ? 'Projetar 1 versículo' : 'Projetar ' + n + ' juntos');
+  const l = $('#leitura');
+  if (modoJuntar) { if (l) l.innerHTML = previaEscolha(); }
+  else if (l) l.textContent = 'Toque num número para ler aqui antes de projetar.';
+  pintarGradeVersos();
+}
+/* Manda o grupo pro telão. O computador não tem um comando "projete estes":
+   ele projeta os versículos MARCADOS na Lista de Projeção. Então o que este
+   botão faz é deixar a Lista com exatamente os meus marcados, e cada comando
+   espera o anterior — a ordem da fila do servidor é a ordem que sai na tela.
+
+   Mexe o MENOS possível: o que já está marcado fica onde está. Acrescentar um
+   versículo ao grupo que está no ar vira DOIS comandos, e o telão faz uma troca
+   só, em vez de desmontar e remontar o grupo na frente da congregação.
+
+   1) saem os que eu quero mas estão DESMARCADOS na Lista — "guardar" repetido é
+      recusado, então eles nunca entrariam no grupo sem sair antes;
+   2) um versículo no telão: o computador só reprojeta o grupo quando o que está
+      no ar é Bíblia — senão mexer na Lista arrancaria o louvor do telão;
+   3) entram os que faltam, na ordem em que foram tocados;
+   4) só DEPOIS saem os que sobraram de outra leitura. Tirar antes podia esvaziar
+      a Lista, e a Lista vazia manda o computador para a tela de espera — que
+      além do susto DESCONGELA o telão que o operador tinha congelado de
+      propósito para preparar isto escondido.
+   O último escolhido sempre sai e volta: é o comando que dispara a projeção do
+   grupo quando nada mais mudou (ex.: pôr de volta o mesmo grupo com um louvor
+   no ar). */
+let mandandoJuntos = false;
+async function projetarJuntos() {
+  if (mandandoJuntos || !escolhidos.length) return;
+  mandandoJuntos = true;
+  const ok = $('#bj-ok'); if (ok) { ok.disabled = true; ok.textContent = 'Mandando…'; }
+  await ouvir();                      // a Lista mais fresca possível: vou apagar por índice
+  const meus = new Set(escolhidos.map(chaveV));
+  const ultimo = chaveV(escolhidos[escolhidos.length - 1]);
+  const naFila = new Map();
+  ultimaFila.forEach((it, i) => {
+    if (it.tipo !== 'verso') return;
+    const x = refDoRotulo(it.rotulo);
+    if (x) naFila.set(chaveV(x), {i: i, on: it.on === true});
+  });
+  const antes = [], depois = [];
+  naFila.forEach((o, k) => {
+    if (meus.has(k)) { if (!o.on || k === ultimo) antes.push(o.i); }
+    else if (o.on) depois.push(o.i);
+  });
+  const por = escolhidos.filter(x => {
+    const o = naFila.get(chaveV(x));
+    return !o || !o.on || chaveV(x) === ultimo;
+  });
+  let bom = true;
+  // de trás pra frente: cada remoção encurta a lista, e assim os índices que
+  // ainda não usei continuam valendo
+  antes.sort((a, b) => a - b);
+  for (let k = antes.length - 1; k >= 0 && bom; k--) bom = await mandar('tirardalista', {i: antes[k]});
+  if (bom) bom = await mandar('verso', escolhidos[0]);
+  for (const x of por) { if (!bom) break; bom = await mandar('guardar', x); }
+  // o que entrou foi para o FIM da lista, então os índices de quem ficou não
+  // mudaram — só desconto o que já saiu no passo 1
+  depois.sort((a, b) => a - b);
+  for (let k = depois.length - 1; k >= 0 && bom; k--) {
+    bom = await mandar('tirardalista', {i: depois[k] - antes.filter(i => i < depois[k]).length});
+  }
+  mandandoJuntos = false;
+  if (!bom) { atualizarJuntar(); recado('Não consegui falar com o computador. Tente de novo.'); return; }
+  if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
+  // o telão já vai mostrar estes: pinta em ouro agora e segura, senão o estado
+  // seguinte (ainda velho) apagaria as marcas e elas voltariam piscando
+  juntosNoAr = new Set(escolhidos.map(chaveV)); juntosTxt = null;
+  juntosMeuAte = Date.now() + 2500;
+  modoJuntar = false; escolhidos = [];
+  atualizarJuntar();
+}
 
 /* ---------- slides importados ---------- */
 function montarSlides(n) {
@@ -914,4 +1201,6 @@ $('#frio').onclick   = () => {
 $('#maior').onclick  = () => enviar('mais');
 $('#menor').onclick  = () => enviar('menos');
 </script>
+
+
 </body></html>

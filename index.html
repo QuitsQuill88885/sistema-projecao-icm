@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=13">
+<link rel="stylesheet" href="app.css?v=15">
 </head><body>
 <div id="app">
   <header>
@@ -133,7 +133,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=13"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=15"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -150,20 +150,23 @@
       </div>
       <!-- Só aparecem quando o louvor no ar TEM o recurso. Sem louvor com cifra
            ou sem versão animada, a fileira inteira some e o painel fica limpo. -->
-      <!-- a cifra abre AQUI DENTRO, no visual do Sistema. Antes ela era jogada
-           numa janela crua do navegador, que é tudo o que este programa evita. -->
+      <!-- a cifra é DESENHADA aqui dentro, letra e acordes, no visual do Sistema.
+           Antes isto era o PDF escaneado da coletânea dentro de um iframe: o
+           computador da igreja levava um tempão só para mostrar a primeira
+           página. O painel de tons entra depois do cabeçalho, pelo app.js. -->
       <div class="cifra-ov oculto" id="cifra-ov">
         <div class="cifra-cx">
-          <div class="cifra-cab">
+          <div class="cifra-cab" id="cifra-cab">
             <span class="ico" data-i="violao"></span>
             <b id="cifra-tit">Cifra</b>
-            <span class="cifra-tom oculto" id="cifra-tom"></span>
-            <span class="cifra-pag" id="cifra-pag"></span>
-            <button class="cifra-nav" id="cifra-ant" title="Página anterior">‹</button>
-            <button class="cifra-nav" id="cifra-prox" title="Próxima página">›</button>
+            <span class="tom-cx" id="cifra-tom-cx"></span>
+            <span class="cifra-zoom">
+              <button id="cifra-menor" title="Letra menor">A−</button>
+              <button id="cifra-maior" title="Letra maior">A+</button>
+            </span>
             <button class="cifra-x" id="cifra-x" title="Fechar (Esc)">✕</button>
           </div>
-          <iframe id="cifra-frame" title="Cifra"></iframe>
+          <div class="folha" id="cifra-folha"></div>
         </div>
       </div>
       <div class="barra-extras oculto" id="barra-extras">
@@ -332,11 +335,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=13"></script>
+<script src="dados/louvores.js?v=15"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=13"></script>
+<script src="dados/galeria.js?v=15"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=13"></script>
-<script src="app.js?v=13"></script>
+<script src="icones.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body></html>
