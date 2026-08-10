@@ -53,6 +53,7 @@ import os
 import re
 import sys
 import unicodedata
+import difflib
 from collections import Counter, defaultdict
 
 # "A", "Bm", "C#m7", "F#", "Bb", "G/B", "Dsus4", "E7M", "A7(9)"
@@ -171,18 +172,23 @@ def coluna_do_x(texto, x, tam):
 #  Colunas e linhas
 # --------------------------------------------------------------------------
 
-def achar_calha(frags, vao_min=34.0):
+def achar_calha(frags, vao_min=30.0, sep_min=140.0):
     """O x que separa as duas colunas, ou None se a página tiver uma só.
 
-    Pelo VÃO VAZIO, não pelos picos. A ideia dos "dois picos do histograma"
-    parece boa e falha na prática: quando uma coluna tem muito mais linhas que
-    a outra — que é o normal — os picos mais altos são todos da coluna cheia, e
-    a calha nunca é encontrada. O resultado é pior do que não separar: a letra
-    da esquerda sai grudada com os acordes da direita, e ninguém percebe.
+    Duas medidas, porque nenhuma sozinha cobre os três livros:
 
-    A calha é a faixa larga onde a página não desenhou NADA. Procuramos o maior
-    buraco no meio (entre 28% e 72% da largura) e exigimos que ele seja largo o
-    bastante para não ser só o vão entre duas palavras.
+    1. O MAIOR VÃO VAZIO no meio da página. Serve na Coletânea 2025, onde a
+       calha tem 70 pt de largura.
+
+    2. Se não houver vão largo, as DUAS MARGENS. Nos Avulsos as colunas quase
+       se encostam — a calha tem 13 pt — e nenhum limiar de vão que não
+       estrague o resto consegue vê-la. Mas as margens são nítidas: 28 e 223,
+       195 pt de distância, cada uma com dezenas de linhas começando ali.
+
+    Sem a segunda medida, os Avulsos saíam com as duas colunas grudadas: o
+    cabeçalho da direita entrava colado no da esquerda, e o louvor virava
+    "AGEU (Bm) 09 - AGRADECEMOS A TI, SENHOR (E)" — dois louvores num título só,
+    que não casa com nada e é descartado.
     """
     if len(frags) < 12:
         return None
@@ -197,7 +203,36 @@ def achar_calha(frags, vao_min=34.0):
         if ini - alcance > melhor and esq <= (ini + alcance) / 2 <= dir_:
             melhor, corte = ini - alcance, (ini + alcance) / 2
         alcance = max(alcance, fim)
-    return corte if melhor >= vao_min else None
+    if melhor >= vao_min:
+        return corte
+
+    # --- segunda medida: as margens ---
+    # x inicial de cada faixa horizontal, agrupando por y sem olhar coluna
+    inicios = {}
+    for x, y, _t, _f, _tam in frags:
+        k = round(y / 2.4)
+        if k not in inicios or x < inicios[k]:
+            inicios[k] = x
+    # e tambem os inicios "de dentro": fragmento que comeca depois de um vao
+    por_y = defaultdict(list)
+    for f in frags:
+        por_y[round(f[1] / 2.4)].append(f)
+    dentro = []
+    for fs in por_y.values():
+        fs.sort(key=lambda f: f[0])
+        alc = None
+        for x, _y, t, _f, tam in fs:
+            if alc is not None and x - alc > tam * 2.5:
+                dentro.append(x)
+            alc = max(alc or 0, x + largura(t, tam))
+    if not dentro:
+        return None
+    h = Counter(round(v / 3) * 3 for v in dentro)
+    margem_esq = min(inicios.values()) if inicios else x0
+    fortes = [b for b, n in h.items() if n >= 3 and b - margem_esq >= sep_min]
+    if not fortes:
+        return None
+    return min(fortes) - 4.0
 
 
 def juntar_sobrescritos(frags):
@@ -408,7 +443,11 @@ def montar_bloco(linhas, ini, fim):
         # num pedaco so, e ai o pedaco inteiro nao e' acorde nenhum.
         toks = [f for f in fs if f[2].strip()]
         palavras = tokens_com_x(fs)
-        so_acorde = (bool(palavras) and all(eh_acorde(w) for _x, w in palavras)
+        # ate 1/4 de lixo tolerado: no PDF escaneado o OCR estraga um acorde
+        # aqui e ali, e exigir 100%% jogava a linha inteira fora -- com todos os
+        # acordes bons que estavam nela.
+        bons = sum(1 for _x, w in palavras if eh_acorde(w))
+        so_acorde = (bool(palavras) and bons >= max(1, len(palavras) * 3 // 4)
                      and any(negrito(f[3]) for f in toks))
         if so_acorde:
             guardados = palavras      # espera a linha de letra logo abaixo
@@ -422,8 +461,10 @@ def montar_bloco(linhas, ini, fim):
             x0 = fs[0][0]
             tam = fs[0][4] or 9.0
             for fx, palavra in guardados:
-                acordes.append([max(0, coluna_do_x(letra, fx - x0, tam)),
-                                palavra.strip("|")])
+                nome = palavra.strip("|")
+                if not eh_acorde(nome):
+                    continue
+                acordes.append([max(0, coluna_do_x(letra, fx - x0, tam)), nome])
             guardados = None
         saida.append({"t": letra, "a": acordes})
     return saida, tom
@@ -475,6 +516,103 @@ def so_letras(t):
     return re.sub(r"[^A-Z0-9 ]+", " ", t).strip()
 
 
+def _parecido(a, b):
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def consertar_pela_letra(corpo, letra_certa, minimo=0.5):
+    """Troca a letra que saiu do OCR pela letra certa do app, sem perder onde
+    cada acorde cai.
+
+    POR QUE: a Coletanea 2018 e' escaneada, e o OCR devolve "Roichedo fonte é
+    'o 'Se - inhor" no lugar de "ROCHEDO FORTE É O SENHOR". Os ACORDES, porem,
+    saem certos -- sao curtos, em negrito, e o que importa neles e' a posicao,
+    que vem do x e nao do reconhecimento de caractere. Temos a letra certa de
+    um lado e a marcacao certa do outro; falta costurar.
+
+    COMO: alinhamento de SEQUENCIA, nao casamento livre. As duas listas contam
+    a mesma historia na mesma ordem, e casar cada linha com a mais parecida que
+    ainda esteja livre parece igual mas nao e': a primeira linha processada
+    escolhe a melhor para si e rouba a correspondencia da linha certa. Foi o
+    que aconteceu -- "REFÚGIO NA TRIBULAÇÃO" costurou e "Rochedo forte", que
+    era a primeira do louvor, ficou com o OCR cru.
+
+    O alinhamento e' o mesmo do "diff": uma matriz onde cada passo ou casa duas
+    linhas, ou pula uma de um lado. Respeitando a ordem, ninguem rouba nada.
+    """
+    if not letra_certa:
+        return corpo, 0
+    uteis = [i for i, l in enumerate(corpo) if len(so_letras(l["t"])) >= 6]
+    if not uteis:
+        return corpo, 0
+    A = [so_letras(corpo[i]["t"]) for i in uteis]
+    B = [so_letras(x) for x in letra_certa]
+    n, m = len(A), len(B)
+    if not m:
+        return corpo, 0
+
+    VAZIO = -0.28                       # custo de pular uma linha de um lado
+    pont = [[0.0] * (m + 1) for _ in range(n + 1)]
+    veio = [[0] * (m + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        pont[i][0] = pont[i - 1][0] + VAZIO
+        veio[i][0] = 1
+    for j in range(1, m + 1):
+        pont[0][j] = pont[0][j - 1] + VAZIO
+        veio[0][j] = 2
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            casa = pont[i - 1][j - 1] + (_parecido(A[i - 1], B[j - 1]) - 0.45)
+            sobe = pont[i - 1][j] + VAZIO
+            lado = pont[i][j - 1] + VAZIO
+            melhor = max(casa, sobe, lado)
+            pont[i][j] = melhor
+            veio[i][j] = 0 if melhor == casa else (1 if melhor == sobe else 2)
+
+    pares = {}
+    i, j = n, m
+    while i > 0 and j > 0:
+        d = veio[i][j]
+        if d == 0:
+            if _parecido(A[i - 1], B[j - 1]) >= minimo:
+                pares[uteis[i - 1]] = j - 1
+            i -= 1
+            j -= 1
+        elif d == 1:
+            i -= 1
+        else:
+            j -= 1
+
+    saida, trocadas = [], 0
+    for k, linha in enumerate(corpo):
+        if k not in pares:
+            saida.append(linha)
+            continue
+        nova = letra_certa[pares[k]]
+        velha = linha["t"]
+        mapa = {}
+        for a, b, t in difflib.SequenceMatcher(None, velha, nova).get_matching_blocks():
+            for c in range(t):
+                mapa[a + c] = b + c
+        acordes = []
+        for col, nome in linha["a"]:
+            if col in mapa:
+                acordes.append([mapa[col], nome])
+            else:                       # caiu num trecho que o OCR inventou
+                antes = [c for c in mapa if c <= col]
+                base = mapa[max(antes)] + (col - max(antes)) if antes else 0
+                acordes.append([base, nome])
+        # so' acorde de verdade: no PDF escaneado o OCR devolve coisas como
+        # 'E91#" 4)' e '13' na linha de acordes. A linha inteira ainda vale --
+        # os acordes legiveis ao lado estao certos -- mas o lixo nao pode ir
+        # para a tela do musico.
+        acordes = [[max(0, min(len(nova), c)), nm] for c, nm in acordes if eh_acorde(nm)]
+        acordes.sort()
+        saida.append({"t": nova, "a": acordes})
+        trocadas += 1
+    return saida, trocadas
+
+
 def sem_parenteses(t):
     """"DEIXA O MEU POVO IR (Vai Moises)" -> "DEIXA O MEU POVO IR".
 
@@ -482,6 +620,22 @@ def sem_parenteses(t):
     Rei", "(D)", "(SALMO 23)"). O banco de louvores do app não tem nada disso.
     """
     return so_letras(re.sub(r"\([^)]*\)", " ", t or ""))
+
+
+def letras_dos_louvores(raiz=None):
+    """{titulo normalizado: [linha, linha, ...]} — a letra certa, do app."""
+    raiz = raiz or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    s = io.open(os.path.join(raiz, "dados", "louvores.js"), encoding="utf-8").read()
+    L = json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
+    if isinstance(L, dict):
+        L = L.get("louvores", L)
+    mapa = {}
+    for l in L:
+        linhas = [li for sl in l.get("slides", []) for li in sl.get("linhas", [])]
+        for forma in {so_letras(l["titulo"]), sem_parenteses(l["titulo"])}:
+            if forma and forma not in mapa:
+                mapa[forma] = linhas
+    return mapa
 
 
 def chaves_dos_louvores(raiz=None):
@@ -518,6 +672,7 @@ def extrair(pasta=None, limite=0, aviso=None):
         raise SystemExit("Nao achei o indice das cifras. Rode indexar_cifras.py antes.")
     indice = json.load(io.open(caminho_idx, encoding="utf-8"))
     banco = chaves_dos_louvores()
+    letras = letras_dos_louvores()
     if aviso:
         aviso("banco do app: %d titulos" % len(banco))
 
@@ -545,10 +700,14 @@ def extrair(pasta=None, limite=0, aviso=None):
                 if not alvo:
                     sem_par += 1
                     continue
+                certa = letras.get(so_letras(titulo)) or letras.get(sem_parenteses(titulo))
+                corpo2, trocadas = consertar_pela_letra(corpo, certa)
                 for chave in alvo:
                     if chave in acordes:
                         continue                   # o primeiro que aparece manda
-                    reg = {"linhas": corpo, "pdf": nome}
+                    reg = {"linhas": corpo2, "pdf": nome}
+                    if trocadas:
+                        reg["ok"] = trocadas
                     if tom:
                         reg["tom"] = tom
                     acordes[chave] = reg
