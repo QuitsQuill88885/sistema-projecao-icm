@@ -1,75 +1,96 @@
-# Sistema
+# Sistema — projeção para a igreja
 
-Projeção para o culto da Igreja Cristã Maranata — louvores, Bíblia, avisos e slides.
-Feito para rodar em qualquer computador com Windows, **sem internet** e sem depender de mais nada.
+Programa de projeção para o culto: louvores, Bíblia, avisos, cronômetro e
+apresentações da Escola Bíblica. Roda em Windows, **sem internet**, e é operado
+por quem não é da área de informática.
 
-> *"Escreve a visão e torna-a bem legível sobre tábuas, para que a possa ler quem passa correndo."*
-> — Habacuque 2:2
+Feito para a Igreja Cristã Maranata de Iperó, mas serve a qualquer igreja que
+queira usá-lo.
+
+> *"Escreve a visão e torna-a bem legível sobre tábuas,
+> para que a possa ler quem passa correndo."* — Habacuque 2:2
 
 ---
 
 ## O que ele faz
 
-- **Louvores** — a coletânea inteira, com busca por número, nome ou por um trecho da letra (com ou sem acento).
-  A letra se ajusta sozinha para caber na tela: nenhum louvor fica cortado.
-- **Bíblia** — um clique projeta o versículo; ▶ segue a leitura sozinho, cruzando capítulos e livros.
-  Marque vários com ✓ e eles aparecem juntos na mesma tela.
-- **Lista de projeção** — monte a ordem do culto (louvores e versículos), reordene arrastando,
-  e o Avançar respeita exatamente a sequência que você montou.
-- **Slides** — abre PowerPoint e PDF da Escola Bíblica e projeta como se fosse um louvor.
-- **Timer, Relógio, Texto e Avisos** — com avisos que se montam sozinhos a partir dos cultos da sua igreja.
-- **Fundos** — organizados por categoria, com a tela de espera que aparece sozinha entre os louvores.
+**Louvores.** A coletânea inteira, buscável por número, por nome ou por um trecho
+da letra — com ou sem acento, com ou sem vírgula. A busca traz primeiro o louvor
+cujo **título** bate, e só depois os que citam aquilo no meio da letra.
 
-O operador sempre sabe o que está no telão: a barra de estado mostra **Projetando ao vivo**,
-**Congelado** ou **Projeção fechada**, e a prévia mostra exatamente o que a congregação vê.
+**Coletâneas convivendo.** O mesmo número existe em coletâneas diferentes com
+letras diferentes: o 60 da Coletânea 2018 e o 60 dos CIAS são louvores distintos.
+Procurando por número, o Sistema mostra os dois, cada um debaixo do nome da sua
+coletânea. Não há sigla para decorar.
 
-## Como instalar
+**Bíblia.** Um clique projeta, dois guardam na lista. Avança sozinho de capítulo
+e de livro, e projeta vários versículos juntos numa tela só.
 
-Execute o **`Instalar o Sistema.exe`**. Ele instala o programa, cria o atalho na Área de Trabalho
-e no menu Iniciar, e cria as suas pastas em `%APPDATA%\Sistema Projecao`:
+**Lista de projeção.** Monte a ordem do culto antes de começar. Louvores e
+versículos ficam em grupos separados e **não se misturam** na navegação: uma hora
+é a hora do louvor, outra é a hora da palavra. O que já passou fica riscado.
 
-- `Meus fundos` — imagens de fundo que você quiser usar
-- `Minhas apresentações` — PowerPoint e PDF da Escola Bíblica
-- `Meus louvores` — louvores que você adicionar
+**Celular como controle.** Uma página que abre no navegador do celular, pelo
+hotspot ou pelo wi-fi da igreja, com prévia ao vivo do telão. Sem instalar nada.
 
-Suas configurações ficam nessa pasta, **fora do programa**. Ao atualizar, nada se perde.
+**Cifras.** Ligadas a cada louvor: um botão abre a cifra na página certa, para
+quem está tocando.
 
-## Como projetar no projetor
+**Louvores de CIAS com animação.** Quando existe a versão animada, ela substitui
+o texto — e dá para desligar num toque.
 
-1. Ligue o cabo (HDMI) e aperte <kbd>⊞ Windows</kbd> + <kbd>P</kbd>, escolhendo **Estender**.
-2. Clique em **Abrir Projeção**. O Sistema encontra o projetor e joga a tela cheia nele sozinho.
+---
 
-## Para desenvolver
+## Instalação
 
-```bash
-pip install pywebview pywin32 pyinstaller
-python sistema.py
+Baixe o instalador e execute. Ele cria o atalho na Área de Trabalho e no menu
+Iniciar. Para atualizar, basta instalar por cima: **suas configurações, seus
+fundos e seus louvores próprios não são tocados** — eles ficam em
+`%APPDATA%\Sistema Projecao`.
+
+---
+
+## Sobre o conteúdo — leia antes de clonar
+
+**Este repositório tem o PROGRAMA, não o conteúdo.** Ficam de fora, de propósito:
+
+| O que | Por quê |
+|---|---|
+| Louvores e Bíblia | material da Igreja Cristã Maranata |
+| Fundos de tela | idem |
+| Fonte de projeção | tipografia comercial, licenciada |
+| Animações dos CIAS | pacote oficial da igreja |
+| Cifras | coletâneas publicadas pela ICM |
+
+Nada disso é nosso para redistribuir. Quem clonar precisa trazer o próprio
+conteúdo — o Sistema importa tudo pelo menu, e funciona normalmente sem nada
+disso (os botões correspondentes apenas não aparecem).
+
+O material oficial da ICM está em <https://louvoricm.org.br>, no aplicativo
+oficial da igreja e na Livraria ICM.
+
+---
+
+## Para quem quiser compilar
+
+Precisa de Python 3 no Windows, com `pyinstaller`, `pywebview`, `pywin32`,
+`qrcode`, `pypdf` e `pillow`.
+
+```
+python -m PyInstaller --noconfirm "Sistema.spec"
 ```
 
-Para gerar o instalador, veja os comandos do PyInstaller em [`COMO-COMPILAR.md`](COMO-COMPILAR.md).
+Detalhes em [COMO-COMPILAR.md](COMO-COMPILAR.md), inclusive por que o programa é
+empacotado em pasta e não em arquivo único (arquivo único descompactava 28 MB a
+cada abertura e demorava 8 segundos para abrir).
+
+Ferramentas auxiliares ficam em `ferramentas/`: leitura do pacote de animações,
+conversão para WebP e indexação das cifras por louvor.
 
 ---
 
 ## Créditos
 
-Este projeto não teria existido sozinho.
+Escrito por Samuel, para a igreja dele, com ajuda do Claude (Anthropic).
 
-- **Glorifica** (glorifica.com.br) — foi a referência e a inspiração. Muitas das melhores ideias daqui
-  vieram de lá: a lista de projeção, a exibição de vários versículos juntos, o congelamento da tela.
-  O autor fez, sozinho, um trabalho que serviu a igrejas no Brasil inteiro por anos. O mérito é dele.
-- **Igreja Cristã Maranata** — pelo padrão visual dos cultos, que este projeto procura respeitar fielmente.
-- Ao projeto de código aberto que organizou e publicou a coletânea de louvores em formato legível,
-  o que tornou possível carregar a coletânea inteira aqui.
-
-## Sobre o conteúdo
-
-O **código** deste repositório é livre (veja [LICENSE](LICENSE)).
-
-O **conteúdo** que acompanha o programa — fontes tipográficas, artes de fundo, letras dos louvores
-e texto bíblico — pertence a terceiros e está aqui apenas para uso da própria igreja.
-Não redistribua esse conteúdo separadamente. Se for usar este código em outra igreja,
-coloque as suas próprias fontes em `fontes/` e os seus próprios fundos em `fundos/`.
-
----
-
-Feito com carinho para a Igreja Cristã Maranata de Iperó.
+O nome veio de Provérbios 31:28.

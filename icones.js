@@ -15,7 +15,13 @@
     ant: S('<path d="M15 18l-6-6 6-6"/>'),
     prox: S('<path d="M9 18l6-6-6-6"/>'),
     reset: S('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
-    descanso: S('<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+    // "Parar de projetar": era uma LUA, que não fala de projeção nenhuma.
+    // Câmera de cinema cortada por um traço = parar a exibição.
+    descanso: S('<rect x="2.5" y="8.5" width="12" height="9.5" rx="2"/><path d="M14.5 12.2l7-3.7v11l-7-3.7z"/><path d="M3.5 3.5l17 17"/>'),
+    // violão — o modo cifra, para quem está no banquinho tocando
+    violao: S('<circle cx="8.8" cy="15.2" r="5.6"/><circle cx="8.8" cy="15.2" r="1.7"/><path d="M12.8 11.2l5.6-5.6"/><path d="M16.8 3.6l3.6 3.6"/>'),
+    // três bloquinhos de letras: os louvores de CIAS têm exibição própria
+    cias: S('<rect x="2.5" y="12.2" width="8.6" height="8.6" rx="1.7"/><rect x="12.9" y="12.2" width="8.6" height="8.6" rx="1.7"/><rect x="7.7" y="3" width="8.6" height="8.6" rx="1.7"/>'),
     preto: F('<rect x="4" y="4" width="16" height="16" rx="2"/>'),
     congelar: S('<path d="M12 2v20M4 5l16 14M20 5L4 19M2 12h20"/>'),
     menu: S('<path d="M3 6h18M3 12h18M3 18h18"/>'),

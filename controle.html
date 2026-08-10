@@ -46,7 +46,9 @@ nav button.on{background:var(--painel2);color:var(--ouro)}
 
 /* ---- conteúdo ---- */
 main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px}
-.busca{position:sticky;top:0;background:var(--fundo);padding-bottom:8px;z-index:2}
+/* A caixa gruda no topo, mas sem fundo em cima e sem ficar acima dos cabeçalhos
+   ela deixava a lista aparecer POR TRÁS — item cortado ao meio, atrás do campo. */
+.busca{position:sticky;top:0;background:var(--fundo);padding:8px 0;z-index:6}
 .busca input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid var(--borda);
   background:#0c1830;color:#fff;font-size:16px}
 .lista{display:flex;flex-direction:column;gap:5px}

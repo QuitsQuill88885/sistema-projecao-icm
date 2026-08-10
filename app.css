@@ -21,7 +21,9 @@ header{display:flex;align-items:center;gap:10px;background:linear-gradient(180de
 header .logo{font-weight:800;font-size:17px;color:#fff;letter-spacing:.5px;white-space:nowrap}
 .marca{display:flex;align-items:center;gap:9px;white-space:nowrap;min-width:0}
 .marca svg{display:block}
-.marca-igreja{font-size:15px;color:#fff;letter-spacing:.3px;max-width:200px;overflow:hidden;
+/* usa o espaço que houver, em vez de cortar sempre em 200px — "Igreja Cristã
+   Maranata — Iperó" ficava talhado bem antes do nome do bairro */
+.marca-igreja{font-size:15px;color:#fff;letter-spacing:.3px;min-width:0;overflow:hidden;
               text-overflow:ellipsis;white-space:nowrap}
 /* ---------- BOAS-VINDAS ---------- */
 .bv-overlay{position:fixed;inset:0;background:#060d1acc;backdrop-filter:blur(3px);z-index:300;
@@ -84,6 +86,16 @@ main{display:grid;grid-template-columns:1fr 348px;overflow:hidden;min-height:0}
 .item:hover{background:var(--hover)}
 .item.sel{background:var(--azul2);color:#fff;font-weight:600}
 .item.na-lista{box-shadow:inset 3px 0 0 var(--ouro)}
+/* Cabeçalho de coletânea. O mesmo número existe em coletâneas diferentes com
+   letras diferentes (o 60 da 2018 e o 60 dos CIAS). Buscando "60" o operador vê
+   os dois, cada um debaixo do seu nome — não precisa decorar sigla nenhuma. */
+.grupo-col{position:sticky;top:0;z-index:2;padding:4px 12px;font-size:10.5px;font-weight:700;
+           letter-spacing:.8px;color:var(--ouro);background:#101d33;border-top:1px solid var(--borda)}
+.grupo-col:first-child{border-top:none}
+.grupo-col.cias{color:#c79bff}          /* CIAS é o único que colide em 100% dos números */
+.item.cias{background:#7b2d9e12}
+.item.cias:hover{background:var(--hover)}
+.item.cias.sel{background:var(--azul2)}
 .marca-lista{color:var(--ouro);font-size:11px;margin-right:5px}
 .item small{color:#7f9ac0;margin-right:5px}
 #lista-slides .item{white-space:normal}
@@ -201,7 +213,8 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .prev-selo.aovivo{background:#8e1b1bd9;color:#fff}
 .prev-selo.congelado{background:#f5d76edd;color:#1a1a1a}
 .dot{width:10px;height:10px;border-radius:50%;background:#556}
-.dot.on{background:#e23;box-shadow:0 0 8px #e23}
+.dot.on{background:#e23;box-shadow:0 0 8px #e23}      /* vermelho = indo pro telão AGORA */
+.dot.espera{background:#7f9ac0;box-shadow:none}       /* telão ligado, mas em espera */
 .preview-box{display:flex;justify-content:center}
 .preview-box .mini{width:min(100%,calc(26vh * 16 / 9));aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 4px 18px #0007}
 .preview-box iframe{width:100%;height:100%;border:0;display:block}
@@ -213,6 +226,16 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .ctrl.projetar.on{background:var(--vermelho)}
 /* telão LIGADO mas em espera: nem verde de "abrir" nem vermelho de "ao vivo" */
 .ctrl.projetar.on.em-espera{background:#4a5c7a}
+
+/* Recursos do louvor que está no ar. A fileira só existe quando há algo nela:
+   louvor sem cifra e sem animação não deixa botão órfão ocupando o painel. */
+.barra-extras{display:flex;gap:6px;padding:5px 8px;border-top:1px solid var(--borda)}
+.barra-extras.oculto,.ff.extra.oculto{display:none}
+.ff.extra{display:flex;align-items:center;gap:5px;font-size:11.5px;padding:5px 10px;
+          border-radius:7px;background:#16233c;border:1px solid var(--borda);color:#b9cbe6}
+.ff.extra:hover{background:var(--hover)}
+.ff.extra.cifra.on{background:#a8570f;border-color:#d4761c;color:#fff}      /* violão: laranja */
+.ff.extra.cias.on{background:#8a6d10;border-color:#c9a227;color:#fff}       /* CIAS: amarelo */
 .ctrl-linha{display:flex;gap:5px}
 .ctrl-linha .ctrl{flex:1}
 .nav2{display:flex;gap:6px}
@@ -235,6 +258,11 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .fila-item:hover{background:var(--hover)}
 .fila-item:hover .fila-btns{opacity:1}
 .fila-item.atual{background:var(--azul2);box-shadow:inset 3px 0 0 var(--ouro)}
+/* já cantado: apaga sem sumir. O operador bate o olho e sabe o que passou e o
+   que falta; voltando na navegação, a marca desfaz sozinha. */
+.fila-item.ja-foi{opacity:.42}
+.fila-item.ja-foi .rot{text-decoration:line-through;text-decoration-color:#5d7ba8}
+.fila-item.ja-foi:hover{opacity:.85}
 .fila-item.arrastando{opacity:.4}
 .fila-item.drop-alvo{box-shadow:inset 0 3px 0 var(--ouro)}
 .fila-btns{margin-left:auto;display:flex;gap:3px;opacity:.8;transition:.15s}
@@ -373,3 +401,6 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000d;padding:10px 20px;
        border-radius:20px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
 #toast.show{opacity:1}
+
+/* etiqueta da coletânea nas buscas por texto, onde não há cabeçalho de grupo */
+.item small.etq-col{color:#7f9ac0;font-size:10px;letter-spacing:.4px;margin-right:6px}

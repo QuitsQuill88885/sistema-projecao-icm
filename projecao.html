@@ -125,13 +125,22 @@ function fit(box, cqh, escala, crescer, linhasRef){
     if(px < 6){ px = 6; box.style.fontSize = px+'px'; break; }
     box.style.fontSize = px+'px';
   }
+  // Uma linha "quebrou" quando ela virou duas: aviso com a frase partida no meio
+  // ("Culto de Senhoras —" numa linha e "19:30" na outra) fica feio, mesmo cabendo.
+  const quebrou = () => {
+    for(const el of w.children){
+      const lh = parseFloat(getComputedStyle(el).lineHeight) || (px * 1.42);
+      if(el.offsetHeight > lh * 1.6) return true;
+    }
+    return false;
+  };
   // sobrou espaço (ex.: só 1 versículo)? cresce até preencher, sem passar do limite
-  if(crescer && px >= base - 0.5){
-    const teto = base * 2.2;
+  if(crescer && px >= base - 0.5 && !quebrou()){
+    const teto = base * (crescer === 'aviso' ? 1.7 : 2.2);
     for(let i=0;i<18;i++){
       const tentativa = px * 1.06; if(tentativa > teto) break;
       box.style.fontSize = tentativa+'px';
-      if(!cabe()){ box.style.fontSize = px+'px'; break; }
+      if(!cabe() || quebrou()){ box.style.fontSize = px+'px'; break; }
       px = tentativa;
     }
   }
@@ -176,7 +185,9 @@ function aplicar(e){
       const comBarra = e.zona === 'barra';
       el.livre.style.top = comBarra ? '22%' : '10%';
       el.livre.style.height = comBarra ? '72%' : '80%';
-      linhas(el.livre, e.linhas||[]); fit(el.livre, e.tam||6, e.escala);
+      // aviso costuma ter 2 ou 3 linhas curtas: sem CRESCER ele ficava boiando
+      // minúsculo no meio da tela, ilegível do fundo da igreja
+      linhas(el.livre, e.linhas||[]); fit(el.livre, e.tam||6, e.escala, 'aviso');
     }
     else if(e.modo==='relogio'){
       fundo(e.fundo); el.grande.style.display='flex';

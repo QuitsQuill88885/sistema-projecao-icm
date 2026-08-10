@@ -25,15 +25,28 @@ def instalar(progresso):
     progresso(5, "Preparando…")
     os.makedirs(DESTINO, exist_ok=True)
 
+    progresso(10, "Fechando o Sistema, se estiver aberto…")
+    fechar_sistema_aberto()
+
     progresso(15, "Copiando os arquivos do Sistema…")
+    falhas = []
     if os.path.isdir(pacote):
         for raiz, _, arquivos in os.walk(pacote):
             rel = os.path.relpath(raiz, pacote)
             alvo = os.path.join(DESTINO, rel) if rel != "." else DESTINO
             os.makedirs(alvo, exist_ok=True)
             for a in arquivos:
-                try: shutil.copy2(os.path.join(raiz, a), os.path.join(alvo, a))
-                except Exception: pass
+                try:
+                    shutil.copy2(os.path.join(raiz, a), os.path.join(alvo, a))
+                except Exception as e:
+                    falhas.append((a, e))
+    # NUNCA mais engolir isto calado. Instalar por cima com o Sistema aberto
+    # falhava arquivo por arquivo, o instalador dizia "Pronto!" e o programa
+    # continuava na versão velha — sem uma palavra de aviso.
+    if falhas:
+        raise RuntimeError(
+            "Não consegui substituir %d arquivo(s). Feche o Sistema e instale de novo. "
+            "(primeiro: %s)" % (len(falhas), falhas[0][0]))
 
     progresso(65, "Criando as suas pastas…")
     os.makedirs(DADOS, exist_ok=True)
@@ -51,6 +64,9 @@ def instalar(progresso):
         if pasta and os.path.isdir(pasta):
             atalho(os.path.join(pasta, NOME + ".lnk"), exe)
 
+    progresso(85, "Instalando o conteúdo…")
+    copiar_conteudo_extra(progresso)
+
     progresso(90, "Fixando no menu Iniciar…")
     fixar_no_iniciar(exe)
 
@@ -58,6 +74,76 @@ def instalar(progresso):
     time.sleep(0.4)
     progresso(100, "Pronto!")
     return exe
+
+
+def copiar_conteudo_extra(progresso=None):
+    """Instala a pasta "Conteudo" que vier AO LADO do instalador.
+
+    É o que separa a versão completa da enxuta sem existirem dois programas:
+    o mesmo instalador, com ou sem a pasta do lado. Dentro dela vão as
+    animações dos CIAS e as cifras, que são pesadas demais para viajar dentro
+    do .exe (juntas passam de 200 MB).
+
+        Instalar o Sistema.exe
+        Conteudo\\animacoes\\...
+        Conteudo\\cifras\\...
+
+    Nada aqui é obrigatório: sem a pasta, o Sistema instala igual e os botões
+    de cifra e animação simplesmente não aparecem.
+    """
+    origem_pasta = os.path.join(os.path.dirname(os.path.abspath(sys.executable)), "Conteudo")
+    if not os.path.isdir(origem_pasta):
+        origem_pasta = os.path.join(os.getcwd(), "Conteudo")
+    if not os.path.isdir(origem_pasta):
+        return 0
+
+    copiados = 0
+    for raiz, _, arquivos in os.walk(origem_pasta):
+        rel = os.path.relpath(raiz, origem_pasta)
+        alvo = os.path.join(DADOS, rel) if rel != "." else DADOS
+        os.makedirs(alvo, exist_ok=True)
+        for a in arquivos:
+            try:
+                shutil.copy2(os.path.join(raiz, a), os.path.join(alvo, a))
+                copiados += 1
+                if progresso and copiados % 40 == 0:
+                    progresso(85, "Instalando o conteúdo… (%d arquivos)" % copiados)
+            except Exception:
+                pass          # um arquivo de conteúdo que falhe não derruba a instalação
+    return copiados
+
+
+def fechar_sistema_aberto(espera=6.0):
+    """Fecha o Sistema se ele estiver rodando.
+
+    Atualizar por cima com o programa aberto é o caso NORMAL — o operador clica
+    no instalador com o Sistema na tela. E o Windows não deixa sobrescrever um
+    .exe em uso: a cópia falhava arquivo por arquivo e a versão velha continuava.
+    Pedimos para fechar com jeito primeiro; só insistimos se ele não sair.
+    """
+    alvo = os.path.join(DESTINO, "Sistema.exe").lower()
+    try:
+        subprocess.run(["taskkill", "/IM", "Sistema.exe"],
+                       capture_output=True, timeout=10, **SEM_JANELA)
+    except Exception:
+        pass
+    fim = time.time() + espera
+    while time.time() < fim:
+        try:
+            r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq Sistema.exe", "/NH"],
+                               capture_output=True, timeout=10, text=True, **SEM_JANELA)
+            if "Sistema.exe" not in (r.stdout or ""):
+                return True
+        except Exception:
+            return True
+        time.sleep(0.4)
+    try:                                   # não saiu com jeito: encerra mesmo
+        subprocess.run(["taskkill", "/F", "/IM", "Sistema.exe"],
+                       capture_output=True, timeout=10, **SEM_JANELA)
+        time.sleep(0.6)
+    except Exception:
+        pass
+    return True
 
 
 def fechar_splash():
@@ -259,6 +345,15 @@ class Api:
 
     def instalar(self):
         def tarefa():
+            # COM PRECISA ser inicializado nesta thread. Sem isto, as chamadas de
+            # atalho e de fixar no Iniciar (WScript.Shell e Shell.Application)
+            # travam a janela inteira — o Windows chega a dizer "não está
+            # respondendo". A cópia dos arquivos não tem culpa: leva 0,8 segundo.
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pythoncom = None
             def progresso(pct, txt):
                 try:
                     self.janela.evaluate_js("window.avancar(%d, %s)" % (pct, repr(txt).replace("'", '"')))
@@ -268,6 +363,10 @@ class Api:
                 self.exe = instalar(progresso)
             except Exception as e:
                 progresso(100, "Erro: " + str(e))
+            finally:
+                if pythoncom:
+                    try: pythoncom.CoUninitialize()
+                    except Exception: pass
         threading.Thread(target=tarefa, daemon=True).start()
         return True
 

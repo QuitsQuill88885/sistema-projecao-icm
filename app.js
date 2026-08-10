@@ -11,7 +11,11 @@ const TAM_DEF = { louvor: 6.4, biblia: 5.55 };
 const est = {
   aba: 'louvor', projetando: false, freeze: false, estilo: 'limpo',
   louvorIdx: -1, louvorSlide: 0,
-  livro: null, cap: null, bibPos: null, fila: [], setPos: -1, vistaFim: null, aguardando: false, contAfter: 0, juntos: false,
+  // contAfter/contAntes = quantos versículos você já andou DEPOIS do último e
+  // ANTES do primeiro item escolhido na lista. São o caminho de volta: sem eles
+  // a lista era abandonada e o Avançar seguia o capítulo para sempre.
+  livro: null, cap: null, bibPos: null, fila: [], setPos: -1, vistaFim: null, aguardando: false,
+  contAfter: 0, contAntes: 0, juntos: false,
   descansoFundo: null,   // tela de espera escolhida (null = padrão do estilo)
   live: null, ultimo: { modo: 'preto' },
   timerFim: 0, timerParadoMs: 0, timerRotulo: 'Oração',
@@ -132,14 +136,35 @@ function stBiblia(ref, texto) {
 
 // ---------- LOUVOR ----------
 function projetarLouvor(idx, slide, fade) {
+  const s = LOUVORES[idx];
   est.louvorIdx = idx; est.louvorSlide = slide;
   est.live = { tipo: 'louvor', idx, slide };
-  projetar(stLouvor(idx, slide, fade));
-  marcarSlide();
+  // Louvor de CIAS com animação: o GIF já é a TELA PRONTA (título, letra e fundo
+  // animado), então ele SUBSTITUI o texto — não se soma a ele. As telas do GIF
+  // não são as mesmas do texto, por isso a contagem vem do próprio GIF.
+  const anim = est.modoAnim !== false ? daAnimacao(s) : null;
+  if (anim && anim.length) {
+    const i = Math.min(slide, anim.length - 1);
+    est.louvorSlide = i;
+    est.live = { tipo: 'louvor', idx, slide: i, anim: true, n: anim.length };
+    projetar({ modo: 'slide', src: '/animacoes/' + encodeURIComponent(anim[i]),
+               transicao: true, fade: fade ? 500 : 200 });
+  } else {
+    projetar(stLouvor(idx, slide, fade));
+  }
+  marcarSlide(); atualizarExtras();
+}
+// quantas telas tem o louvor no ar (o GIF pode ter menos que o texto)
+function telasDoLouvor(idx) {
+  const s = LOUVORES[idx]; if (!s) return 0;
+  const a = est.modoAnim !== false ? daAnimacao(s) : null;
+  return a && a.length ? a.length : s.slides.length;
 }
 function louvorProximo() {
   const s = LOUVORES[est.louvorIdx]; if (!s) return;
-  if (est.louvorSlide < s.slides.length - 1) projetarLouvor(est.louvorIdx, est.louvorSlide + 1, false);
+  // conta as telas do que está NO AR: o GIF dos CIAS costuma ter menos telas que
+  // o texto, e usar a contagem do texto deixaria telas fantasma no fim
+  if (est.louvorSlide < telasDoLouvor(est.louvorIdx) - 1) projetarLouvor(est.louvorIdx, est.louvorSlide + 1, false);
   else finalizarLouvor();   // acabou o louvor -> vai pra tela de espera; o PRÓXIMO "Avançar" engata o seguinte
 }
 // terminou o louvor: cai na tela de espera (descanso). Fica "aguardando" o próximo Avançar.
@@ -150,20 +175,117 @@ function louvorAnterior() { if (est.louvorSlide > 0) projetarLouvor(est.louvorId
 
 // tira acentos: procurar "coracao" acha "CORAÇÃO", e vice-versa
 function semAcento(t) { return (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+// tira também a pontuação: ninguém digita a vírgula do título, então quem
+// procura "resplandece jerusalem" tem que achar "RESPLANDECE, Ó JERUSALÉM"
+function soLetras(t) { return semAcento(t).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+// QUÃO PERTO o louvor está do que foi digitado — quanto maior, mais acima.
+// A ordem que o operador espera: título igual, título que COMEÇA com aquilo,
+// título que contém, título com todas as palavras soltas, e só no fim a LETRA.
+// Sem isso, procurar "Jesus" enterrava o louvor CHAMADO "Jesus" debaixo de
+// centenas de louvores que só citam Jesus no meio da letra.
+function pontuarLouvor(s, alvo, palavras) {
+  const tit = s._tl || (s._tl = soLetras(s.titulo));
+  if (tit === alvo) return 1000;
+  if (tit.startsWith(alvo)) return 900 - Math.min(tit.length, 99);      // título curto primeiro
+  if (tit.includes(alvo)) return 800 - Math.min(tit.indexOf(alvo), 99);
+  if (palavras.length > 1 && palavras.every(p => tit.includes(p)))
+    return 600 - Math.min(tit.indexOf(palavras[0]), 99);
+  const letra = s._ll || (s._ll = soLetras(s.slides.map(x => x.linhas.join(' ')).join(' ')));
+  if (letra.includes(alvo)) return 300;
+  if (palavras.length > 1 && palavras.every(p => letra.includes(p))) return 200;
+  return 0;
+}
+// ---- coletâneas ----------------------------------------------------------
+// O mesmo número existe em coletâneas diferentes com letras diferentes: o 60 da
+// Coletânea 2018 e o 60 dos CIAS são louvores distintos. Alguém anuncia só
+// "sessenta" ou "setenta CIAS" e o operador tem segundos para achar o certo.
+// A lista mostra os resultados AGRUPADOS por coletânea, com o nome escrito:
+// ele digita o número e vê os dois, cada um debaixo do seu cabeçalho.
+const NOME_COL = {
+  'Coletânea 2018': 'COLETÂNEA 2018',
+  'CIA 2018': 'CIAS',
+  'Coletânea Antiga': 'COLETÂNEA ANTIGA',
+  'Avulsos 2018': 'AVULSOS',
+  'Meus louvores': 'MEUS LOUVORES',
+};
+const ORDEM_COL = ['Coletânea 2018', 'CIA 2018', 'Coletânea Antiga', 'Avulsos 2018', 'Meus louvores'];
+function nomeCol(s) { return NOME_COL[s.col] || String(s.col || '').toUpperCase(); }
+function ehCias(s) { return s.col === 'CIA 2018'; }
+// etiqueta curta da coletânea, usada quando a lista vem ranqueada (sem grupo)
+function siglaCol(s) {
+  return { 'Coletânea 2018': '2018', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
+           'Avulsos 2018': 'AVULSO', 'Meus louvores': 'MEU' }[s.col] || '';
+}
+// "AV" não é número: nos Avulsos a coluna fica com um traço em vez de repetir a sigla
+function numLouvor(s) { return (!s.num || s.num === 'AV') ? '' : s.num; }
+function numInt(s) { const n = numLouvor(s); return /^\d+$/.test(n) ? parseInt(n, 10) : null; }
+// como o louvor se apresenta fora da lista (fila, barra de estado, celular),
+// onde não existe o cabeçalho de grupo para dizer de que coletânea ele é
+function rotuloLouvor(s) {
+  const n = numLouvor(s), c = nomeCol(s);
+  const curto = { 'COLETÂNEA 2018': '2018', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
+                  'MEUS LOUVORES': 'MEU', 'CIAS': 'CIAS' }[c] || c;
+  return (n ? n + ' ' : '') + curto + ' · ' + s.titulo;
+}
+
 function renderListaLouvores(filtro) {
   const cont = $('#lista-louvores'); cont.innerHTML = '';
   const f = semAcento(filtro).trim();
+  // digitar "60" tem que trazer o 60, não o 160, o 600 e o 1160: quando a busca
+  // é só dígitos, o número casa por IGUALDADE, não por "contém"
+  const soNumero = /^\d+$/.test(f) ? parseInt(f, 10) : null;
+  const alvo = soLetras(filtro);
+  const palavras = alvo ? alvo.split(' ').filter(Boolean) : [];
+  const achados = [];
   LOUVORES.forEach((s, i) => {
+    let pontos = 1;
     if (f) {
-      const noTit = (s._tit || (s._tit = semAcento(s.titulo))).includes(f) || (s.num && semAcento(s.num).includes(f));
-      const naLetra = !noTit && (s._letra || (s._letra = semAcento(s.slides.map(x => x.linhas.join(' ')).join(' ')))).includes(f);
-      if (!noTit && !naLetra) return;
-      s._naLetra = !noTit && naLetra;
+      if (soNumero !== null) {                     // busca por número: igualdade
+        if (numInt(s) !== soNumero) return;
+        pontos = 1000;
+      } else {
+        pontos = pontuarLouvor(s, alvo, palavras);
+        if (!pontos) return;
+        s._naLetra = pontos <= 300;                // achou só na letra
+      }
+    }
+    achados.push([s, i, pontos]);
+  });
+  // agrupa mantendo a ordem das coletâneas; a 2018 é a mais cantada, vem primeiro
+  achados.sort((a, b) => {
+    // PROCURANDO: manda a proximidade com o que foi digitado. LISTA INTEIRA:
+    // manda a ordem natural (coletânea e número), que é como o operador folheia.
+    if (f && b[2] !== a[2]) return b[2] - a[2];
+    const d = ORDEM_COL.indexOf(a[0].col) - ORDEM_COL.indexOf(b[0].col);
+    if (d) return d;
+    const na = numInt(a[0]), nb = numInt(b[0]);
+    if (na !== null && nb !== null) return na - nb;
+    return a[1] - b[1];
+  });
+
+  // Agrupar por coletânea resolve a ambiguidade do NÚMERO (o 60 da 2018 e o 60
+  // dos CIAS). Mas em busca por TEXTO o grupo brigaria com a ordem de
+  // proximidade — o cabeçalho se repetiria a cada linha. Então: número agrupa,
+  // texto vem ranqueado, com a coletânea escrita em cada linha.
+  const agrupar = !f || soNumero !== null;
+  let colAtual = null;
+  achados.forEach(([s, i]) => {
+    if (agrupar && s.col !== colAtual) {      // cabeçalho da coletânea
+      colAtual = s.col;
+      const g = document.createElement('div');
+      g.className = 'grupo-col' + (ehCias(s) ? ' cias' : '');
+      g.textContent = nomeCol(s);
+      cont.appendChild(g);
     }
     const naLista = est.fila.some(x => x.tipo === 'louvor' && x.chave === chaveLouvor(s));
-    const d = document.createElement('div'); d.className = 'item' + (naLista ? ' na-lista' : ''); d.dataset.i = i;
+    const d = document.createElement('div');
+    d.className = 'item' + (naLista ? ' na-lista' : '') + (ehCias(s) ? ' cias' : '');
+    d.dataset.i = i;
+    const n = numLouvor(s);
     d.innerHTML = (naLista ? '<span class="marca-lista" title="Já está na lista de projeção">♪</span>' : '') +
-      (s.num ? '<small>' + s.num + '</small>' : '') + s.titulo +
+      '<small>' + (n || '—') + '</small>' +
+      (agrupar ? '' : '<small class="etq-col">' + siglaCol(s) + '</small>') + s.titulo +
       (f && s._naLetra ? ' <small style="color:#6fa8dc">· letra</small>' : '');
     // o clique simples espera um tico: se vier o segundo clique, ele é cancelado
     // e o louvor só vai pra lista — sem piscar no telão
@@ -171,7 +293,7 @@ function renderListaLouvores(filtro) {
     d.ondblclick = () => {
       clearTimeout(d._t);
       selecionarLouvor(i, true);      // só mostra os slides no painel; não projeta
-      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s), rotulo: (s.num ? s.num + ' · ' : '') + s.titulo });
+      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s), rotulo: rotuloLouvor(s) });
     };
     cont.appendChild(d);
   });
@@ -183,7 +305,7 @@ function selecionarLouvor(i, semProjetar) {
   est.setPos = -1;
   $$('#lista-louvores .item').forEach(e => e.classList.toggle('sel', +e.dataset.i === i));
   const s = LOUVORES[i];
-  $('#tit-slides').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
+  $('#tit-slides').textContent = rotuloLouvor(s);   // diz a coletânea também
   const cont = $('#lista-slides'); cont.innerHTML = '';
   s.slides.forEach((sl, k) => {
     const d = document.createElement('div'); d.className = 'item'; d.dataset.k = k;
@@ -196,8 +318,62 @@ function selecionarLouvor(i, semProjetar) {
     };
     cont.appendChild(d);
   });
+  atualizarExtras();                 // este louvor tem cifra? tem animação?
   if (!semProjetar) projetarLouvor(i, 0, false);
   else marcarSlide();
+}
+// ---- recursos extras do louvor (cifra e animação dos CIAS) ----------------
+// Os dois arquivos são importados pelo menu e ficam na pasta do usuário. Se o
+// operador nunca importou nada, ANIMACOES e CIFRAS ficam vazios e os botões
+// simplesmente não aparecem — nada de botão morto no painel.
+let ANIMACOES = {}, CIFRAS = {};
+function carregarExtras() {
+  fetch('/api/animacoes').then(r => r.json()).then(r => { ANIMACOES = r.indice || {}; atualizarExtras(); }).catch(() => {});
+  fetch('/api/cifras').then(r => r.json()).then(r => { CIFRAS = r.indice || {}; atualizarExtras(); }).catch(() => {});
+}
+function temAnimacao(s) { return !!(s && s.col === 'CIA 2018' && ANIMACOES[String(parseInt(s.num, 10))]); }
+function daAnimacao(s) { return temAnimacao(s) ? ANIMACOES[String(parseInt(s.num, 10))] : null; }
+function temCifra(s) { return !!(s && CIFRAS[chaveLouvor(s)]); }
+function daCifra(s) { return s ? CIFRAS[chaveLouvor(s)] : null; }
+
+// Abre a cifra numa janela própria. É PDF: o navegador já sabe abrir, com zoom e
+// rolagem nativos — que é exatamente o que o músico do banquinho precisa para
+// repetir um coro sem depender de quem passa os slides.
+let janelaCifra = null;
+function abrirCifra() {
+  const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
+  const c = daCifra(s);
+  if (!c) { toast('Este louvor não tem cifra importada.'); return; }
+  const url = '/cifras/' + encodeURIComponent(c.pdf) + '#page=' + c.pag + '&view=FitH';
+  try {
+    if (janelaCifra && !janelaCifra.closed) { janelaCifra.location.href = url; janelaCifra.focus(); }
+    else janelaCifra = window.open(url, 'cifra', 'width=760,height=900');
+  } catch (e) { window.open(url, '_blank'); }
+  est.modoCifra = true; atualizarExtras();
+  toast('Cifra: ' + c.pdf.replace(/\.pdf$/i, '') + ', página ' + c.pag + (c.tom ? ' · tom ' + c.tom : ''));
+}
+
+// Liga/desliga a exibição animada dos CIAS. Ela vem LIGADA: é assim que o louvor
+// de criança se apresenta. Desligando, cai no texto normal.
+function alternarAnimacao() {
+  est.modoAnim = est.modoAnim === false;      // undefined/true -> false; false -> true
+  atualizarExtras();
+  if (est.louvorIdx >= 0) projetarLouvor(est.louvorIdx, est.louvorSlide || 0, true);
+  toast(est.modoAnim === false ? 'Exibindo o texto deste louvor.' : 'Exibindo a animação dos CIAS.');
+}
+
+// Mostra/esconde os botões conforme o louvor que está selecionado agora.
+function atualizarExtras() {
+  const barra = $('#barra-extras'), bc = $('#btn-cifra'), ba = $('#btn-anim');
+  if (!barra) return;
+  const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
+  const cifra = temCifra(s), anim = temAnimacao(s);
+  bc.classList.toggle('oculto', !cifra);
+  ba.classList.toggle('oculto', !anim);
+  barra.classList.toggle('oculto', !cifra && !anim);
+  bc.classList.toggle('on', cifra && est.modoCifra);
+  // a animação vem LIGADA por natureza: é assim que o louvor de CIAS se apresenta
+  ba.classList.toggle('on', anim && est.modoAnim !== false);
 }
 function marcarSlide() {
   $$('#lista-slides .item').forEach(e => e.classList.toggle('sel', +e.dataset.k === est.louvorSlide));
@@ -316,23 +492,36 @@ function idxDoItem(it) {   // resolve o índice pela CHAVE (o índice cru muda s
 }
 function projetarItemLista(i, aoFim) {
   const it = est.fila[i]; if (!it) return;
-  est.setPos = i; est.vistaFim = i; est.contAfter = 0; est.juntos = false;
+  est.setPos = i; est.vistaFim = i; est.contAfter = 0; est.contAntes = 0; est.juntos = false;
   if (it.tipo === 'louvor') {
     const k = idxDoItem(it);
     if (k < 0 || !LOUVORES[k]) { toast('Este louvor não está mais disponível.'); renderFila(); return; }
     selecionarLouvor(k);
     // aoFim: chegando por Voltar, abre no último slide em vez de recomeçar
-    if (aoFim) projetarLouvor(k, LOUVORES[k].slides.length - 1, false);
+    if (aoFim) projetarLouvor(k, telasDoLouvor(k) - 1, false);
   }
   else projetarVerso(it.livro, it.cap, it.v);
   est.setPos = i; est.vistaFim = i; renderFila();
 }
 // JUNTOS: projeta os versículos MARCADOS (✓) juntos numa tela só; atualiza ao vivo ao marcar/reordenar
+// Se o versículo que está no ar está na Lista, a navegação tem que voltar a
+// obedecer a Lista. Sem isso o operador ficava preso na leitura contínua sem
+// entender por quê — a lista estava ali, montada, e o Voltar a ignorava.
+function devolverPosicaoNaFila(v) {
+  const i = est.fila.findIndex(x => x.tipo === 'verso' && x.livro === v.livro && x.cap === v.cap && x.v === v.v);
+  if (i >= 0) { est.setPos = i; est.vistaFim = i; est.contAfter = 0; est.contAntes = 0; renderFila(); }
+}
 function projetarVersiculosJuntos() {
   const versos = est.fila.filter(x => x.tipo === 'verso' && x.on === true);
   if (!versos.length) { toast(est.fila.some(x => x.tipo === 'verso') ? 'Marque (✓) os versículos que devem aparecer juntos' : 'Adicione versículos (2 cliques) à lista'); return; }
   if (versos.length === 1) {                  // um só marcado -> versículo normal (não estica pra tela toda)
-    const s = versos[0]; est.juntos = false; projetarVerso(s.livro, s.cap, s.v); return;
+    const s = versos[0]; est.juntos = false;
+    projetarVerso(s.livro, s.cap, s.v);
+    // DEVOLVE a posição na lista. O modo "juntos" zera setPos de propósito, mas
+    // ao desmarcar e sobrar um só versículo ninguém devolvia — e o Voltar passava
+    // a ler o capítulo de trás em vez de ir ao versículo anterior da lista.
+    devolverPosicaoNaFila(s);
+    return;
   }
   const itens = versos.map(x => ({ ref: x.livro + ' - ' + x.cap + ':' + x.v, texto: versoTexto(x) }));
   const u = versos[versos.length - 1]; est.bibPos = { livro: u.livro, cap: u.cap, v: u.v };   // continuar leitura após o último
@@ -400,8 +589,13 @@ function renderFila() {
     }
     const chkOn = it.on === true;                                   // marcado = entra na projeção "Juntos"
     const naVista = est.setPos >= 0 && i >= est.setPos && i <= vFim; // realça o item atual da navegação
+    // Já cantado: item do MESMO grupo que ficou para trás. No meio do culto o
+    // operador precisa bater o olho e saber o que já passou e o que falta —
+    // senão ele não sabe onde parou nem qual é o próximo. Voltar desfaz a marca.
+    const atualNaFila = est.setPos >= 0 ? est.fila[est.setPos] : null;
+    const jaFoi = !!atualNaFila && it.tipo === atualNaFila.tipo && i < est.setPos;
     const d = document.createElement('div');
-    d.className = 'fila-item' + (naVista ? ' atual' : '') + (chkOn ? ' agrupado' : '');   // ✓ = está no telão
+    d.className = 'fila-item' + (naVista ? ' atual' : '') + (jaFoi ? ' ja-foi' : '') + (chkOn ? ' agrupado' : '');
     const rot = it.tipo === 'louvor' ? it.rotulo : it.ref;
     const chk = it.tipo === 'verso' ? '<span class="chk' + (chkOn ? ' on' : '') + '" title="Marcado = entra na projeção Juntos">' + (chkOn ? '✓' : '') + '</span>' : '';
     d.innerHTML = chk + '<span class="rot" style="color:' + (it.tipo === 'louvor' ? '#bfe6ff' : '#f5d76e') + '">' +
@@ -463,7 +657,18 @@ function projetarTexto(instant) {
 }
 
 // ---------- controles globais ----------
-function temProximoNaLista() { return est.setPos >= 0 && est.setPos < est.fila.length - 1; }
+// A Lista tem dois grupos — LOUVORES e VERSÍCULOS — e eles NÃO conversam.
+// Uma hora é a hora do louvor, outra é a hora da palavra: avançar dentro dos
+// versículos nunca pode cair num louvor, nem o contrário. Antes a fila era
+// percorrida em linha reta e voltar do primeiro versículo caía no louvor de trás.
+function vizinhoNaFila(dir) {
+  const atual = est.fila[est.setPos]; if (!atual) return -1;
+  for (let i = est.setPos + dir; i >= 0 && i < est.fila.length; i += dir) {
+    if (est.fila[i].tipo === atual.tipo) return i;
+  }
+  return -1;
+}
+function temProximoNaLista() { return est.setPos >= 0 && vizinhoNaFila(1) >= 0; }
 function proximo() {
   if (est.aguardando) {                       // tela de espera logo após terminar um louvor
     if (temProximoNaLista()) { est.aguardando = false; projetarItemLista(est.setPos + 1); }
@@ -478,7 +683,15 @@ function proximo() {
   if (noAr === 'timer' || noAr === 'relogio' || noAr === 'texto' || noAr === 'fundo' || noAr === 'preto') return;
   if (est.setPos >= 0) {                      // navegando UM A UM pela LISTA (ordem que você montou)
     if (est.live && est.live.tipo === 'louvor') { louvorProximo(); return; }
-    if (temProximoNaLista()) { projetarItemLista(est.setPos + 1); return; }   // PRÓXIMO item da lista
+    // voltando dos versículos que ficaram ANTES do primeiro escolhido: desanda o
+    // caminho até reencontrar a lista, em vez de seguir o capítulo para sempre
+    if (est.contAntes > 0) {
+      est.contAntes--;
+      if (est.contAntes === 0) projetarItemLista(est.setPos); else bibliaProximo();
+      return;
+    }
+    const prox = vizinhoNaFila(1);
+    if (prox >= 0) { projetarItemLista(prox); return; }   // próximo DO MESMO GRUPO
     if (est.bibPos) { est.contAfter++; bibliaProximo(); }                     // passou do último -> leitura contínua
     return;
   }
@@ -491,7 +704,7 @@ function proximo() {
 function anterior() {
   if (est.aguardando || (est.live && est.live.tipo === 'descanso' && est.louvorIdx >= 0)) {
     est.aguardando = false; const s = LOUVORES[est.louvorIdx];               // volta pro último slide do louvor
-    if (s) projetarLouvor(est.louvorIdx, s.slides.length - 1, false);
+    if (s) projetarLouvor(est.louvorIdx, telasDoLouvor(est.louvorIdx) - 1, false);
     return;
   }
   const noAr = est.live && est.live.tipo;      // o que está no ar manda (ver proximo())
@@ -500,10 +713,16 @@ function anterior() {
   if (est.setPos >= 0) {
     // voltando pro louvor anterior, cai no ÚLTIMO slide dele — recomeçar do
     // slide 1 obrigava a apertar Avançar 5, 6 vezes na frente da congregação
-    if (est.live && est.live.tipo === 'louvor') { if (est.louvorSlide > 0) louvorAnterior(); else if (est.setPos > 0) projetarItemLista(est.setPos - 1, true); return; }
+    const ant = vizinhoNaFila(-1);                       // anterior DO MESMO GRUPO
+    if (est.live && est.live.tipo === 'louvor') { if (est.louvorSlide > 0) louvorAnterior(); else if (ant >= 0) projetarItemLista(ant, true); return; }
     if (est.contAfter > 0) { est.contAfter--; if (est.contAfter === 0) projetarItemLista(est.setPos); else bibliaAnterior(); return; }
-    if (est.setPos > 0) { projetarItemLista(est.setPos - 1, true); return; }  // item anterior (respeita a ordem que você montou)
-    if (est.bibPos) { est.setPos = -1; renderFila(); bibliaAnterior(); }      // antes do primeiro escolhido -> segue voltando pelo capítulo
+    if (est.contAntes > 0 && est.bibPos) { est.contAntes++; bibliaAnterior(); return; }
+    if (ant >= 0) { projetarItemLista(ant, true); return; }  // item anterior (respeita a ordem que você montou)
+    // Antes do PRIMEIRO escolhido: segue lendo o capítulo para trás, mas CONTANDO
+    // os passos. Antes daqui saía `est.setPos = -1`, que largava a lista de vez —
+    // depois disso o Avançar não voltava mais para os versículos escolhidos,
+    // seguia o capítulo direto. Agora o caminho de volta existe.
+    if (est.bibPos) { est.contAntes++; bibliaAnterior(); }
     return;
   }
   if (!est.live) return;
@@ -521,6 +740,16 @@ function descanso(manterCongelado) {
   if (est.freeze && !manterCongelado) { est.freeze = false; $('#btn-congelar').classList.remove('freeze-on'); }
   est.live = { tipo: 'descanso' };
   projetar({ modo: 'fundo', fundo: esperaAtual(), transicao: true, fade: 500 });
+}
+// Põe no telão o que está selecionado AGORA, na ordem do que faz mais sentido:
+// versículos marcados > item da lista > versículo aberto > louvor aberto.
+function projetarSelecaoAtual() {
+  if (est.fila.some(x => x.tipo === 'verso' && x.on === true)) { projetarVersiculosJuntos(); return; }
+  if (est.setPos >= 0 && est.fila[est.setPos]) { projetarItemLista(est.setPos); return; }
+  if (est.bibPos) { projetarVerso(est.bibPos.livro, est.bibPos.cap, est.bibPos.v); return; }
+  if (est.louvorIdx >= 0 && LOUVORES[est.louvorIdx]) { projetarLouvor(est.louvorIdx, est.louvorSlide || 0, false); return; }
+  if (est.fila.length) { projetarItemLista(0); return; }
+  toast('Escolha um louvor ou versículo para projetar.');
 }
 function preto() { est.live = { tipo: 'preto' }; projetar({ modo: 'preto', transicao: false }); }
 function toggleFreeze() {
@@ -699,13 +928,16 @@ function fecharProjecao() {
 function atualizarProjBtn() {
   const b = $('#btn-projecao'); b.classList.toggle('on', est.projetando);
   const noAr = est.projetando && !(est.live && est.live.tipo === 'descanso');
+  // Com o telão ligado na tela de espera o botão dizia "Em espera" e clicar nele
+  // não fazia nada — rótulo de estado onde tinha que haver ação. Agora ele
+  // convida: "Projetar" põe no ar o que está selecionado.
   b.innerHTML = (noAr ? '<span class="ico" data-i="descanso"></span> Parar de projetar'
-                      : '<span class="ico" data-i="play"></span> ' + (est.projetando ? 'Em espera' : 'Abrir Projeção'));
+                      : '<span class="ico" data-i="play"></span> ' + (est.projetando ? 'Projetar' : 'Abrir Projeção'));
   // "Em espera" NÃO é a mesma coisa que "Abrir Projeção": o telão já está ligado.
   // A dica dizia "Abrir a projeção no projetor" e o operador clicava esperando
   // religar alguma coisa — e nada acontecia.
   b.title = noAr ? 'Volta para a tela de espera (o telão continua ligado)'
-                 : (est.projetando ? 'O telão já está ligado, na tela de espera'
+                 : (est.projetando ? 'Põe no telão o que está selecionado'
                                    : 'Abrir a projeção no projetor');
   b.classList.toggle('on', est.projetando);   // ligado é ligado, mesmo em espera
   b.classList.toggle('em-espera', est.projetando && !noAr);
@@ -717,9 +949,13 @@ function atualizarProjBtn() {
   const classe = congelado ? ' congelado' : (emEspera ? ' espera' : (est.projetando ? ' aovivo' : ''));
   barra.className = 'estado-barra' + classe;
   txt.textContent = congelado ? 'Congelado — o telão não muda'
-    : (emEspera ? 'Em espera — nada sendo projetado' : (est.projetando ? 'Projetando ao vivo' : 'Projeção fechada'));
+    : (emEspera ? 'Tela de espera no telão' : (est.projetando ? 'Projetando ao vivo' : 'Telão desligado'));
   if (selo) { selo.textContent = congelado ? 'Congelado' : (emEspera ? 'Em espera' : (est.projetando ? 'Ao vivo' : 'Prévia')); selo.className = 'prev-selo' + classe; }
-  $('#dot').classList.toggle('on', est.projetando && !congelado);
+  // A bolinha VERMELHA quer dizer uma coisa só: está indo pro telão agora.
+  // Ela acendia também na tela de espera, e o vermelho contradizia o "em espera".
+  const dot = $('#dot');
+  dot.classList.toggle('on', est.projetando && !congelado && !emEspera);
+  dot.classList.toggle('espera', emEspera);
   const bc = $('#btn-congelar');
   if (bc) bc.innerHTML = est.freeze ? '<span class="ico" data-i="congelar"></span> Descongelar' : '<span class="ico" data-i="congelar"></span> Congelar';
   window.Icones && bc && window.Icones.aplicar(bc);
@@ -1040,7 +1276,14 @@ const RESET_TXT = {
 };
 function resetar(o) { confirmar(RESET_TXT[o] || 'Restaurar?', () => aplicarReset(o)); }
 function aplicarReset(o) {
-  if (o === 'fundos' || o === 'tudo') { CUSTOM = []; OCULTOS = []; salvarCustom(); salvarOcultos(); est.descansoFundo = null; est.textoFundo = null; renderFundos(); }
+  // Zerar só a memória não restaura nada: a escolha da tela de espera fica
+  // gravada em 'icm_espera' e voltava sozinha no arranque seguinte.
+  if (o === 'fundos' || o === 'tudo') {
+    CUSTOM = []; OCULTOS = []; salvarCustom(); salvarOcultos();
+    est.descansoFundo = null; est.textoFundo = null;
+    Guardar.gravar('icm_espera', null);
+    renderFundos();
+  }
   if (o === 'tamanhos' || o === 'tudo') { est.escalaLouvor = est.escalaVers = est.escalaTexto = 1; atualizarTamLabel(); }
   if (o === 'louvores' || o === 'tudo') { MEUS = []; salvarMeus(); recarregarLouvores(); renderMeus(); }
   if (o === 'slides' || o === 'tudo') {   // apaga as apresentações importadas
@@ -1048,6 +1291,15 @@ function aplicarReset(o) {
     try { fetch('/api/limpar', { method: 'POST' }); } catch (e) {}
   }
   if (o === 'tudo') {
+    // "de fábrica" tem que incluir a Lista de Projeção e onde a navegação parou.
+    // Sem isto o Sistema voltava com a lista do culto anterior montada e o
+    // realce em cima de um item que o operador achava que tinha apagado.
+    est.fila = []; est.setPos = -1; est.vistaFim = null; est.juntos = false;
+    est.contAfter = 0; est.contAntes = 0; est.bibPos = null;
+    est.louvorIdx = -1; est.louvorSlide = 0; est.aguardando = false;
+    est.freeze = false; est.telaCongelada = null; est.live = null;
+    est.timerFim = 0; est.timerParadoMs = 0;
+    renderFila();
     IGREJA = { nome: '', endereco: '', cultos: CULTOS_PADRAO.map(c => Object.assign({}, c)) };
     salvarIgreja(); aplicarNomeIgreja(); renderCultos(); renderAvisos();
     est.estilo = 'limpo'; aplicarEstilo(); $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
@@ -1184,11 +1436,21 @@ function ligarEventos() {
   $('#texto-livre').oninput = () => { if (est.live && est.live.tipo === 'texto') projetarTexto(true); };   // atualiza AO VIVO enquanto digita
   $('#texto-titulo').oninput = () => { if (est.live && est.live.tipo === 'texto') projetarTexto(true); };
   // projetando -> "Parar" só volta pra tela de espera; o telão continua ligado
-  $('#btn-projecao').onclick = () => { if (est.projetando) { descanso(); toast('Tela de espera no telão.'); } else abrirProjecao(); };
+  // Projetar <-> Parar de projetar. O estado do meio ("Em espera") deixou de ser
+  // um rótulo morto: dali o clique põe no ar o que está selecionado.
+  $('#btn-projecao').onclick = () => {
+    if (!est.projetando) { abrirProjecao(); return; }
+    const emEspera = est.live && est.live.tipo === 'descanso';
+    if (emEspera) projetarSelecaoAtual();
+    else { descanso(); toast('Tela de espera no telão.'); }
+  };
   $('#btn-proximo').onclick = proximo; $('#btn-anterior').onclick = anterior;
   $('#btn-menor').onclick = () => ajustarTam(-0.3); $('#btn-maior').onclick = () => ajustarTam(+0.3);
   $('#tam-label').onclick = tamPadrao;                      // clicar no rótulo volta ao padrão
   $('#btn-congelar').onclick = toggleFreeze;   // "Parar de projetar" já faz o papel da espera
+  const bcf = $('#btn-cifra'); if (bcf) bcf.onclick = abrirCifra;
+  const ban = $('#btn-anim'); if (ban) ban.onclick = alternarAnimacao;
+  carregarExtras();                            // cifras e animações que já foram importadas
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
   const bl = $('#btn-limpar'); if (bl) bl.onclick = limparLista;
   const sa = $('#sl-abrir'); if (sa) sa.onclick = abrirApresentacao;
@@ -1312,6 +1574,12 @@ async function iniciar() {
   aplicarNomeIgreja();
   recarregarLouvores(); renderLivros(''); renderFundos(); renderFila(); renderAvisos();   // avisos já prontos na aba Texto
   $('#timer-view').textContent = '05:00';
+  // A prévia não nasce PRETA. Ela já mostra a tela de espera — a do Sistema, ou
+  // a que o operador escolheu antes. É o que ele espera ver quando abre, e não
+  // precisa que ninguém explique que aquilo é a "tela de espera".
+  est.live = { tipo: 'descanso' };
+  est.ultimo = { modo: 'fundo', fundo: esperaAtual(), estilo: est.estilo, transicao: false };
+  previews.forEach(w => post(w, est.ultimo));
   ligarEventos(); atualizarProjBtn(); atualizarAgora();
   abrirBemVindo(false);   // primeira vez: apresentação + configuração da igreja
 }

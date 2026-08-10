@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket
 
-VERSAO = "1.6.0"
+VERSAO = "1.9.0"
 PORTA = 8765
 
 def raiz():
@@ -103,6 +103,21 @@ def liberar_no_firewall(porta):
         return True
     except Exception:
         return False
+
+
+def pasta_usuario(nome):
+    """Pasta de conteúdo importado pelo operador (animacoes, cifras...)."""
+    return os.path.join(DADOS_USUARIO, nome)
+
+
+def ler_indice(nome):
+    """indice.json de um conteúdo importado. Vazio = o operador ainda não importou,
+    e aí os botões do painel simplesmente não aparecem."""
+    try:
+        with open(os.path.join(pasta_usuario(nome), "indice.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
 
 def ler_config():
@@ -246,12 +261,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # os slides convertidos moram fora da pasta do app (o .exe é somente leitura)
         from urllib.parse import unquote
         limpo = unquote(path.split("?", 1)[0].split("#", 1)[0])
-        if limpo.startswith("/slides_importados/"):
-            resto = limpo[len("/slides_importados/"):].replace("/", os.sep)
-            resto = os.path.normpath(resto).lstrip(os.sep)
-            destino = os.path.normpath(os.path.join(SAIDA, resto))
-            if destino.startswith(os.path.normpath(SAIDA)):   # não deixa sair da pasta de slides
-                return destino
+        # tudo o que o operador importou mora fora da pasta do app (o .exe é
+        # somente leitura): slides convertidos, animações dos CIAS e as cifras
+        for prefixo, base in (("/slides_importados/", SAIDA),
+                              ("/animacoes/", pasta_usuario("animacoes")),
+                              ("/cifras/", pasta_usuario("cifras"))):
+            if limpo.startswith(prefixo):
+                resto = os.path.normpath(limpo[len(prefixo):].replace("/", os.sep)).lstrip(os.sep)
+                destino = os.path.normpath(os.path.join(base, resto))
+                if destino.startswith(os.path.normpath(base)):   # não deixa sair da pasta
+                    return destino
         return super().translate_path(path)
 
     def _json(self, obj, cod=200):
@@ -290,6 +309,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 # ficaria mostrando "AO VIVO" para sempre.
                 idade = time.time() - ESTADO.get("ts", 0) if ESTADO.get("ts") else 999
                 return self._json({"ok": True, "estado": dict(ESTADO), "idade": round(idade, 1)})
+        if self.path.startswith("/api/animacoes"):       # louvores de CIAS com animação
+            return self._json({"ok": True, "indice": ler_indice("animacoes")})
+        if self.path.startswith("/api/cifras"):          # em que PDF e página está cada cifra
+            return self._json({"ok": True, "indice": ler_indice("cifras")})
         if self.path.startswith("/api/rede"):            # endereço e QR para o celular entrar
             porta = self.server.server_address[1]
             url = "http://%s:%d/controle.html" % (endereco_local(), porta)
@@ -558,6 +581,10 @@ def main():
             x=prin["x"] + (prin["w"] - larg) // 2, y=prin["y"] + (prin["h"] - alt) // 2,
             background_color="#0b1526", js_api=ponte)
         por_icone(titulo)
+        # Fechou o controle, fecha o telão junto. Quem fecha o Sistema está
+        # encerrando o culto — deixar a janela da projeção órfã na tela do
+        # projetor, sem nada que a comande, não serve para nada.
+        janela.events.closed += lambda: ponte.fechar_projecao()
         marcar_splash(0.70)                    # janela montada
 
         def entrar():

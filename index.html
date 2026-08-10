@@ -130,7 +130,7 @@
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
         <button class="ctrl nav" id="btn-anterior" title="Slide anterior (seta ←)"><span class="ico" data-i="ant"></span></button>
-        <button class="ctrl projetar" id="btn-projecao"><span class="ico" data-i="play"></span> Abrir Projeção</button>
+        <button class="ctrl projetar" id="btn-projecao"><span class="ico" data-i="play"></span> Projetar</button>
         <button class="ctrl nav" id="btn-proximo" title="Próximo slide (seta → ou Espaço)"><span class="ico" data-i="prox"></span></button>
       </div>
       <div class="barra-ferr">
@@ -139,6 +139,14 @@
         <button class="ff mini" id="btn-menor" title="Diminuir a letra">A−</button>
         <button class="ff mini tam-label" id="tam-label" title="Voltar ao tamanho padrão">Padrão</button>
         <button class="ff mini" id="btn-maior" title="Aumentar a letra">A+</button>
+      </div>
+      <!-- Só aparecem quando o louvor no ar TEM o recurso. Sem louvor com cifra
+           ou sem versão animada, a fileira inteira some e o painel fica limpo. -->
+      <div class="barra-extras oculto" id="barra-extras">
+        <button class="ff extra cifra oculto" id="btn-cifra"
+                title="Ver a cifra deste louvor"><span class="ico" data-i="violao"></span> Cifra</button>
+        <button class="ff extra cias oculto" id="btn-anim"
+                title="Exibir este louvor com a animação dos CIAS"><span class="ico" data-i="cias"></span> Animação</button>
       </div>
       <div class="fila-tit-row">
         <h3 class="fila-tit">Lista de projeção</h3>
