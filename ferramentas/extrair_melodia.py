@@ -59,6 +59,38 @@ CAB_SEM_NUM = re.compile(r"^\s*([A-ZÁÀÂÃÉÊÍÓÔÕÚÜÇ][^a-z]{4,}?)"
                          r"\s*\(([A-G][#b]?m?)\)\s*\**\s*$")
 
 
+def limpar_titulo(t):
+    """"A BELEZA DA TUA SANTIDADE  D  6656" -> ("A BELEZA DA TUA SANTIDADE", "D")
+
+    Muitos cabecalhos trazem, depois do titulo, o tom solto e o numero da
+    coletanea antiga -- sem parenteses, so separados por espaco. O regex que
+    aceita cabecalho sem tom engolia os dois dentro do titulo, e ai o louvor
+    nao casava com nada no app: 291 melodias extraidas certas ficavam orfas.
+    """
+    t = (t or "").strip()
+    tom = None
+    # o numero da coletanea antiga no fim, com ou sem o tom antes
+    t = re.sub(r"\s+\d{2,5}\s*$", "", t)
+    # o tom ENTRE PARENTESES no fim: e' o caso mais comum e o que estava
+    # sobrando -- "A BELEZA DA TUA SANTIDADE (D)" nao casa com nenhum louvor
+    m = re.search(r"\s*\(([A-G][#b]?[Mm]?)\)\s*$", t)
+    if m:
+        return t[:m.start()].strip(), m.group(1)
+    m = re.search(r"\s+([A-G][#b]?[Mm]?)\s+\d{1,5}\s*$", t)
+    if m:
+        tom, t = m.group(1), t[:m.start()]
+    else:
+        m = re.search(r"\s+\d{2,5}\s*$", t)
+        if m:
+            t = t[:m.start()]
+        m = re.search(r"\s+([A-G][#b]?[Mm]?)\s*$", t)
+        if m and len(t[:m.start()].strip()) > 6:
+            tom, t = m.group(1), t[:m.start()]
+    if tom:
+        tom = tom[:-1] + "m" if tom.lower().endswith("m") else tom
+    return t.strip(), tom
+
+
 def em_caixa(t):
     """O titulo vem em CAIXA ALTA. Sem este teste, o cabecalho sem tom casaria
     tambem com linha de letra que comece por numero."""
@@ -163,7 +195,9 @@ def ler_pdf(caminho, aviso=None):
                     num, titulo, tom = None, g[0], g[1]
                 else:
                     num, titulo, tom = g[0], g[1], None
-                atual = {"num": num, "titulo": titulo.strip(), "tom": tom,
+                titulo, tom_solto = limpar_titulo(titulo)
+                tom = tom or tom_solto
+                atual = {"num": num, "titulo": titulo, "tom": tom,
                          "pag": p + 1, "linhas": []}
                 louvores.append(atual)
                 continue
