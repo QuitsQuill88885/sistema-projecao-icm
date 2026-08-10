@@ -85,36 +85,146 @@ def eh_acorde(t):
 #     534x  "7" solto        492x  "m" solto     122x  "/A", "/E", "/C#"...
 #      72x  "Pm"              47x  "CIE", "CIO"   42x  "A°"
 # O "7" e o "m" soltos sao sufixo que nao colou; o "/X" e' o baixo que se
-# desprendeu; "Pm" e' "Em" com o E lido como P; e "CIE" e' "C/E" com a barra
-# lida como I.
-SUFIXO_SOLTO = re.compile(r"^(7|m|M|4|5|6|9|11|13|#|b|°|º|sus|maj|dim|/[A-G](#|b)?)$")
+# desprendeu; e "CIE" e' "C/E" com a barra lida como I.
+
+NOTA_N = {"C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3, "E": 4, "F": 5,
+          "F#": 6, "Gb": 6, "G": 7, "G#": 8, "Ab": 8, "A": 9, "A#": 10,
+          "Bb": 10, "B": 11}
+_RAIZ = re.compile(r"^([A-G](?:#|b)?)(.*)$")
 
 
-def colar_sufixos(pares):
+def _grau(nome):
+    """(altura, qualidade) do acorde, ou None. So' a triade importa aqui."""
+    m = _RAIZ.match(nome or "")
+    if not m:
+        return None
+    resto = m.group(2).split("/")[0]
+    if resto.startswith("m") and not resto.startswith("maj"):
+        q = "m"
+    elif resto[:3] == "dim" or resto[:1] in ("°", "º"):
+        q = "dim"
+    else:
+        q = "M"
+    a = NOTA_N.get(m.group(1))
+    return None if a is None else (a, q)
+
+
+def campo_do_tom(tom):
+    """O que cabe neste tom: os sete graus MAIS as dominantes secundarias.
+
+    Nao e' teoria de conservatorio, e' o que um hino publicado usa de fato. Sem
+    as dominantes secundarias este juiz reprovaria arranjo bom, e ele so' serve
+    para DESEMPATAR duas leituras de OCR — nunca para apagar acorde.
+    """
+    t = (tom or "").split(",")[0].split("/")[0].strip()
+    if not t:
+        return None
+    menor = t.endswith("m") and not t.endswith("M")
+    r = NOTA_N.get(t[:-1] if menor else t)
+    if r is None:
+        return None
+    if menor:
+        graus = [(0, "m"), (2, "dim"), (3, "M"), (5, "m"), (7, "M"), (7, "m"),
+                 (8, "M"), (10, "M")]
+    else:
+        graus = [(0, "M"), (2, "m"), (4, "m"), (5, "M"), (7, "M"), (9, "m"),
+                 (11, "dim")]
+    ok = set(((r + g) % 12, q) for g, q in graus)
+    # dominante secundaria: acorde MAIOR uma quinta acima de cada grau. O grau
+    # diminuto fica de fora -- "V/vii°" nao existe em hino nenhum, e incluir ele
+    # abria o campo de La para D#, que foi o que fez "Do" ser lido como "D#" em
+    # vez de "D" na primeira tentativa.
+    for g, q in graus:
+        if q != "dim":
+            ok.add(((r + g + 7) % 12, "M"))
+    return ok
+
+
+def cabe_no_tom(nome, campo):
+    if not campo:
+        return None                      # sem tom nao ha' juiz
+    g = _grau(nome)
+    return None if g is None else (g in campo)
+
+
+def colar_sufixos(pares, campo=None):
     """[(x,'A'), (x,'7')] -> [(x,'A7')]. Junta o pedaco solto no acorde anterior.
 
     Sem isto o acorde inteiro e' perdido duas vezes: o "A" entra sozinho (errado,
     porque era A7) e o "7" e' descartado como lixo.
+
+    A REGRA E' ESTRUTURAL, nao uma lista de sufixos: cola quando o pedaco NAO e'
+    acorde sozinho e COMPLETA o anterior num acorde de verdade. A lista fixa
+    deixava "D" + "7m" (Dmaj7 lido pelo OCR) passar sem colar, perdendo o acorde.
+
+    A TRAVA DO TOM: onde o tom e' conhecido, nao cola se o anterior JA cabia no
+    tom e o resultado nao cabe. E' assim que "A" + "m" solto parava de virar "Am"
+    em louvor de La maior — o "m" sozinho nao e' acorde, entao nao colar so' o
+    descarta, enquanto colar PLANTA um acorde errado na folha do musico.
     """
     saida = []
     for x, w in pares:
-        if saida and SUFIXO_SOLTO.match(w) and eh_acorde(saida[-1][1] + w):
-            saida[-1] = (saida[-1][0], saida[-1][1] + w)
+        junto = (saida[-1][1] + w) if saida else ""
+        if saida and not eh_acorde(w) and eh_acorde(junto):
+            antes_ok = cabe_no_tom(saida[-1][1], campo)
+            if antes_ok and cabe_no_tom(junto, campo) is False:
+                continue                 # o pedaco e' lixo: descarta, nao cola
+            saida[-1] = (saida[-1][0], junto)
         else:
             saida.append((x, w))
     return saida
 
 
-def consertar_ocr(w):
+# As trocas que o OCR faz, cada uma com o preco medido contra a Tonalidade
+# impressa na propria pagina (auditar_p_e_sustenido.py, Coletanea 2018):
+#
+#   "I","l","|" -> "/"   o baixo: "CIE" e' "C/E"
+#   "P"  -> "F#"         194 ocorrencias em linha de acorde. Onde as duas
+#                        leituras discordam, F# cabe no tom 98 vezes e E cabe
+#                        14: F# ganha por 7 para 1. A regra antiga escrevia "E"
+#                        e era ela que plantava o "Em em tom de Mi" que a
+#                        auditoria de campo harmonico acusava. Prova visual, pg
+#                        37, tom La: "A E/G# Pm F#m/E" -- o baixo desce
+#                        La-Sol#-Fa#-Mi, e a MESMA linha soletra F#m do jeito
+#                        certo logo adiante.
+#   "o"  -> "#"          o OCR le o sustenido como a letra o ("Com"=C#m,
+#                        "Fom"=F#m). 104 ocorrencias, "#" cabe no tom 68 vezes
+#                        contra 1 do diminuto. Antes eh_acorde recusava e o
+#                        acorde SUMIA. Prova, pg 30, tom La: "A Bm Com Pm" =
+#                        A Bm C#m F#m, o I-ii-iii-vi de La -- uma linha so'
+#                        confirmando as duas regras.
+#
+# A ORDEM IMPORTA POUCO porque quem decide e' o tom: quando mais de uma leitura
+# da' acorde valido, ganha a que cabe no campo harmonico da pagina.
+TROCAS = (("I", "/"), ("l", "/"), ("|", "/"), ("P", "F#"), ("o", "#"),
+          ("P", "E"))
+
+
+def consertar_ocr(w, campo=None):
     """Desfaz as trocas de letra que o OCR faz, e SO aceita se o resultado for
-    acorde de verdade. Assim uma palavra comum nunca vira acorde por acidente."""
+    acorde de verdade. Assim uma palavra comum nunca vira acorde por acidente.
+
+    Com o tom em mao, escolhe ENTRE as leituras validas a que cabe no tom. Sem
+    tom, fica com a primeira valida, na ordem medida acima.
+    """
     if eh_acorde(w):
         return w
-    for antes, depois in (("I", "/"), ("l", "/"), ("P", "E"), ("|", "/")):
+    validos = []
+    for antes, depois in TROCAS:
         alvo = w.replace(antes, depois)
-        if alvo != w and eh_acorde(alvo):
+        if alvo != w and eh_acorde(alvo) and alvo not in validos:
+            validos.append(alvo)
+    # tirar o "o" tambem e' leitura: "Do" pode ser "D" com sujeira colada
+    if "o" in w:
+        alvo = w.replace("o", "")
+        if alvo and eh_acorde(alvo) and alvo not in validos:
+            validos.append(alvo)
+    if not validos:
+        return w
+    for alvo in validos:
+        if cabe_no_tom(alvo, campo):
             return alvo
-    return w
+    return validos[0]
 
 
 def negrito(fonte):
@@ -471,16 +581,50 @@ def cabecalho_unico(linhas):
 #  Montagem da cifra
 # --------------------------------------------------------------------------
 
+def linha_e_lixo(t):
+    """Linha que nao e' letra nem acorde: so ruido do scanner.
+
+    O OCR da Coletanea 2018 produz coisas como "137(1,9)  Esum E" e
+    "F9E3  137(b9)  Est\" E" -- restos de simbolo musical e de numeracao que
+    ele nao soube ler. Nao viram acorde (nao passam no teste) e por isso caiam
+    como se fossem LETRA, aparecendo no meio do louvor na tela do musico.
+
+    Uma linha de letra de verdade e' feita de palavras. Se menos da metade dos
+    caracteres for letra, ou se nao houver nenhuma palavra de tres letras, o que
+    esta ali nao e' letra de louvor.
+    """
+    t = (t or "").strip()
+    if not t:
+        return True
+    letras = sum(1 for c in t if c.isalpha())
+    if letras < len(t) * 0.5:
+        return True
+    palavras = [w for w in re.split(r"[^A-Za-zÀ-ÿ]+", t) if len(w) >= 3]
+    return not palavras
+
+
 def montar_bloco(linhas, ini, fim):
-    """[{'t': letra, 'a': [[coluna, acorde], ...]}] de um louvor."""
-    saida, guardados, tom = [], None, None
+    """[{'t': letra, 'a': [[coluna, acorde], ...]}] de um louvor.
+
+    Le' o bloco DUAS vezes. Na primeira so' procura a Tonalidade; na segunda usa
+    ela para desempatar as leituras de OCR. Antes era uma passada so', e o tom
+    chegava tarde demais para os acordes que vinham antes da linha "Tonalidade:"
+    -- justamente a introducao, onde estao os acordes mais estranhos.
+    """
+    tom = None
+    for _col, _y, fs in linhas[ini:fim]:
+        m = SO_TOM.search(texto_da_linha(fs))
+        if m:
+            tom = m.group(1).strip()
+            break
+    campo = campo_do_tom(tom)
+
+    saida, guardados = [], None
     for col, _y, fs in linhas[ini:fim]:
         t = texto_da_linha(fs)
         if not t.strip():
             continue
-        m = SO_TOM.search(t)
-        if m and tom is None:
-            tom = m.group(1).strip()
+        if SO_TOM.search(t):
             continue
         # por TOKEN, nao por fragmento: o PDF pode desenhar "Gm  Gm/F Gm/Eb"
         # num pedaco so, e ai o pedaco inteiro nao e' acorde nenhum.
@@ -490,7 +634,8 @@ def montar_bloco(linhas, ini, fim):
         # letra e' promovida a linha de acordes. Aparece 70 vezes nos livros.
         crus = tokens_com_x(fs)
         ja_bons = sum(1 for _x, w in crus if eh_acorde(w))
-        palavras = (colar_sufixos([(x, consertar_ocr(w)) for x, w in crus])
+        palavras = (colar_sufixos([(x, consertar_ocr(w, campo)) for x, w in crus],
+                                  campo)
                     if crus and ja_bons >= len(crus) * 0.5 else crus)
         # ate 1/4 de lixo tolerado: no PDF escaneado o OCR estraga um acorde
         # aqui e ali, e exigir 100%% jogava a linha inteira fora -- com todos os
@@ -502,8 +647,8 @@ def montar_bloco(linhas, ini, fim):
             guardados = palavras      # espera a linha de letra logo abaixo
             continue
         letra = t.replace("|", "")     # a barra é enfeite: a posição vem do x
-        if not letra.strip():
-            guardados = None
+        if not letra.strip() or linha_e_lixo(letra):
+            guardados = None           # o acorde de cima nao tem onde cair
             continue
         acordes = []
         if guardados:
@@ -569,7 +714,179 @@ def _parecido(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 
-def consertar_pela_letra(corpo, letra_certa, minimo=0.5):
+def achatar(t):
+    """Versao comparavel do texto SEM mudar o comprimento: cada caractere entra
+    como exatamente um caractere.
+
+    Tem que ser 1 para 1 porque a coluna do acorde e' um INDICE dentro desta
+    string. so_letras() nao serve aqui: ele encolhe "  ," num espaco so' e
+    desloca todas as colunas seguintes.
+    """
+    saida = []
+    for c in t or "":
+        d = unicodedata.normalize("NFD", c)
+        b = (d[0] if d else c).upper()
+        saida.append(b if (b.isalnum() and b.isascii()) else " ")
+    return "".join(saida)
+
+
+# Sujeira do OCR que derruba a semelhanca sem mudar o que esta escrito. Usada
+# SO' para comparar -- o texto que vai para a tela e' sempre o do app.
+_SUJEIRA = re.compile(r"[¡¿\[\]{}~^\\_|*\"]")
+_APOSTROFO = re.compile(r"(?<![A-Za-zÀ-ÿ])['´`]+")
+
+
+def para_comparar(t):
+    """A linha do OCR do jeito que da' para compara-la com a letra do app.
+
+    MEDIDO: 62,9% das linhas corrompidas ficam entre 0,30 e 0,50 de semelhanca
+    com a linha certa, e o piso de aceitacao e' 0,50. Ou seja, o alinhador
+    recusava exatamente as linhas que mais precisavam de conserto. Boa parte
+    dessa perda e' enfeite, nao dano: colchete, apostrofo solto, o hifen que
+    separa silaba ("co--racao") e a sobra da linha de acorde grudada no comeco
+    ("P 7 Bm Am D7 Pelo sangue..." -- 18% das linhas corrompidas comecam assim).
+    """
+    # APAGA, nao troca por espaco: o OCR enfia esse lixo DENTRO da palavra
+    # ("Sen[hor"). Trocando por espaco sairia "SEN HOR", que nao casa com
+    # "SENHOR"; apagando sai "SENHOR", que casa.
+    t = _SUJEIRA.sub("", t or "")
+    t = _APOSTROFO.sub("", t)
+    toks = t.split()
+    n = quantos_acordes_no_comeco(toks)
+    # DOIS acordes, nao um: "A" e "E" sozinhos sao acorde E sao palavra
+    # portuguesa. Exigindo dois seguidos, "P 7 Bm Am D7 Pelo sangue" perde o
+    # bloco de acordes e "A GLORIA DE DEUS" fica inteiro.
+    if n >= 2 and n < len(toks):
+        t = " ".join(toks[n:])
+    return so_letras(t)
+
+
+def _tirar_um(w, palavras, minimo=4):
+    """A palavra que sobra tirando UM caractere, se ela existir no louvor."""
+    if len(w) < minimo:
+        return None
+    for i in range(len(w)):
+        alt = w[:i] + w[i + 1:]
+        if alt in palavras:
+            return alt
+    return None
+
+
+def desenfiar(texto, palavras):
+    """Aproxima a linha do OCR das palavras que ESTE louvor realmente tem.
+
+    Dois estragos, um criterio so'. A TRAVA E' A MESMA DAS OUTRAS CORRECOES:
+    a troca so' vale quando o resultado e' palavra do proprio louvor. Sem a
+    trava seria adivinhacao, e adivinhar aqui casa a linha com a estrofe errada.
+
+      letra enfiada no meio   JELSUS -> JESUS, POLDER -> PODER   (1.444 linhas)
+      silaba partida          DA + DO -> DADO,  JE + 1SUS -> JESUS
+
+    A silaba partida e' a tipografia do hino antigo, que separa as silabas para
+    a melodia: o livro imprime "Oh! Que amor que Je -1sus nos tem da - do". Em
+    palavra, isso se resolve juntando os pedacos; em caractere, nao se resolve
+    -- foi o que sobrou de fora quando a costura era so' por caractere.
+
+    Juntar pedacos tambem cobre o hifen de separacao ("co--racao" -> CO RACAO ->
+    CORACAO), e cobre SEM o risco de estragar o pronome: "purificar-me" vira
+    "PURIFICAR ME", e "PURIFICARME" so' seria aceito se o louvor tivesse essa
+    palavra -- que nao tem. Sao 1.288 pronomes assim no acervo contra 2 hifens
+    de silaba, entao uma regra de hifen que errasse esse lado custaria caro.
+    """
+    if not palavras:
+        return texto
+    toks = texto.split()
+    saida, i = [], 0
+    while i < len(toks):
+        w = toks[i]
+        if w in palavras:
+            saida.append(w)
+            i += 1
+            continue
+        alt = _tirar_um(w, palavras)
+        if alt:
+            saida.append(alt)
+            i += 1
+            continue
+        if i + 1 < len(toks):
+            junto = w + toks[i + 1]
+            achado = junto if junto in palavras else _tirar_um(junto, palavras)
+            if achado:
+                saida.append(achado)
+                i += 2
+                continue
+        saida.append(w)
+        i += 1
+    return " ".join(saida)
+
+
+def quantos_acordes_no_comeco(toks):
+    """Quantos tokens do comeco da linha sao acorde, contando o sufixo solto."""
+    n, ultimo = 0, ""
+    for w in toks:
+        c = consertar_ocr(w)
+        if eh_acorde(c):
+            ultimo, n = c, n + 1
+        elif ultimo and eh_acorde(ultimo + w):
+            ultimo, n = ultimo + w, n + 1
+        else:
+            break
+    return n
+
+
+def repartir(linha, alvos):
+    """Uma linha do PDF contra VARIAS linhas do app: devolve uma linha por alvo.
+
+    ESTE E' O CONSERTO DO GRAMPO. O PDF traz a frase inteira numa linha so'
+    ("Sou feliz! Tenho Jesus em meu co--racao.", 40 caracteres, 7 acordes) e o
+    app quebra a mesma frase em linhas curtas de projecao ("SOU FELIZ!", 10
+    caracteres). O alinhador casava 1 para 1 e o que caia depois do fim era
+    grampeado no ultimo caractere por min(len(nova), c) -- cinco acordes
+    empilhados na silaba final. Repartindo, cada acorde cai na linha em que a
+    silaba dele realmente esta.
+    """
+    velha = achatar(linha["t"])
+    pedacos = [achatar(x) for x in alvos]
+    inicio, p = [], 0
+    for s in pedacos:
+        inicio.append(p)
+        p += len(s) + 1
+    nova = " ".join(pedacos)
+
+    mapa = {}
+    for a, b, n in difflib.SequenceMatcher(None, velha, nova,
+                                           autojunk=False).get_matching_blocks():
+        for c in range(n):
+            mapa[a + c] = b + c
+
+    saida = [(x, []) for x in alvos]
+    for col, nome in linha["a"]:
+        if not eh_acorde(nome):
+            continue                     # lixo de OCR nao vai para a tela
+        if col in mapa:
+            h = mapa[col]
+        else:                            # caiu num trecho que o OCR inventou
+            antes = [c for c in mapa if c <= col]
+            h = mapa[max(antes)] + (col - max(antes)) if antes else 0
+        k = 0
+        for idx in range(len(alvos)):
+            if h >= inicio[idx]:
+                k = idx
+        c2 = h - inicio[k]
+        # caiu na juntura entre duas linhas do app: pertence a' de baixo, no
+        # comeco -- e' o comeco da frase seguinte, nao o fim da anterior
+        if c2 >= len(pedacos[k]) and k + 1 < len(alvos):
+            k, c2 = k + 1, 0
+        saida[k][1].append([max(0, min(len(alvos[k]), c2)), nome])
+    for _t, a in saida:
+        a.sort()
+    return [{"t": t, "a": a} for t, a in saida]
+
+
+LIVRE = 0.70            # piso da costura sem ordem (ver segunda passada)
+
+
+def consertar_pela_letra(corpo, letra_certa, minimo=0.5, juntos=6):
     """Troca a letra que saiu do OCR pela letra certa do app, sem perder onde
     cada acorde cai.
 
@@ -588,78 +905,192 @@ def consertar_pela_letra(corpo, letra_certa, minimo=0.5):
 
     O alinhamento e' o mesmo do "diff": uma matriz onde cada passo ou casa duas
     linhas, ou pula uma de um lado. Respeitando a ordem, ninguem rouba nada.
+
+    UMA LINHA DO PDF VALE VARIAS DO APP. Esta e' a correcao que devolve mais
+    acorde de uma vez. O passo de casamento consome 1 linha do PDF e ate
+    `juntos` linhas do app, porque e' isso que os dois lados sao: o PDF imprime
+    a frase inteira, o app quebra a mesma frase em linhas curtas de projecao.
+    Casando 1 para 1, a linha longa do PDF nao se parecia com nenhuma linha
+    curta do app -- ficava abaixo do piso, a letra do OCR nao era trocada, e os
+    acordes que caiam depois do fim eram grampeados no ultimo caractere.
     """
     if not letra_certa:
         return corpo, 0
     uteis = [i for i, l in enumerate(corpo) if len(so_letras(l["t"])) >= 6]
     if not uteis:
         return corpo, 0
-    A = [so_letras(corpo[i]["t"]) for i in uteis]
     B = [so_letras(x) for x in letra_certa]
+    vocab = set(w for linha in B for w in linha.split())
+    A = [desenfiar(para_comparar(corpo[i]["t"]), vocab) for i in uteis]
     n, m = len(A), len(B)
     if not m:
         return corpo, 0
+    K = max(1, juntos)
+
+    # semelhanca de cada linha do PDF com cada RUN de 1..K linhas do app.
+    # O laco tem o alvo por fora de proposito: o SequenceMatcher guarda o indice
+    # da segunda sequencia, entao trocar so' a primeira reaproveita esse indice.
+    sem = [[[0.0] * (K + 1) for _ in range(m)] for _ in range(n)]
+    sm = difflib.SequenceMatcher(autojunk=False)
+    for j in range(m):
+        for k in range(1, K + 1):
+            if j + k > m:
+                break
+            alvo = " ".join(B[j:j + k]).strip()
+            if len(alvo) < 3:
+                continue
+            sm.set_seq2(alvo)
+            for i in range(n):
+                sm.set_seq1(A[i])
+                # dois limites superiores baratos antes da conta cara
+                if sm.real_quick_ratio() < 0.34 or sm.quick_ratio() < 0.34:
+                    continue
+                sem[i][j][k] = sm.ratio()
 
     VAZIO = -0.28                       # custo de pular uma linha de um lado
-    pont = [[0.0] * (m + 1) for _ in range(n + 1)]
-    veio = [[0] * (m + 1) for _ in range(n + 1)]
-    for i in range(1, n + 1):
-        pont[i][0] = pont[i - 1][0] + VAZIO
-        veio[i][0] = 1
-    for j in range(1, m + 1):
-        pont[0][j] = pont[0][j - 1] + VAZIO
-        veio[0][j] = 2
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            casa = pont[i - 1][j - 1] + (_parecido(A[i - 1], B[j - 1]) - 0.45)
-            sobe = pont[i - 1][j] + VAZIO
-            lado = pont[i][j - 1] + VAZIO
-            melhor = max(casa, sobe, lado)
-            pont[i][j] = melhor
-            veio[i][j] = 0 if melhor == casa else (1 if melhor == sobe else 2)
+    MENOS = float("-inf")
+    pont = [[MENOS] * (m + 1) for _ in range(n + 1)]
+    veio = [[None] * (m + 1) for _ in range(n + 1)]
+    pont[0][0] = 0.0
+    for i in range(n + 1):
+        for j in range(m + 1):
+            base = pont[i][j]
+            if base == MENOS:
+                continue
+            if i < n and base + VAZIO > pont[i + 1][j]:
+                pont[i + 1][j] = base + VAZIO
+                veio[i + 1][j] = (i, j, 0)
+            if j < m and base + VAZIO > pont[i][j + 1]:
+                pont[i][j + 1] = base + VAZIO
+                veio[i][j + 1] = (i, j, 0)
+            if i < n:
+                for k in range(1, K + 1):
+                    if j + k > m:
+                        break
+                    s = sem[i][j][k]
+                    if s <= 0.0:
+                        continue
+                    v = base + (s - 0.45)
+                    if v > pont[i + 1][j + k]:
+                        pont[i + 1][j + k] = v
+                        veio[i + 1][j + k] = (i, j, k)
 
-    pares = {}
+    plano, trocadas, cobertas = {}, 0, 0
     i, j = n, m
-    while i > 0 and j > 0:
-        d = veio[i][j]
-        if d == 0:
-            if _parecido(A[i - 1], B[j - 1]) >= minimo:
-                pares[uteis[i - 1]] = j - 1
-            i -= 1
-            j -= 1
-        elif d == 1:
-            i -= 1
-        else:
-            j -= 1
+    while (i, j) != (0, 0):
+        v = veio[i][j]
+        if v is None:
+            break
+        pi, pj, k = v
+        if k and sem[pi][pj][k] >= minimo:
+            plano[uteis[pi]] = repartir(corpo[uteis[pi]], letra_certa[pj:pj + k])
+            trocadas += 1
+            cobertas += k
+        i, j = pi, pj
 
-    saida, trocadas = [], 0
-    for k, linha in enumerate(corpo):
-        if k not in pares:
-            saida.append(linha)
+    # SEGUNDA PASSADA, esta SEM ordem. O alinhamento respeita a ordem de
+    # proposito: e' o que impede uma linha de roubar a correspondencia de outra.
+    # Mas isso gasta cada linha do app UMA vez, e o livro REPETE o coro. Medido
+    # no acervo: das linhas que sobraram cruas tendo par obvio (semelhanca 0,70
+    # ou mais), 1.076 sao repeticao de uma linha que o app so' tem uma vez, e
+    # 914 ficaram de fora porque as estrofes estao em ordem diferente dos dois
+    # lados. Aqui elas casam com a linha mais parecida, ja usada ou nao.
+    # O piso e' mais alto (0,70) porque sem a ordem para proteger, so'
+    # semelhanca alta pode decidir sozinha.
+    for pi in range(n):
+        if uteis[pi] in plano:
             continue
-        nova = letra_certa[pares[k]]
-        velha = linha["t"]
-        mapa = {}
-        for a, b, t in difflib.SequenceMatcher(None, velha, nova).get_matching_blocks():
-            for c in range(t):
-                mapa[a + c] = b + c
-        acordes = []
-        for col, nome in linha["a"]:
-            if col in mapa:
-                acordes.append([mapa[col], nome])
-            else:                       # caiu num trecho que o OCR inventou
-                antes = [c for c in mapa if c <= col]
-                base = mapa[max(antes)] + (col - max(antes)) if antes else 0
-                acordes.append([base, nome])
-        # so' acorde de verdade: no PDF escaneado o OCR devolve coisas como
-        # 'E91#" 4)' e '13' na linha de acordes. A linha inteira ainda vale --
-        # os acordes legiveis ao lado estao certos -- mas o lixo nao pode ir
-        # para a tela do musico.
-        acordes = [[max(0, min(len(nova), c)), nm] for c, nm in acordes if eh_acorde(nm)]
-        acordes.sort()
-        saida.append({"t": nova, "a": acordes})
-        trocadas += 1
-    return saida, trocadas
+        melhor, quanto = None, LIVRE
+        for pj in range(m):
+            s = sem[pi][pj][1]
+            if s > quanto:
+                melhor, quanto = pj, s
+        if melhor is not None:
+            plano[uteis[pi]] = repartir(corpo[uteis[pi]], [letra_certa[melhor]])
+            trocadas += 1
+
+    saida = []
+    for k, linha in enumerate(corpo):
+        if k in plano:
+            saida.extend(plano[k])
+        else:
+            # nao costurou: a letra fica como o OCR deixou, mas o lixo que o
+            # extrator leu como acorde ('E91#" 4)', '13') nao vai para a tela
+            saida.append({"t": linha["t"],
+                          "a": [[c, nm] for c, nm in linha["a"] if eh_acorde(nm)]})
+    return saida, trocadas, cobertas / float(m)
+
+
+def tons_das_melodias(pasta=None):
+    """{titulo normalizado: tom} lido das melodicas, caderno C.
+
+    POR QUE A MELODICA MANDA NO TOM: ela saiu boa e e' fonte INDEPENDENTE da
+    cifra — outro arquivo, outra extracao, outro PDF. O caderno C e' o que soa
+    de verdade (os outros sao transpostos para o instrumento). Onde os dois
+    discordam, quem erra e' quase sempre a linha "Tonalidade:" lida pelo OCR.
+
+    Isto tambem tira o tom da disputa entre livros: antes o tom vinha do PDF que
+    tivesse ganhado o louvor, e trocar de PDF trocava o tom junto.
+    """
+    pasta = pasta or os.path.join(os.path.dirname(pasta_cifras()), "melodias")
+    cam = os.path.join(pasta, "indice.json")
+    if not os.path.exists(cam):
+        return {}
+    try:
+        idx = json.load(io.open(cam, encoding="utf-8")).get("louvores", {})
+    except Exception:
+        return {}
+    mapa = {}
+    for k, v in idx.items():
+        tom = (v.get("tons") or {}).get("C")
+        if not tom:
+            continue
+        titulo = v.get("titulo") or k
+        for forma in {so_letras(titulo), sem_parenteses(titulo)}:
+            if forma:
+                mapa.setdefault(forma, tom)
+                # o tom as vezes vazou para o fim do titulo ("CLAMO A TI D")
+                corte = forma.rsplit(" ", 1)
+                if len(corte) == 2 and eh_acorde(corte[1].title()):
+                    mapa.setdefault(corte[0], tom)
+    return mapa
+
+
+def quanto_cabe(corpo, tom):
+    """Que fracao dos acordes desta cifra cabe no tom. -1 se nao da' para dizer."""
+    campo = campo_do_tom(tom)
+    if not campo:
+        return -1.0
+    vistos = [g for l in corpo for _c, nm in l["a"] for g in (_grau(nm),) if g]
+    if len(vistos) < 4:
+        return -1.0
+    return sum(1 for g in vistos if g in campo) / float(len(vistos))
+
+
+def escolher_tom(tom_pdf, tom_melodia, corpo):
+    """Qual tom vai para a folha do musico, e de onde ele veio.
+
+    A melodica e' fonte confiavel e INDEPENDENTE, e ganha da linha "Tonalidade:"
+    lida pelo OCR. Mas ela nao ganha no escuro: o tom tem que descrever OS
+    ACORDES QUE ESTAO NESTA CIFRA. As duas coletaneas as vezes publicam o mesmo
+    louvor em tons diferentes de verdade — e ai carimbar o tom da melodica sobre
+    uma cifra escrita noutro tom troca um erro que se ve por um que nao se ve: o
+    musico leria "tom G" com os acordes todos em La, e a transposicao do app
+    sairia errada.
+
+    Entao: quando os dois discordam, quem decide sao os acordes. Empate, ou
+    poucos acordes para julgar, fica com a melodica.
+    """
+    if not tom_melodia:
+        return tom_pdf, None
+    if not tom_pdf:
+        return tom_melodia, "melodia"
+    if tom_melodia == tom_pdf:
+        return tom_pdf, None
+    q_mel, q_pdf = quanto_cabe(corpo, tom_melodia), quanto_cabe(corpo, tom_pdf)
+    if q_mel < 0 or q_pdf < 0 or q_mel >= q_pdf:
+        return tom_melodia, "melodia"
+    return tom_pdf, "acordes"
 
 
 def sem_parenteses(t):
@@ -687,30 +1118,211 @@ def letras_dos_louvores(raiz=None):
     return mapa
 
 
-def chaves_dos_louvores(raiz=None):
-    """{titulo normalizado: [chave do app, ...]} lido de dados/louvores.js.
+# --------------------------------------------------------------------------
+#  Casamento: de QUAL louvor do app é esta cifra?
+# --------------------------------------------------------------------------
 
-    Casamos com o BANCO DO APP, não com indice.json. O indice.json existe para
-    o botão de cifra achar a página do PDF e cobre só uma parte: 1.030 títulos
-    para os 2.459 louvores. Enquanto a gravação dependeu dele, 25 de cada 37
-    cifras extraídas certas eram jogadas fora — títulos corretos, extração
-    correta, e mesmo assim descartados.
+def compacto(t):
+    """so_letras sem os espaços. O OCR erra o espaço o tempo todo — lê
+    "QUÃOCEGOANDEI" onde está "QUÃO CEGO ANDEI" — e comparar sem espaço nenhum
+    tira essa fonte de erro do caminho."""
+    return so_letras(t).replace(" ", "")
+
+
+def gramas(t, n=4):
+    """Os pedaços de n letras seguidas. Duas grafias do mesmo texto compartilham
+    quase todos; um erro de OCR só estraga os n gramas que o cercam."""
+    return set(t[i:i + n] for i in range(len(t) - n + 1))
+
+
+class Casador(object):
+    """Diz de que louvor do app é cada cifra lida do PDF.
+
+    POR QUE ISTO EXISTE: casar só por título IDÊNTICO jogava fora 824 das 1.563
+    cifras lidas — mais da metade do trabalho da extração, medido nos três PDFs.
+    Foi assim que "O SANGUE DE JESUS TEM PODER PARA SALVAR" (nº 2 da Coletânea)
+    apareceu sem cifra no Sistema: a cifra foi lida certa, com tom e acordes, e
+    descartada porque o título não coube na coluna do PDF e chegou aqui como
+    "O SANGUE DE JESUS TEM PODER PARA" — faltando a última palavra.
+
+    O título chega quebrado de quatro jeitos, e nenhum é raro:
+
+        cortado pela coluna   "DE MADRUGADA EU BUSCO A"      (...A FACE DO SENHOR)
+        dois num só           "OH! QUE PRECIOSO SANGUE  32 - O SANGUE DE JESU..."
+        estragado pelo OCR    "HÁ VITÓRIA SEMPRE EM 11, SENHOR"     (era EM TI)
+        sumido de vez         ""                      (sobrou só o corpo da cifra)
+
+    O CONSERTO é usar três sinais em vez de um. Nenhum decide sozinho:
+
+    TÍTULO  parecido, não idêntico. E o corte importa: título que é PREFIXO do
+            outro — nos DOIS sentidos, porque tanto o PDF corta o título quanto
+            cola dois num só — é o mesmo louvor.
+    LETRA   4-gramas de caractere do corpo da cifra contra a letra que o app já
+            tem. Sobrevive ao OCR: "Jelsus tem polder" ainda divide SUST, USTE,
+            TEMP, EMPO com "JESUS TEM PODER". É o único sinal que sobra quando o
+            título sumiu — e sozinho recupera 294 cifras.
+    NÚMERO  só onde ele vale, e isso é MEDIDO por PDF, não suposto. Na Coletânea
+            2018 o número lido bate com o do app em 398 de 404 conferências; nos
+            Avulsos bate em 0 de 263, porque lá o app numera tudo como "AV".
+            Confiar nele nos Avulsos casaria cifra com louvor sorteado.
+
+    RESULTADO: 1.015 louvores com cifra passaram a 1.609, sem perder nenhum dos
+    que já funcionavam, e sem piorar a qualidade — a conferência contra a letra
+    conhecida continua em 94% de mediana e 87% de média, como antes.
     """
-    raiz = raiz or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    cam = os.path.join(raiz, "dados", "louvores.js")
-    s = io.open(cam, encoding="utf-8").read()
-    L = json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
-    if isinstance(L, dict):
-        L = L.get("louvores", L)
-    mapa = defaultdict(list)
-    for l in L:
-        linhas = [li for sl in l.get("slides", []) for li in sl.get("linhas", [])]
-        chave = "%s|%s|%s" % (l.get("num") or "", l.get("titulo") or "",
-                              linhas[0] if linhas else "")
-        for forma in {so_letras(l["titulo"]), sem_parenteses(l["titulo"])}:
-            if forma:
-                mapa[forma].append(chave)
-    return mapa
+
+    def __init__(self, raiz=None):
+        # A referência é dados/louvores.js, o BANCO DO APP, e não o indice.json
+        # das cifras: o índice existe para o botão de cifra achar a página do
+        # PDF e cobre só 1.030 dos 2.459 louvores. Enquanto a gravação dependeu
+        # dele, 25 de cada 37 cifras certas eram jogadas fora.
+        raiz = raiz or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        s = io.open(os.path.join(raiz, "dados", "louvores.js"), encoding="utf-8").read()
+        L = json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
+        if isinstance(L, dict):
+            L = L.get("louvores", L)
+
+        self.louvores = []
+        self.titulos = []                        # o titulo cru, para agrupar irmaos
+        self.por_titulo = defaultdict(list)      # titulo normalizado -> [indice]
+        self.por_compacto = defaultdict(list)    # o mesmo, sem espaco nenhum
+        self.por_numero = defaultdict(list)
+        idx_letra, idx_titulo = defaultdict(list), defaultdict(list)
+        for i, l in enumerate(L):
+            linhas = [li for sl in l.get("slides", []) for li in sl.get("linhas", [])]
+            texto, titulo = compacto(" ".join(linhas)), compacto(l["titulo"])
+            g = gramas(texto)
+            reg = {"chave": "%s|%s|%s" % (l.get("num") or "", l.get("titulo") or "",
+                                          linhas[0] if linhas else ""),
+                   "linhas": linhas, "titulo": titulo, "g": g,
+                   # o número do app vem com zero à esquerda na Coletânea Antiga
+                   # ("001"); o do PDF vem sem. Comparar sempre sem.
+                   "num": (l.get("num") or "").lstrip("0") or (l.get("num") or "")}
+            self.louvores.append(reg)
+            self.titulos.append(l["titulo"] or "")
+            for forma in {so_letras(l["titulo"]), sem_parenteses(l["titulo"])}:
+                if forma:
+                    self.por_titulo[forma].append(i)
+            self.por_compacto[titulo].append(i)
+            self.por_numero[reg["num"]].append(i)
+            for x in g:
+                idx_letra[x].append(i)
+            for x in gramas(titulo, 3):
+                idx_titulo[x].append(i)
+        self.idx_letra, self.idx_titulo = idx_letra, idx_titulo
+        # Grama que aparece em mais de 6% dos louvores ("DEUS", "SENH") não
+        # distingue ninguém e ainda faz a busca varrer meio catálogo por grama.
+        self.comuns = set(g for g, v in idx_letra.items()
+                          if len(v) > len(self.louvores) * 0.06)
+        self.confia_no_numero = {}
+
+    # -- o caminho rápido, que já funcionava: título igual ao do app --
+    def por_titulo_exato(self, titulo):
+        return (self.por_titulo.get(so_letras(titulo))
+                or self.por_titulo.get(sem_parenteses(titulo)))
+
+    def calibrar(self, blocos, pdf):
+        """A numeração DESTE PDF corresponde à do app? Mede nos blocos em que o
+        título casou sozinho — ali sabemos a resposta certa e podemos conferir o
+        número contra ela. Sem esta medida seria preciso escrever o nome de cada
+        PDF no código, e o próximo livro que o operador importar chegaria com a
+        regra errada."""
+        bate = total = 0
+        for num, titulo, _corpo, _tom in blocos:
+            alvo = self.por_titulo_exato(titulo)
+            if not alvo or num is None:
+                continue
+            total += 1
+            if any(self.louvores[i]["num"] == str(num) for i in alvo):
+                bate += 1
+        self.confia_no_numero[pdf] = total >= 20 and bate >= total * 0.6
+        return bate, total
+
+    def casar(self, num, titulo, corpo, pdf):
+        """(indice do louvor no app, como casou) — ou (None, "perdido")."""
+        alvo = self.por_titulo_exato(titulo)
+        if alvo:
+            return alvo[0], "exato"
+
+        texto = compacto(" ".join(l["t"] for l in corpo))
+        g_letra = gramas(texto) - self.comuns
+        t_pdf = compacto(titulo)
+        usa_num = self.confia_no_numero.get(pdf) and num is not None
+
+        # Só os candidatos plausíveis entram na conta cara: comparar o bloco com
+        # os 2.459 louvores um a um levaria minutos por página.
+        votos = Counter()
+        for x in g_letra:
+            for i in self.idx_letra.get(x, ()):
+                votos[i] += 1
+        cand = set(i for i, _ in votos.most_common(25))
+        votos = Counter()
+        for x in gramas(t_pdf, 3):
+            for i in self.idx_titulo.get(x, ()):
+                votos[i] += 1
+        cand.update(i for i, _ in votos.most_common(15))
+        if usa_num:
+            cand.update(self.por_numero.get(str(num), ()))
+
+        melhor, ponto = None, (-1, 0.0, 0.0)
+        for i in cand:
+            a = self.louvores[i]
+            util = a["g"] - self.comuns
+            # QUANTO da letra do app apareceu na leitura do PDF. Contenção, não
+            # semelhança: o bloco do PDF pode trazer sobra da coluna vizinha, e
+            # isso não deve baixar a nota de quem está todo lá dentro.
+            n_letra = len(util & g_letra) / float(len(util)) if len(util) >= 12 else 0.0
+            n_tit = 0.0
+            if t_pdf and a["titulo"]:
+                n_tit = difflib.SequenceMatcher(None, t_pdf, a["titulo"]).ratio()
+                if len(t_pdf) >= 12 and a["titulo"].startswith(t_pdf):
+                    n_tit = max(n_tit, 0.92)         # o PDF cortou o título
+                if len(a["titulo"]) >= 12 and t_pdf.startswith(a["titulo"]):
+                    n_tit = max(n_tit, 0.92)         # dois cabeçalhos colados
+            num_ok = 1 if (usa_num and a["num"] == str(num)) else 0
+            # Um sinal forte basta; dois médios também. O número sozinho nunca:
+            # ele só abaixa a exigência dos outros dois, porque no PDF escaneado
+            # o OCR troca 7 por 1 e faria a cifra cair no louvor vizinho.
+            if not (n_letra >= 0.45 or n_tit >= 0.80
+                    or (n_tit >= 0.62 and n_letra >= 0.25)
+                    or (num_ok and (n_tit >= 0.5 or n_letra >= 0.30))):
+                continue
+            # o número desempata primeiro: "DAS PROFUNDEZAS CLAMO A TI," casa
+            # igualmente bem com o nº 89 e com o nº 295, e só o número sabe qual
+            p = (num_ok, round(max(n_letra, n_tit), 2), n_letra + n_tit)
+            if p > ponto:
+                melhor, ponto = i, p
+        if melhor is None:
+            return None, "perdido"
+        return melhor, ("numero" if ponto[0] else "texto")
+
+    def irmaos(self, i):
+        """Todas as chaves do app que são ESTE louvor. O mesmo louvor está no
+        catálogo até quatro vezes — "Coletânea 2018" nº 1 e "Coletânea Antiga"
+        nº 001 são a mesma música — e a cifra vale para todas.
+
+        São TRÊS formas do título, porque o mesmo louvor foi digitado de jeitos
+        diferentes em cada coletânea e nenhuma forma sozinha junta todas:
+
+            título inteiro   o caso comum, o mesmo texto nas duas coletâneas
+            sem parênteses   o app separa "O SENHOR É O MEU PASTOR (REFRIGERA A
+                             MINHA ALMA)" de "(BONDADE E MISERICÓRDIA)"; o PDF
+                             traz só "O SENHOR É O MEU PASTOR"
+            sem espaço       "GUIA, Ó CRISTO, MINHA NAU" e "GUIA CRISTO MINHA
+                             NAU" só ficam iguais quando a pontuação some
+
+        Tirar qualquer uma das três custa cifras: só o título inteiro perde 8
+        louvores que já funcionavam, só as duas primeiras perde outros 81.
+        """
+        titulo = self.titulos[i]
+        iguais = []
+        for grupo in (self.por_titulo.get(so_letras(titulo)),
+                      self.por_titulo.get(sem_parenteses(titulo)),
+                      self.por_compacto.get(compacto(titulo))):
+            for j in (grupo or ()):
+                if j not in iguais:
+                    iguais.append(j)
+        return [self.louvores[j]["chave"] for j in (iguais or [i])]
 
 
 def extrair(pasta=None, limite=0, aviso=None):
@@ -720,12 +1332,17 @@ def extrair(pasta=None, limite=0, aviso=None):
     if not os.path.exists(caminho_idx):
         raise SystemExit("Nao achei o indice das cifras. Rode indexar_cifras.py antes.")
     indice = json.load(io.open(caminho_idx, encoding="utf-8"))
-    banco = chaves_dos_louvores()
-    letras = letras_dos_louvores()
+    casador = Casador()
     if aviso:
-        aviso("banco do app: %d titulos" % len(banco))
+        aviso("banco do app: %d louvores" % len(casador.louvores))
 
     acordes, feitos, paginas_lidas, sem_par = {}, 0, 0, 0
+    qualidade = {}                       # chave -> nota da cifra que esta la'
+    tons_mel = tons_das_melodias()
+    trocou_tom = {}
+    if aviso:
+        aviso("melodicas com tom no caderno C: %d" % len(tons_mel))
+    como = Counter()
     for nome in sorted({r["pdf"] for r in indice.values()}):
         cam = os.path.join(pasta, nome)
         if not os.path.exists(cam):
@@ -736,37 +1353,75 @@ def extrair(pasta=None, limite=0, aviso=None):
         r = PdfReader(cam)
         if aviso:
             aviso("%s - %d paginas, ancora: %s" % (nome[:44], len(r.pages), rot))
+
+        # O LIVRO INTEIRO ANTES DE CASAR: a calibração do número precisa ver
+        # todas as páginas para saber se a numeração deste PDF corresponde à do
+        # app. É a leitura do PDF que custa caro (minutos); guardar as cifras já
+        # lidas custa o tamanho do acordes.json, cerca de 1 MB.
+        blocos = []
         for p in range(len(r.pages)):
             try:
                 achados = louvores_da_pagina(r.pages[p], nome)
             except Exception:
                 continue
             paginas_lidas += 1
-            for num, titulo, corpo, tom in achados:
-                if not any(l["a"] for l in corpo):
-                    continue                       # sem acorde nenhum: nao serve
-                alvo = banco.get(so_letras(titulo)) or banco.get(sem_parenteses(titulo))
-                if not alvo:
-                    sem_par += 1
-                    continue
-                certa = letras.get(so_letras(titulo)) or letras.get(sem_parenteses(titulo))
-                corpo2, trocadas = consertar_pela_letra(corpo, certa)
-                for chave in alvo:
-                    if chave in acordes:
-                        continue                   # o primeiro que aparece manda
-                    reg = {"linhas": corpo2, "pdf": nome}
-                    if trocadas:
-                        reg["ok"] = trocadas
-                    if tom:
-                        reg["tom"] = tom
-                    acordes[chave] = reg
-                    feitos += 1
-            if limite and feitos >= limite:
+            blocos.extend(b for b in achados if any(l["a"] for l in b[2]))
+            if limite and len(blocos) >= limite:
                 break
+        bate, total = casador.calibrar(blocos, nome)
+        if aviso:
+            aviso("   numero do PDF confere com o do app em %d de %d -> %s"
+                  % (bate, total,
+                     "usa" if casador.confia_no_numero[nome] else "ignora"))
+
+        for num, titulo, corpo, tom in blocos:
+            i, jeito = casador.casar(num, titulo, corpo, nome)
+            como[jeito] += 1
+            if i is None:
+                sem_par += 1
+                continue
+            # a letra certa é a do louvor que ACABAMOS de identificar, não a do
+            # título lido — que pode estar cortado ou estragado
+            corpo2, trocadas, cobertura = consertar_pela_letra(
+                corpo, casador.louvores[i]["linhas"])
+            # QUAL cifra fica com o louvor quando mais de um livro tem ele.
+            # Antes era "o primeiro que aparece manda", e o primeiro é sempre o
+            # mesmo: os PDFs são lidos em ordem alfabética e "Coletânea 2018" —
+            # o livro ESCANEADO, o de pior leitura — vem antes dos dois de texto
+            # nativo. Toda vez que o mesmo louvor existia nos dois, a folha do
+            # músico ficava com a versão do scanner. Medido: 430 louvores
+            # tinham a cifra limpa dos Avulsos trocada pela do escaneado.
+            # A nota é QUANTO DA LETRA DO APP a cifra conseguiu costurar — ou
+            # seja, o quanto ela é mesmo este louvor — e desempata pelo número
+            # de acordes. É medida do resultado, não preferência por livro.
+            nota = (round(cobertura, 2), sum(len(l["a"]) for l in corpo2))
+            mel = (tons_mel.get(so_letras(casador.titulos[i]))
+                   or tons_mel.get(sem_parenteses(casador.titulos[i])))
+            for chave in casador.irmaos(i):
+                if chave in acordes and qualidade.get(chave, (0, 0)) >= nota:
+                    continue
+                reg = {"linhas": corpo2, "pdf": nome}
+                if trocadas:
+                    reg["ok"] = trocadas
+                escolhido, de_onde = escolher_tom(tom, mel, corpo2)
+                if escolhido != tom:
+                    trocou_tom[chave] = (tom, escolhido)
+                if escolhido:
+                    reg["tom"] = escolhido
+                    if de_onde:
+                        reg["tom_de"] = de_onde
+                if chave not in acordes:
+                    feitos += 1
+                acordes[chave] = reg
+                qualidade[chave] = nota
         if limite and feitos >= limite:
             break
     if aviso:
+        aviso("casamento: %s" % ", ".join("%s %d" % (k, v) for k, v in como.most_common()))
         aviso("cifras lidas sem louvor correspondente no app: %d" % sem_par)
+        novos = sum(1 for a, _b in trocou_tom.values() if not a)
+        aviso("tom corrigido pela melodica: %d (%d ganharam tom que nao tinham)"
+              % (len(trocou_tom), novos))
 
     destino = os.path.join(pasta, "acordes.json")
     tmp = destino + ".tmp"

@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.5.2"
+VERSAO = "2.5.5"
 PORTA = 8765
 
 def raiz():
@@ -132,18 +132,31 @@ def catalogo_do_musico():
         pass
     except Exception as e:
         sys.stderr.write("catalogo do musico, violao: %s" % e + chr(10))
-    melodia, instrumentos = {}, []
+    melodia, melodia1, instrumentos = {}, {}, []
     try:
         with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
             idx = json.load(f)
         instrumentos = idx.get("instrumentos", [])
+        repetidas = set()
         for chave, v in idx.get("louvores", {}).items():
             melodia[chave] = v.get("tons", {})
+            # segundo mapa, pela PRIMEIRA LINHA da letra: e' por ele que se
+            # reencontram as melodias cujo titulo difere do catalogo do app
+            # ("ALELUIA", "SOMENTE PELA FE"...). So entra linha inequivoca:
+            # os cinco arranjos do Salmo 23 comecam iguais, e ai nenhum vale.
+            l1 = v.get("l1") or ""
+            if l1:
+                if l1 in melodia1:
+                    repetidas.add(l1)
+                melodia1[l1] = v.get("tons", {})
+        for l1 in repetidas:
+            del melodia1[l1]
     except FileNotFoundError:
         pass
     except Exception as e:
         sys.stderr.write("catalogo do musico, melodia: %s" % e + chr(10))
-    d = {"violao": violao, "melodia": melodia, "instrumentos": instrumentos}
+    d = {"violao": violao, "melodia": melodia, "melodia1": melodia1,
+         "instrumentos": instrumentos}
     _CATALOGO.update({"ts": time.time(), "dados": d})
     return d
 
@@ -163,12 +176,22 @@ def material_do_louvor(chave, afinacao="C"):
         with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
             idx = json.load(f)
         # o indice das melodias e' por TITULO, nao pela chave do app
-        titulo = chave.split("|")[1] if "|" in chave else chave
+        partes = chave.split("|")
+        titulo = partes[1] if len(partes) > 1 else chave
         alvo = None
         for k, v in idx.get("louvores", {}).items():
             if k == _simples(titulo):
                 alvo = v
                 break
+        if alvo is None and len(partes) > 2:
+            # titulo diferente entre a Melodica e o catalogo: reencontra pela
+            # PRIMEIRA LINHA da letra (que vem na chave do app) — mas so' se
+            # ela apontar para UMA melodia, senao e' Salmo 23 contra Salmo 23
+            l1 = _simples("|".join(partes[2:]))[:30]
+            iguais = [v for v in idx.get("louvores", {}).values()
+                      if l1 and v.get("l1") == l1]
+            if len(iguais) == 1:
+                alvo = iguais[0]
         if alvo:
             with io.open(os.path.join(pasta_melodias(), alvo["arq"]), encoding="utf-8") as f:
                 reg = json.load(f)
@@ -185,7 +208,193 @@ def _simples(t):
     import unicodedata as _u
     t = _u.normalize("NFD", (t or "").upper())
     t = "".join(c for c in t if _u.category(c) != "Mn")
-    return re.sub(r"[^A-Z0-9 ]+", " ", t).strip()
+    # espacos repetidos recolhidos, IGUAL ao so_letras do extrair_melodia.py e
+    # ao simples() do controle.html — uma virgula de diferenca no titulo
+    # ("MESTRE, O MAR...") gerava chave com espaco duplo e o casamento morria
+    return re.sub(r"\s+", " ", re.sub(r"[^A-Z0-9 ]+", " ", t)).strip()
+
+
+# ------------------------------------------------- atualização e exportação
+DONO_GITHUB = "QuitsQuill88885"
+REPO_GITHUB = "sistema-projecao-icm"
+ARQ_INSTALADOR = "Instalar-o-Sistema.exe"
+
+# andamento das duas tarefas demoradas, para a tela ir perguntando
+ATUALIZA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
+EXPORTA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
+
+
+def _versao_tupla(v):
+    try:
+        return tuple(int(x) for x in re.findall(r"\d+", v or "")[:4])
+    except Exception:
+        return ()
+
+
+def versao_mais_nova():
+    """Pergunta ao GitHub qual é a versão mais nova, SEM baixar nada.
+
+    O endereço /releases/latest responde com um redirecionamento cujo destino
+    termina em /tag/vX.Y.Z — lemos só esse cabeçalho e desligamos. Sem
+    internet devolve None, e quem chamou decide o que dizer. A igreja muitas
+    vezes NÃO tem internet: isso nunca pode virar erro na cara do operador."""
+    import urllib.request
+    import urllib.error
+
+    class SemRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    url = "https://github.com/%s/%s/releases/latest" % (DONO_GITHUB, REPO_GITHUB)
+    try:
+        urllib.request.build_opener(SemRedirect).open(
+            urllib.request.Request(url, headers={"User-Agent": "Sistema"}), timeout=8)
+    except urllib.error.HTTPError as e:
+        m = re.search(r"/tag/v?([0-9][0-9.]*)", e.headers.get("Location") or "")
+        if m:
+            return m.group(1)
+    except Exception:
+        pass
+    return None
+
+
+def _atualizar_thread():
+    """Baixa o instalador mais novo e entrega a ele o serviço.
+
+    O download são ~58 MB só do PROGRAMA. O conteúdo pesado (animações,
+    cifras, melodias) mora nos dados do usuário e a atualização NÃO toca
+    nele — é o que impede o "baixar 500 MB toda vez"."""
+    import tempfile
+    import urllib.request
+    try:
+        ATUALIZA.update({"pct": 3, "txt": "Baixando a versão nova…", "erro": ""})
+        url = ("https://github.com/%s/%s/releases/latest/download/%s"
+               % (DONO_GITHUB, REPO_GITHUB, ARQ_INSTALADOR))
+        alvo = os.path.join(tempfile.mkdtemp(), "Instalar o Sistema.exe")
+        req = urllib.request.Request(url, headers={"User-Agent": "Sistema"})
+        with urllib.request.urlopen(req, timeout=60) as r, open(alvo, "wb") as f:
+            total = int(r.headers.get("Content-Length") or 0)
+            feito = 0
+            while True:
+                peda = r.read(256 * 1024)
+                if not peda:
+                    break
+                f.write(peda)
+                feito += len(peda)
+                if total:
+                    ATUALIZA["pct"] = 3 + int(90.0 * feito / total)
+        ATUALIZA.update({"pct": 96, "txt": "Instalando… o Sistema vai fechar e reabrir sozinho.",
+                         "fim": True})
+        # --reabrir: o instalador novo reabre o Sistema no fim. Um instalador
+        # antigo ignora a bandeira — aí o operador reabre pelo atalho.
+        subprocess.Popen([alvo, "--silencioso", "--reabrir"], **SEM_JANELA)
+    except Exception:
+        ATUALIZA.update({"erro": "Não consegui baixar a atualização. Confira a internet e "
+                                 "tente de novo — nada foi mexido.",
+                         "fim": True, "rodando": False})
+
+
+def pendrives_plugados():
+    """[{letra, nome, livre}] das unidades removíveis acessíveis agora."""
+    import ctypes
+    achados = []
+    try:
+        k = ctypes.windll.kernel32
+        bits = k.GetLogicalDrives()
+        for i in range(26):
+            if not (bits & (1 << i)):
+                continue
+            letra = "%s:\\" % chr(65 + i)
+            if k.GetDriveTypeW(letra) != 2:            # 2 = DRIVE_REMOVABLE
+                continue
+            livre = ctypes.c_ulonglong(0)
+            if not k.GetDiskFreeSpaceExW(letra, ctypes.byref(livre), None, None):
+                continue                               # leitor de cartão vazio
+            nome = ""
+            buf = ctypes.create_unicode_buffer(261)
+            if k.GetVolumeInformationW(letra, buf, 260, None, None, None, None, 0):
+                nome = (buf.value or "").strip()
+            achados.append({"letra": letra, "nome": nome or "Pendrive",
+                            "livre": int(livre.value)})
+    except Exception:
+        pass
+    return achados
+
+
+def _exportar_usb_thread(letra):
+    """Grava no pendrive tudo o que outro computador precisa para virar ESTE:
+    o instalador guardado + a pasta Conteudo (animações, cifras, melodias E as
+    coisas pessoais: configurações, histórico, louvores e fundos próprios).
+    O instalador do outro lado copia a pasta inteira sozinho."""
+    import ctypes
+    try:
+        EXPORTA.update({"pct": 1, "txt": "Conferindo o pendrive…", "erro": ""})
+        pasta_inst = os.path.join(DADOS_USUARIO, "Instalador")
+        exes = sorted(glob.glob(os.path.join(pasta_inst, "*.exe")), key=os.path.getmtime)
+        if not exes:
+            raise RuntimeError("Não achei o instalador guardado nos dados do Sistema. "
+                               "Instale o Sistema uma vez pelo instalador que ele fica guardado.")
+        exe = exes[-1]
+
+        itens = [(exe, "Instalar o Sistema.exe")]
+        pastas = ["animacoes", "cifras", "melodias",
+                  "Meus louvores", "Meus fundos", "Minhas apresentações"]
+        for nome in pastas:
+            p = os.path.join(DADOS_USUARIO, nome)
+            if not os.path.isdir(p):
+                continue
+            for raiz_c, _sub, arqs in os.walk(p):
+                rel = os.path.relpath(raiz_c, DADOS_USUARIO)
+                for a in arqs:
+                    itens.append((os.path.join(raiz_c, a),
+                                  os.path.join("Conteudo", rel, a)))
+        for nome in ("configuracoes.json", "historico.json"):
+            p = os.path.join(DADOS_USUARIO, nome)
+            if os.path.isfile(p):
+                itens.append((p, os.path.join("Conteudo", nome)))
+
+        total = 0
+        for origem_c, _d in itens:
+            try:
+                total += os.path.getsize(origem_c)
+            except OSError:
+                pass
+        livre = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(letra, ctypes.byref(livre), None, None)
+        if livre.value and livre.value < total + 20 * 1024 * 1024:
+            raise RuntimeError("Não cabe: o pacote tem %d MB e o pendrive só tem %d MB livres."
+                               % (total // 1048576, livre.value // 1048576))
+
+        feito = 0
+        for origem_c, destino_rel in itens:
+            alvo = os.path.join(letra, destino_rel)
+            os.makedirs(os.path.dirname(alvo), exist_ok=True)
+            shutil.copy2(origem_c, alvo)
+            try:
+                feito += os.path.getsize(origem_c)
+            except OSError:
+                pass
+            EXPORTA.update({"pct": max(2, int(96.0 * feito / (total or 1))),
+                            "txt": "Copiando… (%d de %d MB)" % (feito // 1048576,
+                                                                total // 1048576)})
+
+        with io.open(os.path.join(letra, "LEIA - Como instalar o Sistema.txt"),
+                     "w", encoding="utf-8") as f:
+            f.write("SISTEMA — projecao para a igreja\r\n"
+                    "================================\r\n\r\n"
+                    "1. De dois cliques em \"Instalar o Sistema.exe\"\r\n"
+                    "2. Espere a barrinha encher\r\n\r\n"
+                    "A pasta \"Conteudo\" vai junto e o instalador copia tudo\r\n"
+                    "sozinho: animacoes, cifras, melodias e as configuracoes\r\n"
+                    "de quem gravou este pendrive. Nao precisa de internet.\r\n\r\n"
+                    "Se o Windows avisar \"protegeu o computador\": clique em\r\n"
+                    "\"Mais informacoes\" e \"Executar assim mesmo\".\r\n\r\n"
+                    "Desenvolvido por Samuel Mariano Ribeiro.\r\n")
+        EXPORTA.update({"pct": 100, "txt": "Pronto! Pode tirar o pendrive.",
+                        "fim": True, "rodando": False})
+    except Exception as e:
+        EXPORTA.update({"erro": str(e) or "Não consegui exportar.",
+                        "fim": True, "rodando": False})
 
 
 def ler_indice(nome):
@@ -438,6 +647,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             chave = unquote(u.path[len("/api/cifra/"):])
             afinacao = (parse_qs(u.query).get("em") or ["C"])[0]
             return self._json(material_do_louvor(chave, afinacao))
+        if self.path.startswith("/api/atualizacao"):     # existe versão mais nova?
+            nova = versao_mais_nova()
+            tem = bool(nova) and _versao_tupla(nova) > _versao_tupla(VERSAO)
+            return self._json({"ok": nova is not None, "atual": VERSAO,
+                               "nova": nova, "tem": tem})
+        if self.path.startswith("/api/atualizar"):       # andamento da atualização
+            return self._json({"ok": True, **ATUALIZA})
+        if self.path.startswith("/api/pendrives"):
+            return self._json({"ok": True, "pendrives": pendrives_plugados()})
+        if self.path.startswith("/api/exportar-usb"):    # andamento da exportação
+            return self._json({"ok": True, **EXPORTA})
         if self.path.startswith("/api/rede"):            # endereço e QR para o celular entrar
             porta = self.server.server_address[1]
             url = "http://%s:%d/controle.html" % (endereco_local(), porta)
@@ -485,6 +705,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             try:
                 n = int(self.headers.get("Content-Length", 0))
                 gravar_config(json.loads(self.rfile.read(n).decode("utf-8")))
+                return self._json({"ok": True})
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
+        if self.path.startswith("/api/atualizar"):       # começa a atualização
+            with TRAVA:
+                if not ATUALIZA["rodando"]:
+                    ATUALIZA.update({"rodando": True, "pct": 0, "txt": "Começando…",
+                                     "erro": "", "fim": False})
+                    threading.Thread(target=_atualizar_thread, daemon=True).start()
+            return self._json({"ok": True})
+        if self.path.startswith("/api/exportar-usb"):    # começa a exportação
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                letra = (json.loads(self.rfile.read(n).decode("utf-8")) or {}).get("letra", "")
+                if not letra or not os.path.isdir(letra):
+                    return self._json({"ok": False, "erro": "O pendrive foi retirado."})
+                with TRAVA:
+                    if not EXPORTA["rodando"]:
+                        EXPORTA.update({"rodando": True, "pct": 0, "txt": "Começando…",
+                                        "erro": "", "fim": False})
+                        threading.Thread(target=_exportar_usb_thread, args=(letra,),
+                                         daemon=True).start()
                 return self._json({"ok": True})
             except Exception as e:
                 return self._json({"ok": False, "erro": str(e)})

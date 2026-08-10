@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=17">
+<link rel="stylesheet" href="app.css?v=20">
 </head><body>
 <div id="app">
   <header>
@@ -133,7 +133,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=17"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=20"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -285,6 +285,17 @@
           <p class="dica">Ajustes gerais e restauração.</p>
           <div class="reset-row"><div><b>Apresentação inicial</b><small>Rever como o Sistema funciona e reconfigurar a igreja.</small></div>
             <button class="big-btn" id="btn-rever">Ver de novo</button></div>
+          <h3 class="menu-h3">Atualizações</h3>
+          <div class="reset-row"><div><b>Buscar atualizações</b><small id="atu-status">Procura a versão mais nova na internet. Suas coisas nunca são apagadas, e o conteúdo pesado não baixa de novo.</small></div>
+            <button class="big-btn" id="btn-atualizar">Buscar</button></div>
+          <div class="reset-row"><div><b>Procurar sozinho ao abrir</b><small>Se houver internet, o Sistema avisa quando existir versão nova. Nada se instala sem você mandar.</small></div>
+            <button class="big-btn" id="btn-atu-auto">Ligado</button></div>
+          <h3 class="menu-h3">Levar para outro computador</h3>
+          <div class="reset-row"><div><b>Exportar para um pendrive</b><small id="usb-status">Grava o instalador, as animações, cifras, melodias e as suas configurações — pronto para instalar lá.</small></div>
+            <button class="big-btn" id="btn-usb">Exportar</button></div>
+          <h3 class="menu-h3">Fale com o desenvolvedor</h3>
+          <div class="reset-row"><div><b>Achou um defeito ou tem uma ideia?</b><small id="contato-mail">samuelsaxdiesel@gmail.com</small></div>
+            <button class="big-btn" id="btn-contato">Copiar e-mail</button></div>
           <h3 class="menu-h3">Voltar ao padrão</h3>
           <div class="reset-row"><div><b>Fundos</b><small>Restaura os fundos originais e apaga os que você adicionou.</small></div>
             <button class="big-btn" data-reset="fundos">Restaurar</button></div>
@@ -308,7 +319,7 @@
             <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
                fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
                licença.</p>
-            <p>Fontes: <b>Jost</b> (indestructible type) e <b>Bebas Neue</b>
+            <p>Fontes: <b>Outfit</b> (Rodrigo Fuenzalida) e <b>Bebas Neue</b>
                (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
                com o programa.</p>
           </div>
@@ -335,11 +346,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=17"></script>
+<script src="dados/louvores.js?v=20"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=17"></script>
+<script src="dados/galeria.js?v=20"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=17"></script>
-<script src="app.js?v=17"></script>
+<script src="icones.js?v=20"></script>
+<script src="app.js?v=20"></script>
 </body></html>

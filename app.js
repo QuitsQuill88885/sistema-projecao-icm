@@ -6,7 +6,10 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const BIBLIA = window.BIBLIA, LOUVORES = window.LOUVORES;
 const BASE_LOUVORES = LOUVORES.slice();   // coletânea original (os "Meus louvores" entram depois dela)
 const ESTILOS = window.ESTILOS, GALERIA = window.GALERIA || [];
-const TAM_DEF = { louvor: 6.4, biblia: 5.55 };
+// louvor 5.75: calibrado na transmissão oficial (129, 10/08/2026) — letra a
+// 4,36% da altura da tela com avanço de 11,05%; o desenho fino está no
+// comentário do #lou-txt em projecao.html
+const TAM_DEF = { louvor: 5.75, biblia: 5.55 };
 
 const est = {
   aba: 'louvor', projetando: false, freeze: false, estilo: 'limpo',
@@ -136,26 +139,188 @@ function stBiblia(ref, texto) {
 
 // ---------- SUGESTÕES: louvores que combinam com o versículo ----------
 // A tabela vem PRONTA (dados/sugestoes.js): o computador da igreja não calcula
-// nada para os três primeiros. O "ver mais" é que calcula, e só naquele momento,
-// para aquele versículo — assim a lista não tem fim e mesmo assim nada pesa.
-let sugMostradas = 3, sugCalculadas = null;
+// nada para abrir a lista. O resto da roda é calculado na hora, uma vez por
+// versículo, e fica guardado até o operador trocar de verso.
+//
+// A LISTA É UMA RODA, NÃO UMA FILA QUE ACABA. Mostra três; o botão troca pelos
+// três seguintes; passado o último trio, volta ao primeiro. Quem fica clicando
+// atravessa todos os louvores que têm nexo com o versículo e recomeça — nunca
+// acaba, e dentro de uma volta nenhum louvor aparece duas vezes.
+const SUG_POR_VEZ = 3;    // três é o que cabe sem empurrar a grade de versículos para fora da tela
+const SUG_TETO = 30;      // dez trios: daí para baixo já é louvor que só encosta no assunto
+const SUG_JANELA = 4;     // versículos de cada lado que entram na busca (o assunto não cabe numa linha só)
+let sugCand = [];         // candidatos { i, prox } — prox = proximidade com a mensagem, de 0 a 1
+let sugRoda = [];         // a roda pronta: índices de louvor, em ordem de peso e sem repetidos
+let sugPag = 0;           // qual trio está na tela
+let sugVers = null;       // { livro, cap, v } a que esta roda pertence
+let sugCheia = false;     // a parte calculada já entrou nesta roda?
+
 function codVers(livro, cap, v) {
   const li = BIBLIA.ordem.indexOf(livro);
   return li < 0 ? null : li + '.' + cap + '.' + v;
 }
+// O mesmo louvor está em várias coletâneas: são 2.459 entradas no catálogo para
+// pouco mais de 1.500 louvores distintos, e a tabela de sugestões repete o mesmo
+// em 15.122 dos 25.806 versículos (Gênesis 1:1 sugeria "DEUS CRIOU OS CÉUS E A
+// TERRA" duas vezes, uma dos CIAS e outra da Antiga). Numa lista de três, isso é
+// um terço da tela desperdiçado, e numa roda é "repetir fora de hora".
+//
+// SÃO DUAS CHAVES, porque nenhuma delas sozinha reconhece a cópia.
+//   pelo TÍTULO + o começo da primeira linha — junta o que a coletânea copiou
+//   com outra pontuação ou outra quebra de linha ("(BIS)", "3X", "fez"/"faz").
+//   Doze letras da primeira linha porque as coletâneas quebram a linha em pontos
+//   diferentes, e comparar a linha inteira separava justamente o que é igual.
+//   pela LETRA — junta o que a coletânea REBATIZOU, e aí o título não serve de
+//   nada: 71 dos CIAS é "JESUS VIU A MULTIDÃO" e 9997 da Antiga é "JESUS VIU A
+//   MULTIDÃO (A MULTIPLICAÇÃO)", mesma letra palavra por palavra; 353 é
+//   "DEIXA-ME CHORAR" e 3371 é "DEIXA-ME CHORAR AOS TEUS PÉS". Só pelo título,
+//   esses pares entravam os dois na mesma volta da roda e o operador via o mesmo
+//   louvor duas vezes — foi o que aconteceu em 4 dos 6 versículos medidos.
+// Sessenta letras da letra, e não menos: os cinco arranjos do Salmo 23 começam
+// todos com "o senhor é o meu pastor, nada me faltará" e seguem cada um para um
+// lado. Com 40 letras eles viravam um só e a igreja perdia quatro louvores.
+const IDENT_LETRA = 60;
+function identTitulo(titulo, linha1) {
+  return soLetras(titulo) + '|' + soLetras(linha1).slice(0, 12);
+}
+// As duas chaves de um louvor, calculadas uma vez só: a da letra percorre todos
+// os slides, e a roda pergunta por elas centenas de vezes a cada montagem.
+// A lembrança é pelo LOUVOR, não pelo índice: apagar um "Meu louvor" empurra os
+// de baixo uma casa para trás, e uma lista guardada por índice passaria a
+// responder pelo louvor errado.
+const identCache = new Map();
+function ident(i) {
+  const s = LOUVORES[i] || {};
+  let d = identCache.get(s);
+  if (!d) {
+    const sl = (s.slides || [])[0] || {};
+    d = [identTitulo(s.titulo || '', (sl.linhas || [])[0] || ''),
+         soLetras((s.slides || []).map(x => (x.linhas || []).join(' ')).join(' ')).slice(0, IDENT_LETRA)];
+    identCache.set(s, d);
+  }
+  return d;
+}
+
+// ---- o peso do que a igreja já cantou ----
+// historico.json guarda cada projeção com a chave do louvor. Aqui só interessa
+// QUANTAS VEZES cada um subiu ao telão, somando as coletâneas: para a igreja o
+// 470 da Coletânea e o 7752 da Antiga são o mesmo louvor.
+let sugVezes = null, sugVezesLetra = null, sugVezesMax = 0, sugHistPedido = false;
+function carregarHistoricoSug() {
+  if (sugHistPedido) return;
+  sugHistPedido = true;
+  fetch('/api/historico').then(r => r.json()).then(r => {
+    // duas contagens, uma por chave, para a projeção do 9997 contar também para
+    // o 71 dos CIAS — que é o mesmo louvor com outro nome. A chave de título sai
+    // direto do que está gravado; a da letra só o catálogo tem, então o registro
+    // é reencontrado pelo louvor que o gerou.
+    const porTit = new Map(), porLet = new Map(), porChave = new Map();
+    LOUVORES.forEach((s, i) => porChave.set(chaveLouvor(s), i));
+    const conta = (m, k) => {
+      if (!k) return;
+      const n = (m.get(k) || 0) + 1;
+      m.set(k, n);
+      if (n > sugVezesMax) sugVezesMax = n;
+    };
+    (r.registros || []).forEach(x => {
+      if (x.q !== 'louvor' || !x.chave) return;
+      const p = String(x.chave).split('|');       // num|titulo|primeira linha
+      conta(porTit, identTitulo(p[1] || '', p.slice(2).join('|')));
+      // não achou: é louvor que saiu do catálogo, e o que saiu não vai ser
+      // sugerido de qualquer jeito
+      const i = porChave.get(String(x.chave));
+      if (i !== undefined) conta(porLet, ident(i)[1]);
+    });
+    sugVezes = porTit; sugVezesLetra = porLet;
+    // O histórico chegou depois da lista pintada. Aqui a roda é refeita do zero,
+    // sem preservar o que já estava na tela: acontece uma única vez por sessão,
+    // nos primeiros instantes, e sem isso o primeiro trio ficaria para sempre na
+    // ordem que tinha ANTES de o histórico ser lido — justo o trio que mais
+    // importa acertar.
+    if (sugVers) { montarRoda(true); pintarSug(); }
+  }).catch(() => { sugVezes = new Map(); sugVezesLetra = new Map(); });
+}
+// COMO OS DOIS PESOS SE COMBINAM
+//   proximidade   — o quanto o louvor fala do que o versículo fala, de 0 a 1.
+//   familiaridade — quantas vezes a igreja cantou o louvor, na escala do mais
+//                   cantado de todos: ln(1+vezes) / ln(1+maisCantado). O
+//                   logaritmo é o que impede o campeão de esmagar o resto:
+//                   cantar 40 vezes não vale 40, vale pouco mais que cantar 10.
+//   peso final    = proximidade × (1 + 0,4 × familiaridade)
+// O histórico é BÔNUS, nunca nota. O louvor que a igreja canta toda semana ganha
+// no máximo 40% e passa na frente de quem tinha empatado com ele; o que ela nunca
+// cantou não perde nada — fica com a nota inteira que a mensagem lhe deu, só não
+// ganha o empurrão. E como a proximidade já nasce em faixas separadas (o
+// versículo manda mais que os vizinhos, que mandam mais que o calculado), o bônus
+// remexe a vizinhança de cada louvor sem virar a lista do avesso.
+// A escala tem piso: numa igreja que acabou de instalar o Sistema, o louvor mais
+// cantado tem UMA projeção, e sem o piso essa única vez valeria o bônus inteiro —
+// o acaso do primeiro culto mandando na lista. Com o piso, o histórico só pesa de
+// verdade quando já existe histórico; até lá empurra de leve.
+const SUG_HIST_PISO = 8;
+function familiaridade(i) {
+  if (!sugVezes) return 0;
+  const d = ident(i);
+  // as duas contagens são do mesmo louvor por dois caminhos: vale a maior, somar
+  // contaria a mesma projeção duas vezes
+  const n = Math.max(sugVezes.get(d[0]) || 0, (sugVezesLetra && sugVezesLetra.get(d[1])) || 0);
+  return n ? Math.log(1 + n) / Math.log(1 + Math.max(sugVezesMax, SUG_HIST_PISO)) : 0;
+}
+function montarRoda(refazer) {
+  // o que já passou pela tela nesta volta fica onde está: crescer a roda no meio
+  // do giro não pode reembaralhar o que o operador acabou de ver
+  const presos = refazer ? [] : sugRoda.slice(0, (sugPag + 1) * SUG_POR_VEZ);
+  const fixo = new Set(presos), roda = presos.slice();
+  // basta bater UMA das duas chaves para ser o mesmo louvor de novo
+  const vTit = new Set(), vLet = new Set();
+  const anotar = i => { const d = ident(i); vTit.add(d[0]); vLet.add(d[1]); };
+  const jaVeio = i => { const d = ident(i); return vTit.has(d[0]) || vLet.has(d[1]); };
+  presos.forEach(anotar);
+  sugCand.filter(c => !fixo.has(c.i) && LOUVORES[c.i])
+         .map(c => ({ i: c.i, p: c.prox * (1 + 0.4 * familiaridade(c.i)) }))
+         .sort((a, b) => b.p - a.p)
+         .forEach(c => {
+           if (jaVeio(c.i) || roda.length >= SUG_TETO) return;
+           anotar(c.i); roda.push(c.i);
+         });
+  // trio incompleto no fim faria a última tela parecer defeito; sobram no máximo
+  // dois louvores de fora, e são os dois mais fracos da roda
+  if (roda.length > SUG_POR_VEZ) roda.length -= roda.length % SUG_POR_VEZ;
+  sugRoda = roda;
+}
 function sugerirPara(livro, cap, v) {
   const cx = $('#sug'); if (!cx) return;
-  sugMostradas = 3; sugCalculadas = null;
-  const k = codVers(livro, cap, v);
-  const base = (window.SUGESTOES && k && window.SUGESTOES[k]) || [];
-  if (!base.length) { cx.classList.add('oculto'); return; }
+  const base = (window.SUGESTOES && window.SUGESTOES[codVers(livro, cap, v)]) || [];
+  if (!base.length) {
+    // some da tela e esvazia: faixa escondida com o trio do versículo anterior
+    // dentro é sugestão errada esperando um descuido do CSS para reaparecer
+    cx.classList.add('oculto'); sugVers = null; sugRoda = []; sugCand = [];
+    const c = $('#sug-lista'); if (c) c.innerHTML = '';
+    return;
+  }
   cx.classList.remove('oculto');
-  pintarSug(base.map(a => a[0]));
+  sugVers = { livro, cap, v }; sugPag = 0; sugCheia = false; sugRoda = [];
+  carregarHistoricoSug();
+  // Faixa 0,70–1,00 para o que a tabela deu a ESTE versículo, 0,50–0,65 para o
+  // que ela deu aos vizinhos. Os vizinhos entram porque a tabela repete tanto
+  // louvor que sobrava trio de dois — e porque o versículo seguinte fala do
+  // mesmo assunto. Sai de graça: já está tudo carregado, não calcula nada.
+  const alto = Math.max.apply(null, base.map(a => a[1])) || 1;
+  sugCand = base.map(a => ({ i: a[0], prox: 0.7 + 0.3 * (a[1] / alto) }));
+  for (let k = v - SUG_JANELA; k <= v + SUG_JANELA; k++) {
+    if (k === v || k < 1) continue;
+    ((window.SUGESTOES && window.SUGESTOES[codVers(livro, cap, k)]) || [])
+      .forEach(a => sugCand.push({ i: a[0], prox: 0.5 + 0.15 * Math.min(1, a[1] / alto) }));
+  }
+  montarRoda(); pintarSug();
 }
-function pintarSug(idxs) {
+function pintarSug() {
   const c = $('#sug-lista'); if (!c) return;
   c.innerHTML = '';
-  idxs.slice(0, sugMostradas).forEach(i => {
+  const n = sugRoda.length;
+  const paginas = Math.max(1, Math.ceil(n / SUG_POR_VEZ));
+  sugPag = ((sugPag % paginas) + paginas) % paginas;    // é aqui que a roda dá a volta
+  sugRoda.slice(sugPag * SUG_POR_VEZ, sugPag * SUG_POR_VEZ + SUG_POR_VEZ).forEach(i => {
     const s = LOUVORES[i]; if (!s) return;
     const d = document.createElement('div'); d.className = 'sug-l';
     d.innerHTML = '<small>' + (numLouvor(s) || '—') + ' ' + siglaCol(s) + '</small>' +
@@ -172,45 +337,122 @@ function pintarSug(idxs) {
     c.appendChild(d);
   });
   const b = $('#sug-mais');
-  if (b) b.style.display = idxs.length > sugMostradas ? '' : 'none';
-  $('#sug').dataset.todos = JSON.stringify(idxs);
+  // o rótulo não muda nunca: quem clica está pedindo MAIS SUGESTÕES, não
+  // esperando um carregamento. O que demora (o índice temático) vem por trás,
+  // com o trio seguinte já na tela.
+  if (b) { b.textContent = 'mais sugestões'; b.style.display = (n > SUG_POR_VEZ || !sugCheia) ? '' : 'none'; }
 }
-// "ver mais": daqui pra frente é calculado na hora, com o índice temático que
-// já está carregado. A Maranata tem centenas de louvores por tema — cortar em
-// três seria desperdiçar o acervo.
-// O índice temático tem 881 KB. Carregar sempre pesaria no arranque do micro
+// O índice temático tem 883 KB. Carregar sempre pesaria no arranque do micro
 // da igreja para um recurso que talvez ninguém use no culto — então ele só é
-// buscado no primeiro "ver mais", e daí em diante fica na memória.
-let temasPedidos = false;
+// buscado no primeiro "mais sugestões", e daí em diante fica na memória.
+let temasPedidos = false, temasEsperando = [];
 function carregarTemas(feito) {
   if (window.TEMAS) return feito();
+  // FILA, não "já pedi, deixa pra lá": o operador clica em "mais sugestões",
+  // troca de versículo e clica de novo enquanto o índice ainda vem. O segundo
+  // pedido é de OUTRO versículo, e largá-lo fazia esse clique morrer — a roda
+  // do versículo novo só crescia no clique seguinte.
+  temasEsperando.push(feito);
   if (temasPedidos) return;
   temasPedidos = true;
   const sc = document.createElement('script');
   sc.src = 'dados/temas.js';
-  sc.onload = feito;
-  sc.onerror = () => { temasPedidos = false; toast('Não consegui abrir a lista de temas.'); };
+  sc.onload = () => { const fila = temasEsperando; temasEsperando = []; fila.forEach(f => f()); };
+  sc.onerror = () => { temasPedidos = false; temasEsperando = []; toast('Não consegui abrir a lista de temas.'); };
   document.head.appendChild(sc);
 }
 function maisSugestoes() {
-  if (!window.TEMAS) { carregarTemas(maisSugestoes); return; }
-  const cx = $('#sug');
-  let todos = JSON.parse(cx.dataset.todos || '[]');
-  if (!sugCalculadas && est.bibPos) {
-    const t = versoTexto(est.bibPos) || '';
-    const ps = soLetras(t).split(' ').filter(p => p.length > 2);
-    const pontos = new Map();
-    TEMAS.louvores.forEach((pesos, i) => {
-      let sc = 0;
-      for (const p of ps) if (pesos[p]) sc += pesos[p];
-      if (sc > 3) pontos.set(i, sc);
-    });
-    todos.forEach(i => pontos.delete(i));
-    sugCalculadas = [...pontos.entries()].sort((a, b) => b[1] - a[1]).map(a => a[0]);
-    todos = todos.concat(sugCalculadas);
+  if (!sugVers) return;
+  sugPag++;
+  // Gira JÁ, com o que a tabela deu aos versículos vizinhos — o índice temático
+  // vem por trás e engorda a roda sem tirar nada da tela. Só quando os vizinhos
+  // não deram nem um segundo trio é que vale a pena esperar: repintar o MESMO
+  // trio seria o operador clicar e achar que o botão está quebrado.
+  if (sugCheia || sugRoda.length > SUG_POR_VEZ) pintarSug();
+  if (sugCheia) return;
+  const alvo = sugVers;
+  carregarTemas(() => {
+    // trocou de versículo enquanto o índice carregava: o cálculo já não é deste
+    if (!sugVers || sugVers !== alvo) return;
+    calcularRoda(); pintarSug();
+  });
+}
+
+// ---- a parte calculada da roda ----
+// Feita uma vez por versículo, e só quando o operador pede. O louvor e o texto
+// bíblico falam do mesmo assunto com palavras diferentes, então a busca junta
+// três coisas: o TRECHO (o versículo e os vizinhos), as FAMÍLIAS de palavras que
+// o trecho encosta, e a PARECENÇA com os louvores que a tabela já garantiu.
+let sugNorma = null;
+function normasTemas() {
+  if (!sugNorma) sugNorma = TEMAS.louvores.map(p => {
+    let s = 0; for (const k in p) s += p[k] * p[k];
+    return Math.sqrt(s) || 1;
+  });
+  return sugNorma;
+}
+function normaCons(q) { let s = 0; for (const k in q) s += q[k] * q[k]; return Math.sqrt(s) || 1; }
+// cosseno: divide pelo tamanho do vetor para que louvor comprido não ganhe só
+// por ter mais palavras que os outros
+function cosTemas(i, q, nq) {
+  const p = TEMAS.louvores[i]; let s = 0;
+  for (const k in p) if (q[k]) s += p[k] * q[k];
+  return s / (normasTemas()[i] * nq);
+}
+function consultaDoVerso(livro, cap, v) {
+  const cs = (BIBLIA.livros[livro] || [])[cap - 1] || {};
+  const q = {}, doTrecho = new Set();
+  const por = (txt, w) => soLetras(txt).split(' ').forEach(p => {
+    if (p.length < 3) return;
+    doTrecho.add(p);
+    // palavra que está em quase todo louvor não tem peso no índice, e é isso
+    // mesmo: "senhor" e "deus" não dizem de que assunto o versículo trata
+    const g = TEMAS.idf[p];
+    if (g) q[p] = Math.max(q[p] || 0, w * g);
+  });
+  por(cs[v] || '', 1);
+  for (let k = v - SUG_JANELA; k <= v + SUG_JANELA; k++) if (k !== v && cs[k]) por(cs[k], 0.45);
+  // A PONTE DOS TEMAS. Êxodo 12 fala de fermento, ázimo e umbral; o louvor de
+  // Páscoa fala de cálice, mosto, lagar e cordeiro — nenhuma palavra igual. Se o
+  // trecho encosta em duas palavras de uma família, a família inteira entra na
+  // busca, e aí os dois se encontram. Duas e não uma: uma só é coincidência.
+  for (const nome in TEMAS.familias) {
+    const fam = TEMAS.familias[nome];
+    let bate = 0;
+    for (const p of fam) if (doTrecho.has(p)) bate++;
+    if (bate < 2) continue;
+    for (const p of fam) { const g = TEMAS.idf[p]; if (g) q[p] = Math.max(q[p] || 0, 0.55 * g); }
   }
-  sugMostradas += 3;
-  pintarSug(todos);
+  return q;
+}
+function calcularRoda() {
+  sugCheia = true;
+  const q = consultaDoVerso(sugVers.livro, sugVers.cap, sugVers.v), nq = normaCons(q);
+  // os louvores que a tabela deu já são a resposta certa: quem se parece com eles
+  // também tem a ver com o versículo, mesmo sem repetir palavra do texto
+  const qb = {}, jaTem = new Set();
+  sugCand.forEach(c => {
+    jaTem.add(c.i);
+    const p = TEMAS.louvores[c.i]; if (!p) return;
+    const n = normasTemas()[c.i];
+    for (const k in p) qb[k] = (qb[k] || 0) + p[k] / n;
+  });
+  const nqb = normaCons(qb), pts = [];
+  for (let i = 0; i < TEMAS.louvores.length; i++) {
+    if (jaTem.has(i) || !LOUVORES[i]) continue;
+    const s = 0.6 * cosTemas(i, q, nq) + 0.4 * cosTemas(i, qb, nqb);
+    if (s > 0) pts.push([i, s]);
+  }
+  pts.sort((a, b) => b[1] - a[1]);
+  if (!pts.length) { montarRoda(); return; }
+  const alto = pts[0][1];
+  // Abaixo de um quinto do melhor não é mais "ter nexo", é ter uma palavra em
+  // comum. O corte de quantidade é generoso de propósito: o mesmo louvor vem
+  // três e quatro vezes (uma por coletânea), e quem junta as cópias é a montagem
+  // da roda — cortar antes disso deixava a roda com meia dúzia de louvores.
+  sugCand = sugCand.concat(pts.filter(a => a[1] >= alto * 0.2).slice(0, SUG_TETO * 8)
+                              .map(a => ({ i: a[0], prox: 0.45 * (a[1] / alto) })));
+  montarRoda();
 }
 
 // ---------- HISTÓRICO ----------
@@ -567,53 +809,224 @@ function selecionarLouvor(i, semProjetar) {
   else marcarSlide();
 }
 // ---- recursos extras do louvor (cifra e animação dos CIAS) ----------------
-// Os dois arquivos são importados pelo menu e ficam na pasta do usuário. Se o
-// operador nunca importou nada, ANIMACOES e CIFRAS ficam vazios e os botões
-// simplesmente não aparecem — nada de botão morto no painel.
+// A animação é importada pelo menu e fica na pasta do usuário; se o operador
+// nunca importou nada, ANIMACOES fica vazio e o botão nem aparece — nada de
+// botão morto no painel.
+// A cifra vem de /api/musico, o MESMO catálogo que o celular usa. Assim a folha
+// que o operador abre no computador e a que o músico lê no celular são a mesma,
+// com os mesmos acordes nas mesmas colunas.
 let ANIMACOES = {}, CIFRAS = {};
 function carregarExtras() {
   fetch('/api/animacoes').then(r => r.json()).then(r => { ANIMACOES = r.indice || {}; atualizarExtras(); }).catch(() => {});
-  fetch('/api/cifras').then(r => r.json()).then(r => { CIFRAS = r.indice || {}; atualizarExtras(); }).catch(() => {});
+  fetch('/api/musico').then(r => r.json()).then(r => { CIFRAS = r.violao || {}; atualizarExtras(); }).catch(() => {});
 }
 function temAnimacao(s) { return !!(s && s.col === 'CIA 2018' && ANIMACOES[String(parseInt(s.num, 10))]); }
 function daAnimacao(s) { return temAnimacao(s) ? ANIMACOES[String(parseInt(s.num, 10))] : null; }
-function temCifra(s) { return !!(s && CIFRAS[chaveLouvor(s)]); }
-function daCifra(s) { return s ? CIFRAS[chaveLouvor(s)] : null; }
+// o catálogo guarda o TOM, e há cifra cujo tom o PDF não declarou (string vazia).
+// Testar o valor esconderia o botão dessas: quem manda é a chave EXISTIR.
+function temCifra(s) { return !!s && CIFRAS[chaveLouvor(s)] !== undefined; }
 
-// Abre a cifra numa janela própria. É PDF: o navegador já sabe abrir, com zoom e
-// rolagem nativos — que é exatamente o que o músico do banquinho precisa para
-// repetir um coro sem depender de quem passa os slides.
-let cifraAtual = null;
-function abrirCifra() {
-  const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
-  const c = daCifra(s);
-  if (!c) { toast('Este louvor não tem cifra importada.'); return; }
-  cifraAtual = { pdf: c.pdf, pag: c.pag, tom: c.tom, titulo: rotuloLouvor(s) };
-  mostrarCifra();
-  est.modoCifra = true; atualizarExtras();
+/* ---------- A CIFRA, DESENHADA AQUI DENTRO ----------
+   Isto abria o PDF da coletânea num iframe. O PDF da Cifrada Nível II tem 93
+   megabytes de página escaneada: mesmo num computador bom demorava, e o da
+   igreja é o mais fraco que existe. Agora o servidor manda só os acordes já
+   extraídos deste louvor — uns dois kilobytes — e quem desenha a folha é o
+   Sistema, na hora.
+
+   As funções abaixo são as MESMAS do controle.html, de propósito. Se o desenho
+   divergisse, o operador e o músico estariam lendo cifras diferentes do mesmo
+   louvor, e ninguém descobriria isso a não ser no meio do ensaio. */
+let cifraDados = null,      // a resposta de /api/cifra do louvor aberto
+    cifraLouvor = null,     // qual louvor está na tela (para descartar resposta atrasada)
+    cifraTom = null,        // o tom IMPRESSO, o ponto de partida do transporte
+    cifraDesloc = 0;        // quantos semitons acima/abaixo do impresso
+
+function escaparCifra(t) {
+  return (t || '').split('&').join('&amp;').split('<').join('&lt;');
 }
-function mostrarCifra() {
-  const c = cifraAtual; if (!c) return;
-  $('#cifra-tit').textContent = c.titulo;
-  const tom = $('#cifra-tom');
-  tom.textContent = c.tom ? 'tom ' + c.tom : '';
-  tom.classList.toggle('oculto', !c.tom);
-  $('#cifra-pag').textContent = 'pág. ' + c.pag;
-  // #toolbar=0 esconde a barra do leitor de PDF: fica só a página, dentro da
-  // nossa moldura, em vez de uma janela de navegador solta por cima do Sistema
-  $('#cifra-frame').src = '/cifras/' + encodeURIComponent(c.pdf) +
-                          '#page=' + c.pag + '&toolbar=0&navpanes=0&view=FitH';
+
+/* Desenha a linha de acordes ACIMA da letra, cada um na coluna que veio do PDF.
+   Em fonte monoespaçada a coluna É o caractere: acorde na coluna 8 fica em cima
+   da 8ª letra. É por isso que a folha não pode usar fonte proporcional — com ela
+   o alinhamento vai embora e a cifra perde a serventia. */
+function linhaDeAcordes(acordes) {
+  if (!acordes || !acordes.length) return '';
+  let fila = '';
+  for (const par of acordes) {
+    const col = par[0], nome = par[1];
+    // encostou no anterior: dois espaços, senão "DbmEb0" sai grudado e o músico
+    // lê um acorde que não existe
+    if (fila.length && fila.length >= col) fila += '  ';
+    while (fila.length < col) fila += ' ';
+    fila += nome;
+  }
+  return '<span class="ac">' + escaparCifra(fila) + '</span>\n';
+}
+
+/* ---------- TRANSPOR: o tom que o músico quiser ----------
+   Como no Cifra Club: os doze tons numa grade, meio tom para cada lado e o
+   restaurar. O deslocamento é só desta tela e do louvor aberto — nada disso
+   mexe no telão nem no que o celular do músico está mostrando. */
+const SEMI = {C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,'E#':5,Fb:4,F:5,'F#':6,Gb:6,
+              G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11,'B#':0,Cb:11};
+const SUS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const BEM = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+/* Sustenido ou bemol: pela armadura do tom de destino, não por gosto. Tons de
+   bemol (F, Bb, Eb, Ab, Db, Gb e suas relativas menores) se escrevem com bemol;
+   o resto com sustenido. Escrever "A#" onde o músico espera "Bb" faz ele parar
+   para pensar no meio do louvor. */
+function usaBemol(tom) {
+  if (!tom) return false;
+  const raiz = tom.replace(/m$/, '');
+  if (raiz.includes('b')) return true;
+  if (raiz.includes('#')) return false;
+  return (tom.endsWith('m') ? ['D','G','C','F','Bb','Eb'] : ['F','Bb','Eb','Ab','Db','Gb'])
+         .includes(raiz);
+}
+function transpor(nota, passos, bemol) {
+  if (!passos) return nota;                 // 0 devolve INTACTO: senão "Eb" viraria "D#"
+  const m = /^([A-G])(#|b)?/.exec(nota || '');
+  if (!m) return nota;
+  const base = m[1] + (m[2] || '');
+  if (!(base in SEMI)) return nota;
+  const tab = bemol ? BEM : SUS;
+  return tab[(SEMI[base] + passos % 12 + 12) % 12] + nota.slice(m[0].length);
+}
+function transporAcorde(a, passos, bemol) {
+  return String(a).split('/').map(p => transpor(p, passos, bemol)).join('/');
+}
+function transporTom(tom, passos, bemol) {
+  if (!tom) return tom;
+  const menor = /m$/.test(tom);
+  return transpor(menor ? tom.slice(0, -1) : tom, passos, bemol) + (menor ? 'm' : '');
+}
+// a grafia certa do tom que está valendo agora (o bemol depende do destino)
+function tomAgora() {
+  return transporTom(cifraTom, cifraDesloc,
+                     usaBemol(transporTom(cifraTom, cifraDesloc, usaBemol(cifraTom))));
+}
+
+function pintarTomCifra() {
+  const cx = $('#cifra-tom-cx'); if (!cx) return;
+  if (!cifraDados || !cifraTom) { cx.innerHTML = ''; return; }
+  cx.innerHTML = '<button class="tom-btn" id="cifra-tom-btn" title="Tocar em outro tom">' +
+                 tomAgora() + '</button>';
+  $('#cifra-tom-btn').onclick = abrirTons;
+}
+
+/* A grade dos doze tons. Escolher "Bb" direto é uma tacada; chegar nele
+   apertando "+" seis vezes são seis. */
+function abrirTons() {
+  if ($('#tom-painel')) { fecharTons(); return; }
+  const menor = /m$/.test(cifraTom || '');
+  const escala = ['A','Bb','B','C','Db','D','Eb','E','F','F#','G','Ab'];
+  const raizAtual = (tomAgora() || '').replace(/m$/, '');
+  let h = '<div class="tom-painel" id="tom-painel"><div class="tom-linha">' +
+          '<button data-d="-1">−½ tom</button><button data-d="1">+½ tom</button></div>' +
+          '<div class="tom-grade">';
+  for (const t of escala) {
+    // mesma nota escrita de outro jeito ainda é a mesma tecla
+    const igual = SEMI[t] === SEMI[raizAtual];
+    h += '<button class="tom-op' + (igual ? ' on' : '') + '" data-t="' + t + '">' +
+         t + (menor ? 'm' : '') + '</button>';
+  }
+  h += '</div>' + (cifraDesloc ? '<button class="tom-restaura" data-z="1">↺ Restaurar o tom impresso</button>' : '') + '</div>';
+  $('#cifra-cab').insertAdjacentHTML('afterend', h);
+  $('#tom-painel').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.d) cifraDesloc += parseInt(b.dataset.d, 10);
+    else if (b.dataset.z) cifraDesloc = 0;
+    else if (b.dataset.t) {
+      const raiz = (cifraTom || '').replace(/m$/, '');
+      cifraDesloc = ((SEMI[b.dataset.t] - SEMI[raiz]) % 12 + 12) % 12;
+      if (cifraDesloc > 6) cifraDesloc -= 12;      // −2 em vez de +10: o músico lê melhor
+    }
+    fecharTons(); redesenhar();
+  };
+}
+function fecharTons() { const p = $('#tom-painel'); if (p) p.remove(); }
+
+function redesenhar() {
+  if (!cifraDados) return;
+  // guarda onde a folha estava: trocar de tom no meio do terceiro verso não pode
+  // jogar quem está lendo de volta para o começo da página
+  const f = $('#cifra-folha'), y = f ? f.scrollTop : 0;
+  desenharFolha(cifraDados);
+  if (f) f.scrollTop = y;
+}
+
+function desenharFolha(d) {
+  cifraDados = d;
+  const f = $('#cifra-folha');
+  cifraTom = d.violao ? (d.violao.tom || '') : null;
+  const bemol = usaBemol(tomAgora());
+  let cab = '';
+  if (cifraDesloc) cab = '<p class="cab"><b>' + (cifraDesloc > 0 ? '+' : '') + cifraDesloc +
+    (Math.abs(cifraDesloc) > 1 ? ' semitons' : ' semitom') + '</b> do impresso (' +
+    (cifraTom || 'tom não declarado') + ')</p>';
+  let corpo = '';
+  if (d.violao && d.violao.linhas && d.violao.linhas.length) {
+    for (const l of d.violao.linhas) {
+      const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], cifraDesloc, bemol)]);
+      corpo += linhaDeAcordes(a) + escaparCifra(l.t) + '\n';
+    }
+  } else {
+    corpo = 'Este louvor não tem cifra.';
+  }
+  f.innerHTML = cab + '<pre>' + corpo + '</pre>';
+  pintarTomCifra();
+}
+
+/* Tamanho da letra da folha: quem lê esta tela muitas vezes está com o violão na
+   mão, um metro atrás do monitor. */
+let cifraFonte = 14;
+function aplicarFonteCifra() {
+  const f = $('#cifra-folha'); if (f) f.style.setProperty('--cf', cifraFonte + 'px');
+}
+function ajustarFonteCifra(d) {
+  cifraFonte = clamp(cifraFonte + d, 10, 30);
+  aplicarFonteCifra();
+  Guardar.gravar('icm_cifra_fonte', cifraFonte);
+}
+// Ao contrário dos outros A−/A+, este tamanho fica GRAVADO ao lado do programa —
+// e por isso é o único que o "Restaurar" precisa apagar de verdade. Sem esta
+// função, quem tivesse posto a folha em 30px continuava em 30px depois de mandar
+// restaurar os tamanhos, e até depois do "Restaurar tudo".
+function fonteCifraPadrao() {
+  cifraFonte = 14;
+  aplicarFonteCifra();
+  Guardar.gravar('icm_cifra_fonte', 14);
+}
+
+async function abrirCifra() {
+  const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
+  if (!temCifra(s)) { toast('Este louvor não tem cifra.'); return; }
+  cifraLouvor = s; cifraDados = null; cifraTom = null;
+  cifraDesloc = 0;                       // louvor novo começa no tom impresso
+  fecharTons();
+  $('#cifra-tit').textContent = rotuloLouvor(s);
+  $('#cifra-tom-cx').innerHTML = '';
+  $('#cifra-folha').innerHTML = '<p class="cab">Carregando…</p>';
   $('#cifra-ov').classList.remove('oculto');
   window.Icones && window.Icones.aplicar($('#cifra-ov'));
-}
-function virarPaginaCifra(d) {
-  if (!cifraAtual) return;
-  cifraAtual.pag = Math.max(1, cifraAtual.pag + d);   // o louvor pode ocupar 2 páginas
-  mostrarCifra();
+  aplicarFonteCifra();
+  est.modoCifra = true; atualizarExtras();
+  try {
+    // em=C pede a folha de VIOLÃO, a de acordes. Os cadernos melódicos (Bb, Eb,
+    // F) são para o músico ler no próprio celular, cada um no dele.
+    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) + '?em=C')
+                    .then(r => r.json());
+    if (cifraLouvor !== s) return;   // ele já abriu outro louvor: esta resposta não vale mais
+    desenharFolha(d);
+  } catch (e) {
+    $('#cifra-folha').innerHTML = '<p class="cab">Não consegui carregar a cifra deste louvor.</p>';
+  }
 }
 function fecharCifra() {
   $('#cifra-ov').classList.add('oculto');
-  $('#cifra-frame').src = 'about:blank';   // solta o PDF da memória
+  fecharTons();
+  cifraDados = null; cifraLouvor = null;   // solta a folha da memória
   est.modoCifra = false; atualizarExtras();
 }
 
@@ -635,7 +1048,10 @@ function atualizarExtras() {
   bc.classList.toggle('oculto', !cifra);
   ba.classList.toggle('oculto', !anim);
   barra.classList.toggle('oculto', !cifra && !anim);
-  bc.classList.toggle('on', cifra && est.modoCifra);
+  // o "!!" não é enfeite: est.modoCifra nasce indefinido, e toggle(classe,
+  // undefined) INVERTE em vez de desligar — o botão acendia sozinho a cada
+  // louvor escolhido, dizendo que a cifra estava aberta quando não estava
+  bc.classList.toggle('on', !!(cifra && est.modoCifra));
   // a animação vem LIGADA por natureza: é assim que o louvor de CIAS se apresenta
   ba.classList.toggle('on', anim && est.modoAnim !== false);
 }
@@ -1388,6 +1804,7 @@ function carregarDadosUsuario() {
   MEUS = Guardar.ler('icm_meus_louvores', []) || [];
   CUSTOM = Guardar.ler('icm_fundos', []) || [];
   OCULTOS = Guardar.ler('icm_ocultos', []) || [];
+  cifraFonte = clamp(parseInt(Guardar.ler('icm_cifra_fonte', 14), 10) || 14, 10, 30);
   if (!IGREJA.cultos) IGREJA.cultos = CULTOS_PADRAO.map(c => Object.assign({}, c));
 }
 carregarDadosUsuario();
@@ -1559,7 +1976,7 @@ function aplicarReset(o) {
     Guardar.gravar('icm_espera', null);
     renderFundos();
   }
-  if (o === 'tamanhos' || o === 'tudo') { est.escalaLouvor = est.escalaVers = est.escalaTexto = 1; atualizarTamLabel(); }
+  if (o === 'tamanhos' || o === 'tudo') { est.escalaLouvor = est.escalaVers = est.escalaTexto = 1; atualizarTamLabel(); fonteCifraPadrao(); }
   if (o === 'louvores' || o === 'tudo') { MEUS = []; salvarMeus(); recarregarLouvores(); renderMeus(); }
   if (o === 'slides' || o === 'tudo') {   // apaga as apresentações importadas
     SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides('');
@@ -1584,10 +2001,10 @@ function aplicarReset(o) {
   toast('Configurações restauradas ao padrão.');
 }
 // caixa de confirmação (nada destrutivo acontece sem o operador confirmar)
-function confirmar(msg, aoConfirmar) {
+function confirmar(msg, aoConfirmar, rotulo) {
   const ov = document.createElement('div'); ov.className = 'ajuda-overlay';
   ov.innerHTML = '<div class="ajuda-box" style="max-width:430px"><h3>Confirmar</h3><p>' + msg + '</p>' +
-    '<div class="ajuda-btns"><button class="big-btn vermelho" id="cf-sim">Sim, restaurar</button>' +
+    '<div class="ajuda-btns"><button class="big-btn vermelho" id="cf-sim">' + (rotulo || 'Sim, restaurar') + '</button>' +
     '<button class="big-btn" id="cf-nao">Cancelar</button></div></div>';
   document.body.appendChild(ov);
   ov.querySelector('#cf-nao').onclick = () => ov.remove();
@@ -1695,6 +2112,82 @@ function mostrarAddFundo() {
   };
 }
 
+/* ---------- ATUALIZAÇÃO: buscar, avisar e instalar ----------
+   A busca é um pedido leve ao GitHub (só o número da versão). A instalação
+   baixa SÓ o programa (~58 MB): o conteúdo pesado mora nos dados do usuário
+   e nenhuma atualização baixa ele de novo. */
+function ligarAtualizacao() {
+  const bb = $('#btn-atualizar'), ba = $('#btn-atu-auto');
+  if (!bb || !ba) return;
+  const pintarAuto = () => { ba.textContent = Guardar.ler('atu_auto', true) ? 'Ligado' : 'Desligado'; };
+  pintarAuto();
+  ba.onclick = () => { Guardar.gravar('atu_auto', !Guardar.ler('atu_auto', true)); pintarAuto(); };
+  bb.onclick = () => verificarAtualizacao(false);
+  // ao abrir: pesquisa em silêncio, se o dono deixou ligado. Sem internet,
+  // nada aparece — a igreja não pode ver erro só por não ter internet.
+  if (Guardar.ler('atu_auto', true)) setTimeout(() => verificarAtualizacao(true), 5000);
+}
+async function verificarAtualizacao(silenciosa) {
+  const st = $('#atu-status');
+  if (!silenciosa && st) st.textContent = 'Procurando…';
+  let r = null;
+  try { r = await fetch('/api/atualizacao').then(x => x.json()); } catch (e) {}
+  if (!r || !r.ok) {
+    if (!silenciosa && st) st.textContent = 'Sem internet agora. O Sistema segue funcionando normal.';
+    return;
+  }
+  if (!r.tem) {
+    if (!silenciosa && st) st.textContent = 'Você já está na versão mais nova (' + r.atual + ').';
+    return;
+  }
+  if (st) st.textContent = 'Existe a versão ' + r.nova + ' (você está na ' + r.atual + ').';
+  if (silenciosa) { toast('Há uma versão nova do Sistema (' + r.nova + ') — veja em Configurações › Sistema.'); return; }
+  confirmar('Existe uma versão nova (<b>' + r.nova + '</b>). Atualizar agora?<br><br>' +
+            'O Sistema vai fechar e reabrir sozinho. Suas coisas não são apagadas, ' +
+            'e as animações e cifras não baixam de novo.', async () => {
+    await fetch('/api/atualizar', { method: 'POST', body: '{}' });
+    const t = setInterval(async () => {
+      let a = null;
+      try { a = await fetch('/api/atualizar').then(x => x.json()); } catch (e) { return; }
+      if (!a) return;
+      if (a.erro) { clearInterval(t); if (st) st.textContent = a.erro; return; }
+      if (st) st.textContent = (a.txt || 'Baixando…') + (a.pct ? ' — ' + a.pct + '%' : '');
+      if (a.fim) clearInterval(t);
+    }, 800);
+  }, 'Atualizar agora');
+}
+
+/* ---------- EXPORTAR PARA PENDRIVE ----------
+   Grava no pendrive o instalador guardado + a pasta Conteudo (animações,
+   cifras, melodias, configurações, louvores e fundos próprios). No outro
+   computador são dois cliques: o instalador copia a pasta sozinho. */
+function ligarExportarUsb() {
+  const st = $('#usb-status'), b = $('#btn-usb');
+  if (!b) return;
+  b.onclick = async () => {
+    let r = null;
+    try { r = await fetch('/api/pendrives').then(x => x.json()); } catch (e) {}
+    const us = (r && r.pendrives) || [];
+    if (!us.length) { st.textContent = 'Nenhum pendrive plugado. Coloque um e clique de novo.'; return; }
+    // mais de um plugado: vai no de mais espaço livre, dizendo qual foi
+    const alvo = us.reduce((a, b2) => (b2.livre > a.livre ? b2 : a), us[0]);
+    const gb = (alvo.livre / 1073741824).toFixed(1);
+    confirmar('Exportar o Sistema para <b>' + alvo.nome + '</b> (' + alvo.letra.slice(0, 2) +
+              ', ' + gb + ' GB livres)?<br><br>Vai junto: o instalador, as animações, as ' +
+              'cifras, as melodias e as suas configurações.', async () => {
+      await fetch('/api/exportar-usb', { method: 'POST', body: JSON.stringify({ letra: alvo.letra }) });
+      const t = setInterval(async () => {
+        let a = null;
+        try { a = await fetch('/api/exportar-usb').then(x => x.json()); } catch (e) { return; }
+        if (!a) return;
+        if (a.erro) { clearInterval(t); st.textContent = a.erro; return; }
+        st.textContent = (a.txt || 'Copiando…') + (a.pct ? ' — ' + a.pct + '%' : '');
+        if (a.fim) clearInterval(t);
+      }, 800);
+    }, 'Exportar');
+  };
+}
+
 function ligarEventos() {
   $$('.tab').forEach(t => t.onclick = () => trocarAba(t.dataset.aba));
   $('#btn-estilo').onclick = trocarEstilo;
@@ -1730,8 +2223,8 @@ function ligarEventos() {
     histDias = +b.dataset.dias; pintarPainel();
   });
   const cx = $('#cifra-x'); if (cx) cx.onclick = fecharCifra;
-  const ca = $('#cifra-ant'); if (ca) ca.onclick = () => virarPaginaCifra(-1);
-  const cp = $('#cifra-prox'); if (cp) cp.onclick = () => virarPaginaCifra(1);
+  const cme = $('#cifra-menor'); if (cme) cme.onclick = () => ajustarFonteCifra(-1);
+  const cma = $('#cifra-maior'); if (cma) cma.onclick = () => ajustarFonteCifra(+1);
   const cov = $('#cifra-ov'); if (cov) cov.onclick = e => { if (e.target === cov) fecharCifra(); };
   const ban = $('#btn-anim'); if (ban) ban.onclick = alternarAnimacao;
   carregarExtras();                            // cifras e animações que já foram importadas
@@ -1751,16 +2244,28 @@ function ligarEventos() {
   $('#bv-pular').onclick = () => { salvarIgreja(); aplicarNomeIgreja(); fecharBemVindo(); };
   $('#btn-rever').onclick = () => { fecharMenu(); abrirBemVindo(true); };
   const ir = $('#ini-rever'); if (ir) ir.onclick = () => { fecharMenu(); abrirBemVindo(true); };
+  ligarAtualizacao();
+  ligarExportarUsb();
+  const bc = $('#btn-contato');
+  if (bc) bc.onclick = () => {
+    const mail = 'samuelsaxdiesel@gmail.com';
+    try { navigator.clipboard.writeText(mail); } catch (e) {}
+    toast('E-mail copiado: ' + mail);
+  };
   $$('[data-ir]').forEach(b => b.onclick = () => menuSecao(b.dataset.ir));
   $$('[data-reset]').forEach(b => b.onclick = () => resetar(b.dataset.reset));
   document.addEventListener('keydown', e => {
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
-    // a cifra aberta também segura as teclas: setinha ali vira página, não slide
+    // a cifra aberta também segura as teclas: ali a seta rola a folha. Se ela
+    // passasse adiante, o telão trocaria de slide com o operador olhando a cifra.
     const cif = $('#cifra-ov');
     if (cif && !cif.classList.contains('oculto')) {
-      if (e.key === 'Escape') fecharCifra();
-      else if (e.key === 'ArrowRight') virarPaginaCifra(1);
-      else if (e.key === 'ArrowLeft') virarPaginaCifra(-1);
+      if (e.key === 'Escape') { fecharCifra(); return; }
+      const f = $('#cifra-folha'); if (!f) return;
+      const salto = { ArrowDown: 60, ArrowUp: -60, ' ': f.clientHeight * 0.9,
+                      PageDown: f.clientHeight * 0.9, PageUp: -f.clientHeight * 0.9,
+                      Home: -1e7, End: 1e7 }[e.key];
+      if (salto !== undefined) { e.preventDefault(); f.scrollTop += salto; }
       return;
     }
     const modal = document.querySelector('.ajuda-overlay, .menu-overlay:not(.oculto), .bv-overlay:not(.oculto)');

@@ -39,7 +39,9 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--papel);color:var(--texto);font-family:'Outfit',system-ui,sans-serif;
      font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
-img{max-width:100%;display:block}
+/* height:auto e' o que impede a foto de esticar no celular: sem ele a largura
+   encolhe pelo max-width mas a ALTURA fica presa no atributo width/height */
+img{max-width:100%;height:auto;display:block}
 .faixa{max-width:1080px;margin:0 auto;padding:0 22px}
 
 /* ---------- topo: o telao primeiro. e' o que a pessoa quer ver ---------- */
@@ -159,7 +161,15 @@ a{color:var(--ouro)}
       <td>17 MB</td>
       <td>Você está com internet, ou quer passar o programa adiante.
           Ele pergunta se é para instalar neste computador ou copiar para um pendrive.
-          <small>Cabe no WhatsApp.</small></td>
+          <small>Cabe no WhatsApp. Se o computador já tiver as animações e cifras,
+          ele copia tudo junto para o pendrive.</small></td>
+    </tr>
+    <tr>
+      <td><b>Sistema completo (tudo dentro).zip</b><small>com as animações e cifras</small></td>
+      <td>637 MB</td>
+      <td>A versão com <b>tudo</b>: programa, animações dos CIAS, cifras e cadernos
+          de melodia. Descompacte e rode o instalador com a pasta Conteudo do lado.
+          <small><a href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Sistema-completo.zip">Baixar o pacote completo</a></small></td>
     </tr>
   </table></div>
 </section>

@@ -72,6 +72,17 @@ TEMAS = {
     "missao":       "ide evangelho anunciar pregar nacoes povos missionario mensagem",
     "gratidao":     "gratidao grato agradecer bondade benefico benignidade misericordias",
     "santidade":    "santo santidade puro pureza limpar purificar consagrar consagracao altar",
+    # A Páscoa e a Santa Ceia são o mesmo assunto para a igreja, e o louvor quase
+    # nunca repete a palavra do texto bíblico: Êxodo 12 fala de fermento, ázimo e
+    # umbral; o louvor fala de cálice, mosto, lagar e cordeiro. Sem esta ponte,
+    # "NO GETSÊMANI JESUS OROU" — que é um louvor de Páscoa do começo ao fim —
+    # não encostava em Êxodo 12 por nenhuma palavra igual.
+    "ceia":         "pascoa cordeiro imolado azimos asmos fermento levedado umbrais ceia calice "
+                    "mosto lagar videira vinho pao mesa memorial partilhamos bebemos celebramos",
+    "cativeiro":    "egito farao escravidao escrava jugo cativeiro cativo libertados libertar "
+                    "livramento deserto travessia mar vermelho canaa peregrinacao",
+    "ressurreicao": "ressuscitou ressurreicao ressuscitado sepulcro tumulo venceu vencida morte "
+                    "vivo vive terceiro ergueu levantou",
 }
 
 

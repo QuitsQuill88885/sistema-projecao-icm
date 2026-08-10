@@ -410,8 +410,9 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .item small.etq-col{color:#7f9ac0;font-size:10px;letter-spacing:.4px;margin-right:6px}
 
 /* ---------- CIFRA dentro do Sistema ----------
-   Ela abria numa janela crua do navegador, com a barra de ferramentas do leitor
-   de PDF por cima — justo o tipo de coisa que este programa existe para evitar. */
+   Aqui a folha é DESENHADA a partir dos acordes já extraídos. Antes era o PDF
+   escaneado da coletânea num iframe — dezenas de megabytes que o computador da
+   igreja levava um tempão para abrir, com a barra do leitor de PDF por cima. */
 .cifra-ov{position:fixed;inset:0;background:#060d1ae0;backdrop-filter:blur(3px);z-index:320;
           display:flex;align-items:center;justify-content:center;padding:20px}
 .cifra-ov.oculto{display:none}
@@ -422,16 +423,42 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
            border-bottom:1px solid var(--borda)}
 .cifra-cab b{font-size:14px;color:#eaf0fb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .cifra-cab .ico{color:#d4761c;font-size:17px}
-.cifra-tom{background:#a8570f;color:#fff;border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:700}
-.cifra-tom.oculto{display:none}
-.cifra-pag{font-size:11.5px;color:#8fa8cf;font-variant-numeric:tabular-nums;min-width:78px;text-align:right}
-.cifra-nav{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:7px;
-           padding:4px 11px;font-size:15px;line-height:1}
-.cifra-nav:hover{background:var(--hover)}
 .cifra-x{background:transparent;color:#8fa8cf;font-size:16px;padding:4px 8px;border-radius:7px}
 .cifra-x:hover{background:var(--vermelho);color:#fff}
-/* #toolbar=0 tira a barra do leitor de PDF; o fundo branco é a própria página */
-.cifra-cx iframe{flex:1;width:100%;border:0;background:#fff}
+.cifra-zoom{display:flex;gap:6px;align-items:center}
+.cifra-zoom button{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:7px;width:30px;height:28px;font-size:13px;font-weight:600}
+.cifra-zoom button:hover{background:var(--hover)}
+/* a folha. Aqui QUEM ROLA é ela, porque a caixa tem altura fixa na tela. */
+.folha{flex:1;overflow:auto;padding:14px 16px 26px;background:var(--fundo)}
+/* monoespaçada de propósito: é ela que mantém o acorde em cima da sílaba certa.
+   Com fonte proporcional o alinhamento vai embora e a cifra perde a serventia. */
+.folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
+  font-size:var(--cf,14px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre}
+.folha .ac{color:var(--ouro);font-weight:700}
+.folha .cab{color:#7f9ac0;font-size:12px;margin:0 0 10px;line-height:1.5}
+.folha .cab b{color:var(--ouro)}
+/* o seletor de tom, no formato que o músico já conhece do Cifra Club: o tom
+   atual vira botão, e o botão abre a grade dos doze */
+.tom-cx{display:flex;gap:4px;align-items:center}
+.tom-btn{background:#16233c;border:1px solid var(--ouro);color:var(--ouro);border-radius:8px;
+  padding:5px 13px;font-size:13.5px;font-weight:700;min-width:46px}
+.tom-btn:hover{background:#1b2941}
+.tom-painel{background:#101d33;border-bottom:1px solid var(--borda);padding:10px 14px;
+  display:flex;flex-direction:column;gap:7px}
+.tom-linha{display:flex;gap:7px}
+.tom-linha button{flex:1;background:#1b2941;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:8px;padding:8px;font-size:12.5px;font-weight:600}
+.tom-linha button:hover{background:var(--hover)}
+/* doze colunas: no computador a caixa é larga, e a grade inteira cabe numa fileira */
+.tom-grade{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+.tom-op{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
+  padding:9px 2px;font-size:12.5px;font-weight:600}
+.tom-op:hover{background:var(--hover)}
+.tom-op.on{background:var(--ouro);color:#101d33;border-color:var(--ouro)}
+.tom-restaura{background:none;border:1px solid var(--borda);color:#9db3d6;border-radius:8px;
+  padding:8px;font-size:12px}
+.tom-restaura:hover{background:var(--hover);color:#cfe0f5}
 
 /* ---------- PAINEL dos louvores ---------- */
 .pn-filtros{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap}

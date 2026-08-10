@@ -7,22 +7,31 @@ const t=P.get('t')||'louvor', e=P.get('e')||'mapa';
 const Y='';
 const amostras={
   // reproduz o slide oficial do Maanaim (IMG_0298): 9 linhas, sem título
-  maanaim:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',tam:6.4,linhas:[
+  maanaim:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',tam:5.75,linhas:[
     'PURIFICA-ME, SENHOR,','COM TEU SANGUE REMIDOR.','JUSTIFICA-ME, JESUS,','COM ESTE SANGUE',
     'QUE UM DIA DERRAMASTE','NAQUELA CRUZ,','SÓ POR ME AMAR','E VIDA ETERNA DAR.']},
   // IMG_0302: título na faixa + 5 linhas
-  titulo:{modo:'louvor',fundo:'fundos/louvor1_'+e+'.jpg',titulo:'131 - ÀS VEZES, ALGUÉM ME PERGUNTA',tam:6.4,linhas:[
+  titulo:{modo:'louvor',fundo:'fundos/louvor1_'+e+'.jpg',titulo:'131 - ÀS VEZES, ALGUÉM ME PERGUNTA',tam:5.75,linhas:[
     'ÀS VEZES, ALGUÉM ME PERGUNTA','PORQUE VIVO ALEGRE E SEMPRE A CANTAR;','RESPONDO: SOU MUITO FELIZ',
     'PORQUE JESUS CRISTO','VEIO EM MIM MORAR.']},
   // IMG_0304: CORO (2X) amarelo + (2X) no fim da linha
-  coro:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',label:'CORO (2X)',tam:6.4,linhas:[
+  coro:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',label:'CORO (2X)',tam:5.75,linhas:[
     'NÃO SOU EU MAIS QUEM VIVE','MAS CRISTO VIVE EM MIM,','E A VIDA QUE AGORA VIVO','EU A VIVO PELA FÉ. '+Y+'(2X)'+Y]},
   // IMG_0301: (BIS) amarelo no meio da linha
-  bis:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',tam:6.4,linhas:[
+  bis:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',tam:5.75,linhas:[
     'JESUS CRISTO MUDOU MEU VIVER '+Y+'(BIS)'+Y,'É A LUZ QUE ILUMINA MEU SER,','SIM, JESUS CRISTO MUDOU MEU VIVER.']},
   // IMG_0303: versículo
   biblia:{modo:'biblia',fundo:'fundos/biblia_'+e+'.jpg',ref:'Mateus 5:44b',tam:5.55,linhas:[
     '“...Amai a vossos inimigos, bendizei os que vos maldizem, fazei bem aos que vos odeiam, e orai pelos que vos maltratam e vos perseguem;”']},
+  // IMG_0364: louvor 129 na transmissão oficial — 7 linhas com faixa de título.
+  // É a régua do Samuel para entrelinha/tamanho/proporção (10/08/2026).
+  l129:{modo:'louvor',fundo:'fundos/louvor1_'+e+'.jpg',titulo:'129 - FELICIDADE É TER CRISTO AO MEU LADO',tam:5.75,linhas:[
+    'FELICIDADE É TER CRISTO AO MEU','LADO E POR ELE SER GUARDADO,','TER MEU NOME ESCRITO NO CÉU;',
+    'MEU NOME ESTÁ ESCRITO','NAS MÃOS DO MEU JESUS,','QUANDO MORREU ALI NA CRUZ,','E ASSIM MUI FELIZ SOU EU.']},
+  // IMG_0365/0368: o CORO do 129 — 8 linhas + rótulo, sem faixa
+  l129coro:{modo:'louvor',fundo:'fundos/louvor2_'+e+'.jpg',titulo:'',label:'CORO',tam:5.75,linhas:[
+    'FELICIDADE É POSSUIR O MEU JESUS','E TODO DIA LEVAR A CRUZ','ATÉ O DIA EM QUE ELE VOLTAR;',
+    'FELICIDADE É SER LAVADO','NO SANGUE DE JESUS,','E SEMPRE ANDAR NA SUA LUZ,','ATÉ O DIA EM QUE ELE VOLTAR.']},
 };
 const f=document.getElementById('f');
 f.onload=()=>setTimeout(()=>{const s=Object.assign({estilo:e},amostras[t]);f.contentWindow.postMessage(JSON.stringify(s),'*');},400);

@@ -64,9 +64,17 @@ html,body{height:100%;background:#000;overflow:hidden}
 #bib-ref{color:#f5d76e;font-size:6.9cqh}
 #lou-tit{color:#fff3a3;font-size:6.4cqh}
 #bib-txt{font-family:'Sistema A4','Sistema A3',sans-serif;color:#fff;font-style:italic;font-size:5.55cqh;flex-direction:column;gap:.15em}
-#lou-txt{font-family:'Sistema A3',sans-serif;color:#fff;font-size:6.4cqh;flex-direction:column;text-transform:uppercase}
-#lou-txt .bloco{text-align:left;display:inline-block;width:76%}   /* largura fixa: borda esquerda alinhada em TODOS os slides (margem ~12% p/ centralizar) */
-#lou-txt .bloco .linha{display:block;margin:.16em 0}
+/* CALIBRADO NA TRANSMISSÃO OFICIAL (louvor 129, fotos de 10/08/2026, medidas
+   por script, não no olho): letra 4,36% da altura da tela, avanço entre
+   linhas 11,05%, bloco começando a 19% da largura. Dava 6.4cqh com pouco ar;
+   o oficial é letra um pouco MENOR com MUITO mais respiro (avanço = 2,5x a
+   letra). Os três números abaixo saem dessas medidas:
+     5.75cqh  -> maiúscula visual 4,36% (com o scaleY 1.06)
+     1.815    -> avanço 11,05% (1.815em x 1.06)
+     15.2%    -> borda esquerda do bloco a 19% da tela  */
+#lou-txt{font-family:'Sistema A3',sans-serif;color:#fff;font-size:5.75cqh;flex-direction:column;text-transform:uppercase;align-items:flex-start}
+#lou-txt .bloco{text-align:left;display:inline-block;width:76%;margin-left:15.2%}
+#lou-txt .bloco .linha{display:block;line-height:1.815;margin:0}
 #lou-txt .label-coro{display:block;color:#ffff00;font-style:italic;font-size:.72em;letter-spacing:1px;margin-bottom:.12em}
 #lou-txt .mk{color:#ffff00}
 /* wrapper de medição p/ auto-ajuste (shrink-to-fit) */
@@ -86,12 +94,12 @@ html,body{height:100%;background:#000;overflow:hidden}
 .e-limpo #bib-ref{top:2.2%;height:14.5%}
 .e-limpo #bib-txt{top:22%;height:74%}
 .e-limpo #lou-tit{top:2.2%;height:14.5%;left:14.5%;right:1.5%}
-.e-limpo #lou-txt{top:17%;height:70%}
+.e-limpo #lou-txt{top:20%;height:70%}   /* centro a 55%: bloco oficial vai de 19,6% a 90,3% */
 /* ---- ESTILO MAPA (mundo): faixa Bíblia 16.5%, Louvor 3% ---- */
 .e-mapa #bib-ref{top:16.5%;height:10%}
 .e-mapa #bib-txt{top:27.5%;height:70%}
 .e-mapa #lou-tit{top:3%;height:9%;left:13.5%;right:1.5%}
-.e-mapa #lou-txt{top:14%;height:74%}
+.e-mapa #lou-txt{top:18%;height:74%}   /* centro a 55%: bloco oficial vai de 19,6% a 90,3% */
 /* ---- MULTI-VERSÍCULO: vários juntos, referência dourada + texto branco itálico ---- */
 #bib-multi{font-family:'Sistema A3',sans-serif;flex-direction:column;align-items:center;
            justify-content:center;text-align:left;padding:0 6% 0 8%}
@@ -156,7 +164,9 @@ function fit(box, cqh, escala, crescer, linhasRef){
   let base = Math.max(6, cqh/100*tela.clientHeight * (escala || 1));
   // linhasRef = maior slide do louvor: todos os slides ficam no MESMO tamanho (não "pula")
   if(linhasRef > 0){
-    const teto = box.clientHeight / (linhasRef * 1.42);
+    // 1.815 = o avanço de linha do louvor (line-height do .bloco .linha);
+    // tem que andar JUNTO com o CSS, senão o teto mente
+    const teto = box.clientHeight / (linhasRef * 1.815);
     if(teto < base) base = Math.max(6, teto);
   }
   let px = base;
@@ -216,6 +226,13 @@ function aplicar(e){
     else if(e.modo==='louvor'){
       fundo(e.fundo);
       if(e.titulo){ el.tit.style.display='flex'; el.tit.textContent=e.titulo; }
+      // Sem a faixa do título o bloco oficial SOBE: na transmissão as linhas
+      // vão de 18,2% a 88,9% (rótulo CORO acima delas), contra 19,6%–90,3%
+      // com faixa. Sem esta folga o slide de CORO (rótulo + 7 linhas) não
+      // cabia e o auto-ajuste encolhia a letra — media 8,8% de avanço na tela
+      // quando o oficial mantém os mesmos 11,05% do slide com faixa.
+      el.lou.style.top = e.titulo ? '' : '9%';
+      el.lou.style.height = e.titulo ? '' : '82%';
       el.lou.style.display='flex'; el.lou.className='txt';
       el.lou.innerHTML=''; const bloco=document.createElement('div'); bloco.className='bloco';
       if(e.label){const lb=document.createElement('span');lb.className='label-coro';lb.textContent=e.label;bloco.appendChild(lb);}

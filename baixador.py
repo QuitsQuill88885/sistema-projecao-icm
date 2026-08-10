@@ -109,6 +109,57 @@ def pasta_downloads():
     return palpite if os.path.isdir(palpite) else os.path.expanduser("~")
 
 
+# As pastas de conteúdo pesado que o instalador NÃO carrega dentro do .exe
+# (juntas passam de 580 MB). Se ESTE computador as tem, a exportação leva
+# junto, numa pasta "Conteudo" ao lado do instalador. Foi a falta disto que
+# fez as animações dos CIAS nunca chegarem à igreja: o pendrive levava só o
+# programa, e o programa sem a pasta instala calado, sem os botões.
+PASTAS_CONTEUDO = ("animacoes", "cifras", "melodias")
+
+
+def conteudo_local():
+    """[(nome, caminho, bytes)] do conteúdo que este computador tem para dar."""
+    base = os.path.join(os.environ.get("APPDATA") or "", "Sistema Projecao")
+    achadas = []
+    for nome in PASTAS_CONTEUDO:
+        p = os.path.join(base, nome)
+        if not os.path.isdir(p):
+            continue
+        total = 0
+        for raiz, _sub, arqs in os.walk(p):
+            for a in arqs:
+                try:
+                    total += os.path.getsize(os.path.join(raiz, a))
+                except OSError:
+                    pass
+        if total > 4096:        # pasta só com o LEIA-ME.txt não é conteúdo
+            achadas.append((nome, p, total))
+    return achadas
+
+
+def copiar_conteudo(pasta, achadas, progresso):
+    """Copia as pastas de conteúdo para "Conteudo" ao lado do instalador.
+
+    progresso recebe a fração 0..1 do total de bytes já copiado."""
+    destino = os.path.join(pasta, "Conteudo")
+    total = sum(t for _n, _p, t in achadas) or 1
+    feito = 0
+    for nome, origem_pasta, _t in achadas:
+        for raiz, _sub, arqs in os.walk(origem_pasta):
+            rel = os.path.relpath(raiz, origem_pasta)
+            alvo = os.path.join(destino, nome) if rel == "." \
+                else os.path.join(destino, nome, rel)
+            os.makedirs(alvo, exist_ok=True)
+            for a in arqs:
+                de = os.path.join(raiz, a)
+                shutil.copy2(de, os.path.join(alvo, a))
+                try:
+                    feito += os.path.getsize(de)
+                except OSError:
+                    pass
+                progresso(feito / float(total))
+
+
 def pendrives():
     """Lista os pendrives plugados agora: [{'letra','nome','livre'}].
 
@@ -474,17 +525,44 @@ class Api:
 
             alvo = os.path.join(pasta, "Instalar o Sistema.exe")
             baixar(alvo, self._p)
-            self._p(95, "Conferindo…")
-            self._explicar(pasta)
+
+            # Se ESTE computador tem as animações, cifras e melodias, elas vão
+            # junto — é a única forma de chegarem ao outro computador, porque
+            # são pesadas demais para viajar dentro do .exe ou pela internet
+            # da igreja. Se não couberem, o instalador vai mesmo assim, e o
+            # aviso diz com todas as letras o que ficou para trás.
+            achadas = conteudo_local()
+            levou, faltou = [], 0
+            if achadas:
+                precisa = sum(t for _n, _p2, t in achadas)
+                livre2 = espaco_livre(pasta)
+                if 0 <= livre2 < precisa + 20 * 1024 * 1024:
+                    faltou = precisa + 20 * 1024 * 1024 - livre2
+                else:
+                    self._p(90, "Levando as animações, cifras e melodias…")
+                    copiar_conteudo(pasta, achadas,
+                                    lambda x: self._p(90 + int(x * 8),
+                                                      "Levando as animações, cifras e melodias…"))
+                    levou = [n for n, _p2, _t in achadas]
+
+            self._p(99, "Conferindo…")
+            self._explicar(pasta, levou)
             self._p(100, "Pronto!")
             self.caminho = alvo
             onde = ("no pendrive" if tipo == "usb" else
                     "na pasta Downloads" if tipo == "downloads" else "na pasta escolhida")
             self.msg = ("O instalador completo está %s. Leve para o outro "
                         "computador e execute — ele <b>não precisa de internet</b>." % onde)
+            if levou:
+                self.msg += (" Foi junto a pasta <b>Conteudo</b> (%s) — leve os "
+                             "dois juntos, um ao lado do outro." % ", ".join(levou))
+            elif faltou:
+                self.msg += (" <b>Atenção:</b> as animações e cifras NÃO couberam "
+                             "— faltaram %s livres. O Sistema instala sem elas."
+                             % tamanho_curto(faltou))
         return self._rodar(tarefa)
 
-    def _explicar(self, pasta):
+    def _explicar(self, pasta, levou=()):
         """Deixa um bilhete ao lado do .exe. Quem recebe o pendrive na igreja
         muitas vezes não recebe explicação junto."""
         try:
@@ -499,7 +577,12 @@ class Api:
                     "  3. Espere a barrinha encher e clique em Abrir o Sistema\r\n\r\n"
                     "Nao precisa de internet. Nao precisa instalar mais nada.\r\n"
                     "Ja vem com os louvores, a Biblia inteira e os fundos.\r\n\r\n"
-                    "SE O WINDOWS AVISAR\r\n"
+                    + ("A pasta \"Conteudo\" que veio junto tem as animacoes dos\r\n"
+                       "CIAS, as cifras e as melodias. DEIXE ELA AO LADO do\r\n"
+                       "instalador na hora de instalar — o instalador copia\r\n"
+                       "tudo sozinho. Sem ela o Sistema funciona, mas sem os\r\n"
+                       "botoes de animacao e de cifra.\r\n\r\n" if levou else "")
+                    + "SE O WINDOWS AVISAR\r\n"
                     "  Pode aparecer \"O Windows protegeu o computador\".\r\n"
                     "  Clique em \"Mais informacoes\" e depois em \"Executar assim mesmo\".\r\n"
                     "  Isso acontece porque o programa e' gratuito e nao tem\r\n"

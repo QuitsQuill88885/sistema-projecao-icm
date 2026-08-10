@@ -44,7 +44,10 @@ import sys
 import unicodedata
 
 # nota solta da melodia: A, A#, Bb, C#... (sem acorde, sem baixo)
-NOTA = re.compile(r"^[A-G](#|b)?$")
+# A seta de oitava fica COLADA na nota ("C↑", "A#↓"). Sem ela no regex, a
+# linha inteira deixava de ser reconhecida como melodia e virava "letra" —
+# e uma dessas linhas chegou a ser engolida como titulo de louvor.
+NOTA = re.compile(r"^[A-G](#|b)?[↑↓]?$")
 # O tom e' OPCIONAL e pode vir seguido de asterisco: metade dos cabecalhos
 # nao tem tom nenhum ("2 - O SANGUE DE JESUS TEM PODER") e outros marcam o
 # louvor com "*" depois do tom ("16 - SE ANDARMOS NA LUZ (F#)*"). Exigir os
@@ -70,6 +73,10 @@ def limpar_titulo(t):
     t = (t or "").strip()
     tom = None
     # o numero da coletanea antiga no fim, com ou sem o tom antes
+    t = re.sub(r"\s+\d{2,5}\s*$", "", t)
+    # o "*" do tom alternativo vem DEPOIS do parentese ("(C#)* 7761") e
+    # escondia o tom das regras abaixo: o titulo saia "ESTENDE TUA MAO C"
+    t = re.sub(r"\*+\s*$", "", t).strip()
     t = re.sub(r"\s+\d{2,5}\s*$", "", t)
     # o tom ENTRE PARENTESES no fim: e' o caso mais comum e o que estava
     # sobrando -- "A BELEZA DA TUA SANTIDADE (D)" nao casa com nenhum louvor
@@ -116,7 +123,10 @@ INSTRUMENTOS = [
 def so_letras(t):
     t = unicodedata.normalize("NFD", (t or "").upper())
     t = "".join(c for c in t if unicodedata.category(c) != "Mn")
-    return re.sub(r"[^A-Z0-9 ]+", " ", t).strip()
+    # Espacos repetidos se recolhem: a virgula vira espaco, e "MESTRE, O MAR"
+    # de um lado contra "MESTRE O MAR" do outro dava chave diferente por UM
+    # espaco. Tem que recolher IGUAL no sistema.py e no controle.html.
+    return re.sub(r"\s+", " ", re.sub(r"[^A-Z0-9 ]+", " ", t)).strip()
 
 
 def transpor_nota(nota, passos, bemol=False):
@@ -185,21 +195,63 @@ def ler_pdf(caminho, aviso=None):
             linha = linha.rstrip()
             if not linha.strip() or RODAPE.search(linha):
                 continue
-            m = (CAB_COM_TOM.match(linha) or CAB_SEM_NUM.match(linha)
-                 or CABECALHO.match(linha))
-            if m and em_caixa(m.group(2) if len(m.groups()) >= 2 else m.group(1)):
-                g = m.groups()
-                if len(g) == 3:
-                    num, titulo, tom = g[0], g[1], g[2]
-                elif len(g) == 2 and (g[1] or "").replace("m", "") in SEMI:
-                    num, titulo, tom = None, g[0], g[1]
+            # Melodia se reconhece ANTES de cabecalho: uma linha de notas que
+            # termine em "(G#)" casa com o regex de cabecalho sem numero e
+            # virava louvor-fantasma com titulo de notas.
+            if eh_linha_de_notas(linha):
+                if atual is not None:
+                    notas = notas_da_linha(linha)
+                    if notas:
+                        atual["linhas"].append({"n": notas})
+                continue
+            num = titulo = tom = None
+            m = CAB_COM_TOM.match(linha)
+            if m:
+                num, titulo, tom = m.groups()
+            else:
+                m = CAB_SEM_NUM.match(linha)
+                if m:
+                    titulo, tom = m.groups()
                 else:
-                    num, titulo, tom = g[0], g[1], None
+                    m = CABECALHO.match(linha)
+                    if m:
+                        num, titulo = m.groups()
+            # A caixa alta se confere no TITULO. O codigo antigo conferia o
+            # grupo 2 fosse ele qual fosse, e no cabecalho sem numero o grupo 2
+            # e' o TOM: "AQUILO QUE FUI NAO SOU MAIS (F#m)" era reprovado pelo
+            # "m" minusculo do F#m e o louvor inteiro ia fora -- todo louvor
+            # sem numero em tom menor sumiu assim.
+            if m and em_caixa(titulo):
                 titulo, tom_solto = limpar_titulo(titulo)
                 tom = tom or tom_solto
+                # Titulo quebrado em duas linhas no PDF:
+                #     2 - O SANGUE DE JESUS TEM PODER
+                #     PARA SALVAR (Em)
+                # A segunda linha parece um cabecalho sem numero, mas se o
+                # louvor de cima acabou de abrir (sem nenhuma linha de corpo)
+                # e ficou sem tom, ela e' a continuacao do titulo dele. Sem
+                # isto o titulo saia truncado, sem tom, e ainda engolia do
+                # indice o louvor de titulo igual (o 1 e o 2 do Sangue).
+                if (num is None and atual is not None
+                        and not atual["linhas"] and not atual["tom"]):
+                    atual["titulo"] = (atual["titulo"] + " " + titulo).strip()
+                    atual["tom"] = tom
+                    continue
                 atual = {"num": num, "titulo": titulo, "tom": tom,
                          "pag": p + 1, "linhas": []}
                 louvores.append(atual)
+                continue
+            # Continuacao de titulo SEM tom nos parenteses no fim: nao casa
+            # com regex de cabecalho ("PAZ (G#m) 2302" tem o numero antigo
+            # depois do tom), mas e' caixa alta e o louvor de cima ainda esta
+            # vazio e sem tom. Exige uma palavra de 3+ letras fora dos
+            # parenteses para nunca engolir sobra de notas ("D D C B A").
+            if (atual is not None and not atual["linhas"] and not atual["tom"]
+                    and em_caixa(linha)
+                    and re.search(r"[A-ZÀ-Ü]{3,}", re.sub(r"\([^)]*\)", " ", linha))):
+                t2, tom2 = limpar_titulo(linha.strip())
+                atual["titulo"] = (atual["titulo"] + " " + t2).strip()
+                atual["tom"] = tom2
                 continue
             if atual is None:
                 continue
@@ -303,11 +355,40 @@ def main():
         nome = re.sub(r"[^A-Za-z0-9]+", "_", chave)[:60] + ".json"
         with io.open(os.path.join(destino, nome), "w", encoding="utf-8") as f:
             json.dump(reg, f, ensure_ascii=False, separators=(",", ":"))
+        # A primeira linha de LETRA vai para o indice porque 25 melodias tem
+        # titulo DIFERENTE do catalogo do app ("ALELUIA", "SOMENTE PELA FE"...)
+        # e so se reencontram por ela — mesmo truque das cifras. 30 letras,
+        # simplificadas igual dos dois lados.
+        l1 = ""
+        for x in l["linhas"]:
+            if "t" in x and not x["t"].strip().lower().startswith("introdu"):
+                l1 = so_letras(x["t"])[:30]
+                break
         indice[chave] = {"arq": nome, "titulo": l["titulo"], "num": l["num"],
+                         "l1": l1,
                          "tons": {s: reg["cadernos"][s]["tom"] for s, _q, _p, _b in INSTRUMENTOS}}
         gravados += 1
         if limite and gravados >= limite:
             break
+
+    # Casamentos manuais: melodias cujo titulo difere DEMAIS do catalogo do
+    # app ("SENHOR SE ESTIVESSES AQUI" e' o "LAZARO"). O arquivo diz
+    # chave-da-melodia -> [titulos do catalogo], conferido pela letra inteira;
+    # cada titulo vira um apelido apontando para o mesmo arquivo. setdefault:
+    # apelido nunca atropela melodia verdadeira que ja use aquele titulo.
+    cam = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "casamentos_manuais.json")
+    if os.path.exists(cam):
+        with io.open(cam, encoding="utf-8") as f:
+            manuais = json.load(f)
+        apelidos = 0
+        for de, para in manuais.items():
+            if de in indice:
+                for t in (para if isinstance(para, list) else [para]):
+                    if t not in indice:
+                        indice[t] = indice[de]
+                        apelidos += 1
+        aviso("casamentos manuais: %d apelidos criados" % apelidos)
 
     with io.open(os.path.join(destino, "indice.json"), "w", encoding="utf-8") as f:
         json.dump({"instrumentos": [{"sigla": s, "quem": q} for s, q, _p, _b in INSTRUMENTOS],

@@ -557,6 +557,14 @@ def main_silencioso():
         pass
     exe = instalar(p)
     print("instalado em: %s" % exe)
+    # --reabrir: quem chamou foi o botão "Buscar atualizações" de dentro do
+    # Sistema — o programa foi fechado para atualizar, e o operador está
+    # esperando ele voltar sozinho.
+    if "--reabrir" in sys.argv and exe and os.path.exists(exe):
+        try:
+            subprocess.Popen([exe], cwd=os.path.dirname(exe), **SEM_JANELA)
+        except Exception:
+            pass
     return 0
 
 

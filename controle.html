@@ -423,10 +423,14 @@ function pintarFila(e) {
    Independente de propósito. O instrumentista repete um coro, volta um refrão
    ou procura outro louvor, e NADA disso mexe no telão — ele não pode ficar na
    mão de quem passa os slides. O que a projeção mostra aparece só como pista. */
-let CIFRAS = {}, MELODIAS = {}, INSTRUMENTOS = [];
+let CIFRAS = {}, MELODIAS = {}, MELODIAS1 = {}, INSTRUMENTOS = [];
 const chaveLouvor = s => (s.num || '') + '|' + s.titulo + '|' +
   ((s.slides[0] && s.slides[0].linhas[0]) || '');
-const simples = t => semAcento(t).toUpperCase().replace(/[^A-Z0-9 ]+/g, ' ').trim();
+/* espaços repetidos recolhidos, IGUAL ao _simples do sistema.py e ao
+   so_letras do extrair_melodia.py — os três têm que concordar, senão o
+   título com vírgula gera chave com espaço duplo e a melodia some */
+const simples = t => semAcento(t).toUpperCase().replace(/[^A-Z0-9 ]+/g, ' ')
+  .replace(/\s+/g, ' ').trim();
 
 /* A escolha do instrumento fica GRAVADA no aparelho. O sax alto do grupo abre
    o Sistema no domingo seguinte e já está no caderno dele — ninguém quer
@@ -445,7 +449,8 @@ const QUEM = [
 ];
 
 fetch('/api/musico').then(r => r.json()).then(r => {
-  CIFRAS = r.violao || {}; MELODIAS = r.melodia || {}; INSTRUMENTOS = r.instrumentos || [];
+  CIFRAS = r.violao || {}; MELODIAS = r.melodia || {}; MELODIAS1 = r.melodia1 || {};
+  INSTRUMENTOS = r.instrumentos || [];
   if (Object.keys(CIFRAS).length || Object.keys(MELODIAS).length) {
     $('#aba-cifra').hidden = false;
     pintarInstrumentos();
@@ -483,7 +488,11 @@ function temMaterial(s) {
     const t = CIFRAS[chaveLouvor(s)];
     return t === undefined ? null : { tom: t };
   }
-  const m = MELODIAS[simples(s.titulo)];
+  /* primeiro pelo título; se a Melódica batizou o louvor de outro jeito
+     ("ALELUIA", "SOMENTE PELA FE"...), reencontra pela primeira linha da
+     letra — 30 letras simplificadas, igual dos dois lados */
+  const m = MELODIAS[simples(s.titulo)] ||
+            MELODIAS1[simples((s.slides[0] && s.slides[0].linhas[0]) || '').slice(0, 30)];
   return m ? { tom: m[euToco] || '' } : null;
 }
 
