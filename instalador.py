@@ -15,8 +15,65 @@ PASTAS_USUARIO = [
 ]
 
 
+# Esconde a janela preta do console em taskkill/tasklist/powershell.
+#
+# ESTAVA FALTANDO. Era usado em quatro lugares e nunca definido: toda chamada
+# levantava NameError e o "except Exception: pass" engolia sem dizer nada. O
+# fechamento automatico do Sistema nunca rodou uma unica vez -- e o sintoma era
+# a instalacao falhando em 34 arquivos, que nao tem cara nenhuma de erro de
+# nome de variavel.
+SEM_JANELA = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
+
+
 def origem():
     return sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+
+
+def copiar_por_cima(origem_arq, destino_arq):
+    """Copia por cima MESMO com o arquivo em uso.
+
+    O Windows não deixa sobrescrever um .exe ou .dll que algum processo abriu,
+    mas deixa RENOMEAR. É por isso que todo instalador de verdade tira o arquivo
+    velho do caminho em vez de brigar com ele.
+
+    Fechamos o Sistema antes, e isso resolve o caso normal. Mas o programa vai
+    rodar em computador que ninguém aqui viu: antivírus segurando a DLL,
+    indexador do Windows lendo a pasta, uma segunda janela de projeção aberta,
+    política que proíbe o PowerShell. Em qualquer um desses o fechamento falha
+    — e aí o leigo recebe um erro que não sabe resolver, no domingo, com a
+    igreja esperando.
+
+    O arquivo velho vira ".apagar-<n>" e some na próxima instalação; se nem
+    renomear der, aí sim é erro de verdade (pasta sem permissão, disco cheio).
+    """
+    try:
+        shutil.copy2(origem_arq, destino_arq)
+        return
+    except (PermissionError, OSError):
+        pass
+    if not os.path.exists(destino_arq):
+        raise
+    velho = destino_arq + ".apagar-%d" % int(time.time() % 100000)
+    os.replace(destino_arq, velho)          # renomear funciona com o arquivo em uso
+    try:
+        os.remove(velho)                    # se ninguém mais o segura, some agora
+    except Exception:
+        pass                                # ainda em uso: fica para a próxima
+    shutil.copy2(origem_arq, destino_arq)
+
+
+def limpar_sobras(pasta):
+    """Apaga os restos que ficaram travados numa instalação anterior."""
+    n = 0
+    for raiz, _, arquivos in os.walk(pasta):
+        for a in arquivos:
+            if ".apagar-" in a:
+                try:
+                    os.remove(os.path.join(raiz, a))
+                    n += 1
+                except Exception:
+                    pass
+    return n
 
 
 def instalar(progresso):
@@ -28,6 +85,7 @@ def instalar(progresso):
     progresso(10, "Fechando o Sistema, se estiver aberto…")
     fechar_sistema_aberto()
 
+    limpar_sobras(DESTINO)                 # restos de uma atualização anterior
     progresso(15, "Copiando os arquivos do Sistema…")
     falhas = []
     if os.path.isdir(pacote):
@@ -37,7 +95,7 @@ def instalar(progresso):
             os.makedirs(alvo, exist_ok=True)
             for a in arquivos:
                 try:
-                    shutil.copy2(os.path.join(raiz, a), os.path.join(alvo, a))
+                    copiar_por_cima(os.path.join(raiz, a), os.path.join(alvo, a))
                 except Exception as e:
                     falhas.append((a, e))
     # NUNCA mais engolir isto calado. Instalar por cima com o Sistema aberto
@@ -138,6 +196,20 @@ def guardar_instalador():
         return ""
 
 
+def _sistema32(programa):
+    """Caminho completo de um utilitario do Windows.
+
+    Chamar so "taskkill" depende do PATH, e num .exe compilado rodando em
+    computador alheio o PATH pode nao ter o System32 -- o comando simplesmente
+    nao e' encontrado, a excecao e' engolida, e o Sistema segue aberto. Foi isso
+    que fez o fechamento automatico nao acontecer, mesmo o taskkill funcionando
+    perfeitamente quando digitado a mao.
+    """
+    raiz = os.environ.get("SystemRoot") or r"C:\Windows"
+    caminho = os.path.join(raiz, "System32", programa)
+    return caminho if os.path.exists(caminho) else programa
+
+
 def fechar_sistema_aberto(espera=6.0):
     """Fecha o Sistema se ele estiver rodando.
 
@@ -149,17 +221,29 @@ def fechar_sistema_aberto(espera=6.0):
     # Quem clicou em instalar JÁ decidiu: fecha na hora, sem pedir licença nem
     # esperar. O pedido gentil ia primeiro, mas o Sistema podia estar com uma
     # janela de projeção aberta e não sair — e a instalação ficava pendurada.
-    for args in (["taskkill", "/IM", "Sistema.exe"],
-                 ["taskkill", "/F", "/IM", "Sistema.exe"]):
+    tk = _sistema32("taskkill.exe")
+    for args in ([tk, "/IM", "Sistema.exe"],
+                 [tk, "/F", "/IM", "Sistema.exe"]):
         try:
             subprocess.run(args, capture_output=True, timeout=8, **SEM_JANELA)
         except Exception:
             pass
         time.sleep(0.4)
+    # O MOTOR DO EDGE NAO MORRE COM O PAI. O Sistema desenha a tela com o
+    # WebView2, que roda em processos SEPARADOS (msedgewebview2.exe). Matar o
+    # Sistema.exe deixa esses filhos vivos, e sao ELES que seguram as 34 DLLs da
+    # pasta _internal -- a instalacao falhava inteira com o Sistema ja fechado,
+    # e o usuario leigo nao tinha como adivinhar o que fazer.
+    #
+    # So os NOSSOS: a maquina tem outros WebView2 (o Teams usa 25 deles). O
+    # filtro e' a linha de comando, que carrega o nome do exe dono e a pasta de
+    # dados. Matar todos fecharia o Teams do usuario no meio da instalacao.
+    matar_webview()
+
     fim = time.time() + espera
     while time.time() < fim:
         try:
-            r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq Sistema.exe", "/NH"],
+            r = subprocess.run([_sistema32("tasklist.exe"), "/FI", "IMAGENAME eq Sistema.exe", "/NH"],
                                capture_output=True, timeout=10, text=True, **SEM_JANELA)
             if "Sistema.exe" not in (r.stdout or ""):
                 return True
@@ -167,12 +251,31 @@ def fechar_sistema_aberto(espera=6.0):
             return True
         time.sleep(0.4)
     try:                                   # não saiu com jeito: encerra mesmo
-        subprocess.run(["taskkill", "/F", "/IM", "Sistema.exe"],
+        subprocess.run([tk, "/F", "/IM", "Sistema.exe"],
                        capture_output=True, timeout=10, **SEM_JANELA)
         time.sleep(0.6)
     except Exception:
         pass
     return True
+
+
+def matar_webview():
+    """Encerra so os processos do motor do Edge que pertencem ao Sistema."""
+    consulta = (
+        r"Get-CimInstance Win32_Process -Filter ""Name='msedgewebview2.exe'"" | "
+        r"Where-Object { $_.CommandLine -like '*Sistema.exe*' -or "
+        r"$_.CommandLine -like '*\Programs\Sistema*' -or "
+        r"$_.CommandLine -like '*Sistema Projecao*' } | "
+        r"ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }")
+    try:
+        ps = os.path.join(os.environ.get("SystemRoot") or r"C:\Windows",
+                          "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+        subprocess.run([ps if os.path.exists(ps) else "powershell",
+                        "-NoProfile", "-NonInteractive", "-Command", consulta],
+                       capture_output=True, timeout=20, **SEM_JANELA)
+    except Exception:
+        pass
+    time.sleep(0.8)
 
 
 def fechar_splash():
