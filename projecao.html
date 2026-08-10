@@ -12,12 +12,20 @@
    PowerPoints da igreja declaram 21.168 vezes -- linha por linha, na tela
    real, no fundo real.
 
-   E O ESPACAMENTO E PARTE DA FONTE AQUI. A Outfit e' 5,3% mais estreita
-   que a Futura; sem o letter-spacing a linha encolhe, quebra em outro
-   ponto e o louvor muda de numero de slides. Com ele, as cinco linhas da
-   pagina batem os alvos de 777, 796, 755, 836 e 662 pixels com 2 pixels de
-   diferenca. NAO MEXA no valor sem medir de novo: ele nao e' estetica, e'
-   o que faz a quebra de linha cair onde a igreja esta acostumada.
+   PESO 700, nao 800. No 800 a letra fica grossa demais e passa sensacao de
+   negrito; foi o que ele viu no telao.
+
+   E O ESPACAMENTO E PARTE DA FONTE AQUI. No peso 700 a Outfit e' mais
+   estreita que a Futura, e sem espacamento a linha encolhe, quebra em outro
+   ponto e o louvor muda de numero de slides.
+
+   Sao DOIS espacamentos, e essa separacao importa: 70% da folga vai entre
+   as LETRAS e 30% entre as PALAVRAS. Na primeira tentativa joguei tudo
+   entre as letras, e o resultado foi o contrario do esperado -- cada
+   palavra virou um bloco solido e o texto pareceu mais grudado ainda.
+
+   NAO MEXA nos valores sem medir de novo: eles nao sao estetica, sao o que
+   faz a quebra de linha cair onde a igreja esta acostumada.
 
    A escolha foi confirmada em consulta -- Isaias 34:1, Mateus 27:54 e
    Daniel 2:20 -- e esta registrada no memorial.
@@ -26,14 +34,15 @@
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A2';font-weight:400;font-style:italic;font-display:block;
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
-@font-face{font-family:'Sistema A3';font-weight:800 900;font-style:normal;font-display:block;
+@font-face{font-family:'Sistema A3';font-weight:700 900;font-style:normal;font-display:block;
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
-@font-face{font-family:'Sistema A4';font-weight:800 900;font-style:italic;font-display:block;
+@font-face{font-family:'Sistema A4';font-weight:700 900;font-style:italic;font-display:block;
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A5';font-weight:500;font-style:normal;font-display:block;
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
-/* o espacamento que faz a linha ocupar o mesmo tanto que a do presbiterio */
-#lou-txt,#bib-txt,#livre,#bib-multi,#fim-tag{letter-spacing:.034em}
+/* o que faz a linha ocupar o mesmo tanto que a do presbiterio */
+#lou-txt,#bib-txt,#livre,#bib-multi,#fim-tag{
+  font-weight:700;letter-spacing:.005em;word-spacing:.018em}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */
