@@ -40,9 +40,15 @@
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
 @font-face{font-family:'Sistema A5';font-weight:500;font-style:normal;font-display:block;
   src:url('fontes/Outfit.ttf') format('truetype-variations');}
-/* o que faz a linha ocupar o mesmo tanto que a do presbiterio */
+/* o que faz a linha ocupar o mesmo tanto que a do presbiterio.
+   O scaleY estica a letra na vertical sem alargar a linha: medida, a altura da
+   maiuscula ja bate (72 contra 71 px), mas a proporcao da Outfit deixa o texto
+   com cara de achatado no telao. Esticar 6% resolve a impressao sem mexer em
+   onde a linha quebra -- que e' o que nao pode mudar. */
 #lou-txt,#bib-txt,#livre,#bib-multi,#fim-tag{
   font-weight:700;letter-spacing:.005em;word-spacing:.018em}
+#lou-txt .bloco,#bib-txt .fitw,#livre .fitw,#bib-multi .fitw{
+  transform:scaleY(1.06);transform-origin:center}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */
