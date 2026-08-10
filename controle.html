@@ -70,6 +70,35 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px}
 .g{padding:11px 0;text-align:center;border-radius:8px;background:var(--painel);font-size:14px}
 .g:active,.g.sel{background:var(--vermelho);font-weight:700}
 .g.junto{background:var(--ouro);color:#101d33;font-weight:700}
+/* ---- CIFRA: a tela de quem está tocando ---- */
+.cifra-agora{font-size:12px;color:#7f9ac0;padding:2px 2px 8px}
+.cifra-agora b{color:var(--ouro)}
+.cifra-quadro{position:fixed;inset:0;background:var(--fundo);z-index:20;display:flex;flex-direction:column}
+/* `display:flex` VENCE o atributo hidden — sem esta linha o quadro do PDF ficava
+   aberto o tempo todo e a aba Cifra aparecia como uma tela branca vazia. */
+.cifra-quadro[hidden]{display:none}
+.cifra-topo{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#101d33;border-bottom:1px solid var(--borda)}
+.cifra-volta{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
+             padding:8px 12px;font-size:13px;font-weight:600}
+.cifra-nome{font-size:12.5px;color:#9db3d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* o PDF ocupa tudo: o leitor do próprio navegador dá zoom e rolagem, que é o
+   que o músico precisa para repetir um trecho sem depender de ninguém */
+.cifra-quadro iframe{flex:1;width:100%;border:0;background:#fff}
+.lista-cab{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--suave);
+  font-weight:700;margin:2px 0 9px}
+.lista-dica{margin-top:12px;font-size:11.5px;line-height:1.5;color:#6f86a8;
+  padding:9px 11px;background:#101d33;border-left:3px solid var(--borda);border-radius:0 8px 8px 0}
+.lista-dica b{color:var(--ouro)}
+.fi{display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:9px;background:var(--painel);font-size:13.5px}
+.fi.atual{background:var(--azul);box-shadow:inset 3px 0 0 var(--ouro);font-weight:600}
+.fi.ja{opacity:.45}
+.fi .rot{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi .tirar{background:#2a1a1a;color:#e88;border-radius:7px;padding:6px 10px;font-size:13px;flex:none}
+.fi-grupo{font-size:10.5px;letter-spacing:1px;color:var(--ouro);font-weight:700;margin:10px 0 4px}
+.item .add{margin-left:auto;background:var(--painel2);color:var(--ouro);border-radius:8px;
+  padding:7px 12px;font-size:15px;font-weight:700;flex:none;line-height:1}
+.tom{background:#a8570f;color:#fff;border-radius:5px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:6px}
+
 /* o texto do versículo, pra ele conferir ANTES de jogar no telão.
    sticky porque ela nasce DEPOIS da grade: em Salmos 119 caía mil pixels
    abaixo do que cabe na tela e o recurso simplesmente não existia. */
@@ -113,6 +142,8 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
   <button class="on" data-aba="louvor">Louvores</button>
   <button data-aba="biblia">Bíblia</button>
   <button data-aba="slides">Slides</button>
+  <button data-aba="lista" id="aba-lista">Lista</button>
+  <button data-aba="cifra" id="aba-cifra" hidden>Cifra</button>
 </nav>
 
 <main>
@@ -121,6 +152,30 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
     <div class="busca"><input id="q" placeholder="Número, nome ou trecho da letra…" autocomplete="off"></div>
     <div class="lista" id="lista"></div>
     <div id="slides-louvor"></div>
+  </div>
+  <!-- LISTA DE PROJEÇÃO — o grupo de louvor monta a ordem do culto daqui.
+       Ele disse que isto importa MAIS que controlar a projeção: quem canta
+       precisa dizer o que vai ser cantado, sem pedir para o operador. -->
+  <div class="aba" data-aba="lista" hidden>
+    <div class="lista-cab">Ordem do culto</div>
+    <div class="lista" id="fila-cel"></div>
+    <div class="lista-dica">Toque num item para projetar. Guarde louvores pelo <b>+</b> na aba Louvores,
+      e versículos segurando o dedo no número.</div>
+  </div>
+  <!-- CIFRA — a tela do músico. Ela é INDEPENDENTE de propósito: ele repete um
+       coro, volta um refrão, procura outro louvor, e nada disso mexe no telão.
+       O que a projeção está mostrando aparece só como referência discreta. -->
+  <div class="aba" data-aba="cifra" hidden>
+    <div class="busca"><input id="qc" placeholder="Procurar cifra de outro louvor…" autocomplete="off"></div>
+    <div class="cifra-agora" id="cifra-agora"></div>
+    <div class="lista" id="lista-cifras"></div>
+    <div class="cifra-quadro" id="cifra-quadro" hidden>
+      <div class="cifra-topo">
+        <button class="cifra-volta" id="cifra-volta">‹ Escolher outra</button>
+        <span class="cifra-nome" id="cifra-nome"></span>
+      </div>
+      <iframe id="cifra-pdf" title="Cifra"></iframe>
+    </div>
   </div>
   <!-- BÍBLIA -->
   <div class="aba" data-aba="biblia" hidden>
@@ -224,12 +279,113 @@ async function ouvir() {
     // apresentação saía, e sobravam botões que não faziam mais nada
     const ns = +(e.slides || 0);
     if (ns !== slidesN) { slidesN = ns; montarSlides(ns); }
-    acompanhar(e);
+    acompanhar(e); pistaDoTelao(e); pintarFila(e);
   } catch (err) {
     if (++falhas > 4) mostrarOffline();     // aqui é rede mesmo: título padrão
   }
 }
 setInterval(ouvir, 900); ouvir();
+
+/* ---------- LISTA DE PROJEÇÃO no celular ----------
+   Ver o que está montado e acrescentar. O grupo de louvor precisa dizer o que
+   vai ser cantado sem depender de quem opera o computador. */
+function pintarFila(e) {
+  const c = $('#fila-cel'); if (!c) return;
+  const fila = e.fila || [];
+  c.innerHTML = '';
+  if (!fila.length) {
+    c.innerHTML = '<div class="vazio">A lista está vazia.</div>';
+    return;
+  }
+  let grupo = null;
+  fila.forEach((it, i) => {
+    if (it.tipo !== grupo) {
+      grupo = it.tipo;
+      const g = document.createElement('div');
+      g.className = 'fi-grupo';
+      g.textContent = it.tipo === 'louvor' ? 'LOUVORES' : 'VERSÍCULOS';
+      c.appendChild(g);
+    }
+    const pos = typeof e.pos === 'number' ? e.pos : -1;
+    // já cantado = ficou para trás DENTRO do mesmo grupo (igual ao computador)
+    const jaFoi = pos >= 0 && fila[pos] && fila[pos].tipo === it.tipo && i < pos;
+    const d = document.createElement('div');
+    d.className = 'fi' + (i === pos ? ' atual' : '') + (jaFoi ? ' ja' : '');
+    d.innerHTML = '<span class="rot">' + (it.tipo === 'louvor' ? '♪ ' : '') +
+                  (it.rotulo || '') + '</span>' +
+                  '<button class="tirar" title="Tirar da lista">✕</button>';
+    d.onclick = ev => {
+      if (ev.target.classList.contains('tirar')) { ev.stopPropagation(); enviar('tirardalista', {i}); return; }
+      enviar('irpara', {i});
+    };
+    c.appendChild(d);
+  });
+}
+
+/* ---------- CIFRA: a tela de quem está tocando ----------
+   Independente de propósito. O instrumentista repete um coro, volta um refrão
+   ou procura outro louvor, e NADA disso mexe no telão — ele não pode ficar na
+   mão de quem passa os slides. O que a projeção mostra aparece só como pista. */
+let CIFRAS = {};
+const chaveLouvor = s => (s.num || '') + '|' + s.titulo + '|' +
+  ((s.slides[0] && s.slides[0].linhas[0]) || '');
+
+fetch('/api/cifras').then(r => r.json()).then(r => {
+  CIFRAS = r.indice || {};
+  if (Object.keys(CIFRAS).length) {        // sem cifras importadas, a aba nem existe
+    $('#aba-cifra').hidden = false;
+    listarCifras('');
+  }
+}).catch(() => {});
+
+function listarCifras(f) {
+  const c = $('#lista-cifras'); if (!c) return;
+  c.innerHTML = '';
+  const q = semAcento(f).replace(/[^a-z0-9 ]+/g, ' ').trim();
+  let n = 0;
+  for (let i = 0; i < LOUVORES.length && n < 50; i++) {
+    const s = LOUVORES[i], ref = CIFRAS[chaveLouvor(s)];
+    if (!ref) continue;
+    const alvo = semAcento(s.titulo).replace(/[^a-z0-9 ]+/g, ' ');
+    if (q && !alvo.includes(q) && !(s.num && s.num.toLowerCase().includes(q))) continue;
+    const d = document.createElement('div');
+    d.className = 'item';
+    d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>' +
+                  (ref.tom ? '<span class="tom">' + ref.tom + '</span>' : '');
+    d.onclick = () => abrirCifra(s, ref);
+    c.appendChild(d); n++;
+  }
+  if (!n) c.innerHTML = '<div class="vazio">Nenhuma cifra encontrada.</div>';
+}
+
+function abrirCifra(s, ref) {
+  $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo +
+    (ref.tom ? '  (tom ' + ref.tom + ')' : '');
+  // #page manda o leitor do navegador abrir direto na página da cifra; o zoom e
+  // a rolagem dali em diante são dele, sem passar pelo servidor a cada gesto
+  $('#cifra-pdf').src = '/cifras/' + encodeURIComponent(ref.pdf) +
+                        '#page=' + ref.pag + '&view=FitH';
+  $('#cifra-quadro').hidden = false;
+}
+$('#cifra-volta').onclick = () => {
+  $('#cifra-quadro').hidden = true;
+  $('#cifra-pdf').src = 'about:blank';     // solta o PDF da memória do celular
+};
+$('#qc').oninput = e => listarCifras(e.target.value);
+
+/* Qual louvor está no telão AGORA — só como referência. Um toque abre a cifra
+   dele; nenhum toque aqui muda o que a congregação vê. */
+function pistaDoTelao(e) {
+  const el = $('#cifra-agora'); if (!el) return;
+  const idx = (typeof e.louvor === 'number') ? e.louvor : -1;
+  const s = idx >= 0 ? LOUVORES[idx] : null;
+  const ref = s ? CIFRAS[chaveLouvor(s)] : null;
+  if (!s) { el.textContent = ''; return; }
+  el.innerHTML = 'No telão: <b>' + s.titulo + '</b>' +
+                 (ref ? ' — <u>toque para abrir a cifra</u>' : ' — sem cifra');
+  el.onclick = ref ? (() => abrirCifra(s, ref)) : null;
+  el.style.cursor = ref ? 'pointer' : 'default';
+}
 
 /* ---------- prévia ao vivo do telão ---------- */
 let telaN = -1;
@@ -267,21 +423,56 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
 });
 
 /* ---------- louvores ---------- */
+// mesma regra do computador: sem acento E sem pontuação, para "resplandece
+// jerusalem" achar "RESPLANDECE, Ó JERUSALÉM"
+const soLetras = t => semAcento(t).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+// Quão perto do que foi digitado. Título antes da letra, sempre: procurar
+// "Jesus" tem que trazer os louvores CHAMADOS Jesus, não os mil que o citam.
+function pontuar(s, alvo, palavras) {
+  const tit = s._tl || (s._tl = soLetras(s.titulo));
+  if (tit === alvo) return 1000;
+  if (tit.startsWith(alvo)) return 900 - Math.min(tit.length, 99);
+  if (tit.includes(alvo)) return 800 - Math.min(tit.indexOf(alvo), 99);
+  if (palavras.length > 1 && palavras.every(p => tit.includes(p)))
+    return 600 - Math.min(tit.indexOf(palavras[0]), 99);
+  const letra = s._ll || (s._ll = soLetras(s.slides.map(x => x.linhas.join(' ')).join(' ')));
+  if (letra.includes(alvo)) return 300;
+  if (palavras.length > 1 && palavras.every(p => letra.includes(p))) return 200;
+  return 0;
+}
 function listarLouvores(f) {
   const cont = $('#lista'); cont.innerHTML = '';
-  const q = semAcento(f).trim();
-  let n = 0;
-  for (let i = 0; i < LOUVORES.length && n < 60; i++) {
-    const s = LOUVORES[i];
-    if (q) {
-      const t = (s._t || (s._t = semAcento(s.titulo))).includes(q) || (s.num && semAcento(s.num).includes(q));
-      const l = !t && (s._l || (s._l = semAcento(s.slides.map(x => x.linhas.join(' ')).join(' ')))).includes(q);
-      if (!t && !l) continue;
+  const alvo = soLetras(f);
+  const palavras = alvo ? alvo.split(' ').filter(Boolean) : [];
+  const soNum = /^\d+$/.test(alvo) ? parseInt(alvo, 10) : null;
+  const achados = [];
+  LOUVORES.forEach((s, i) => {
+    if (!alvo) { achados.push([s, i, 1]); return; }
+    if (soNum !== null) {                       // número casa por IGUALDADE
+      const n = /^\d+$/.test(s.num || '') ? parseInt(s.num, 10) : null;
+      if (n === soNum) achados.push([s, i, 1000]);
+      return;
     }
+    const p = pontuar(s, alvo, palavras);
+    if (p) achados.push([s, i, p]);
+  });
+  achados.sort((a, b) => (b[2] - a[2]) || (a[1] - b[1]));
+  let n = 0;
+  for (const [s, i] of achados) {
+    if (n >= 60) break;
     const d = document.createElement('div');
     d.className = 'item' + (i === louvorSel ? ' sel' : '');
-    d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>';
-    d.onclick = () => { louvorSel = i; enviar('louvor', {idx: i}); listarLouvores($('#q').value); mostrarSlides(i); };
+    d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') +
+      '<span>' + s.titulo + '</span>' +
+      '<button class="add" title="Guardar na Lista de Projeção">+</button>';
+    d.onclick = ev => {
+      if (ev.target.classList.contains('add')) {   // o + guarda; o toque projeta
+        ev.stopPropagation(); enviar('addlouvor', {idx: i});
+        ev.target.textContent = '✓'; setTimeout(() => { ev.target.textContent = '+'; }, 900);
+        return;
+      }
+      louvorSel = i; enviar('louvor', {idx: i}); listarLouvores($('#q').value); mostrarSlides(i);
+    };
     cont.appendChild(d); n++;
   }
   if (!n) cont.innerHTML = '<div class="vazio">Nada encontrado.</div>';

@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket
 
-VERSAO = "1.9.0"
+VERSAO = "2.0.0"
 PORTA = 8765
 
 def raiz():
@@ -118,6 +118,37 @@ def ler_indice(nome):
             return json.load(f)
     except Exception:
         return {}
+
+
+ARQ_HISTORICO = os.path.join(DADOS_USUARIO, "historico.json")
+
+
+def ler_historico():
+    """O que ja foi projetado, culto a culto. Cada registro:
+       {"q": "louvor", "rot": "5 2018 - CLAMANDO ESTOU", "chave": "...",
+        "ini": <hora em segundos>, "seg": <quanto tempo ficou no telao>}"""
+    try:
+        with open(ARQ_HISTORICO, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, list) else []
+    except Exception:
+        return []
+
+
+def gravar_historico(registros):
+    """Acrescenta ao historico, por troca atomica: um desligamento no meio do
+    culto nao pode deixar o arquivo pela metade e apagar meses de registro."""
+    os.makedirs(DADOS_USUARIO, exist_ok=True)
+    with TRAVA:
+        atual = ler_historico()
+        atual.extend(registros)
+        if len(atual) > 20000:            # muito alem de anos de culto
+            atual = atual[-20000:]
+        tmp = ARQ_HISTORICO + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(atual, f, ensure_ascii=False)
+        os.replace(tmp, ARQ_HISTORICO)
+    return len(atual)
 
 
 def ler_config():
@@ -311,6 +342,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._json({"ok": True, "estado": dict(ESTADO), "idade": round(idade, 1)})
         if self.path.startswith("/api/animacoes"):       # louvores de CIAS com animação
             return self._json({"ok": True, "indice": ler_indice("animacoes")})
+        if self.path.startswith("/api/historico"):     # o que ja foi projetado
+            return self._json({"ok": True, "registros": ler_historico()})
         if self.path.startswith("/api/cifras"):          # em que PDF e página está cada cifra
             return self._json({"ok": True, "indice": ler_indice("cifras")})
         if self.path.startswith("/api/rede"):            # endereço e QR para o celular entrar
@@ -347,6 +380,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     ESTADO.update(json.loads(self.rfile.read(n).decode("utf-8")))
                     ESTADO["ts"] = time.time()      # para o celular saber se isto ainda é recente
                 return self._json({"ok": True})
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
+        if self.path.startswith("/api/historico"):
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                regs = json.loads(self.rfile.read(n).decode("utf-8"))
+                return self._json({"ok": True, "total": gravar_historico(regs or [])})
             except Exception as e:
                 return self._json({"ok": False, "erro": str(e)})
         if self.path.startswith("/api/config"):

@@ -2,9 +2,17 @@
 <meta charset="utf-8"><title>Projeção — ICM Iperó</title>
 <style>
 @font-face{font-family:'Bebas';src:url('fontes/bebas.otf');font-display:swap}
-/* peso oficial do Maanaim: Futura Heavy (a Book era fina demais no telão) */
-@font-face{font-family:'FuturaBk';src:url('fontes/futura_heavy.ttf');font-display:swap}
-@font-face{font-family:'FuturaBkIt';src:url('fontes/futura_heavy_italic.ttf');font-display:swap}
+/* A fonte oficial da ICM é a Futura Heavy: os PowerPoints da igreja declaram
+   "Futura Hv BT" — 21.168 vezes na Coletânea das Igrejas, 11.839 nos Avulsos.
+   PRIMEIRO usamos a que está INSTALADA no Windows, que é o que os próprios
+   arquivos oficiais fazem; o arquivo embutido é só a reserva para a máquina
+   que não tiver, e depois dele vem uma geométrica parecida. */
+@font-face{font-family:'FuturaBk';font-display:swap;
+  src:local('Futura Hv BT'), local('Futura Heavy'), local('FuturaBT-Heavy'),
+      local('Futura'), url('fontes/futura_heavy.ttf');}
+@font-face{font-family:'FuturaBkIt';font-display:swap;
+  src:local('Futura Hv BT Italic'), local('Futura Heavy Italic'),
+      url('fontes/futura_heavy_italic.ttf');}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */

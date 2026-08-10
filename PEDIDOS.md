@@ -146,3 +146,42 @@ falsos. Os que sobraram, todos corrigidos:
 2. Ao depurar o celular: qualquer `fetch('/api/comandos')` feito à mão **rouba o comando**
    do aplicativo. Mande o comando de fora (script) e confira por `/api/estado`.
 3. O navegador guarda os arquivos em cache. Se algo não mudar, force recarregar.
+
+---
+
+## 📌 PEDIDOS ABERTOS — registro para não se perder
+
+### Bugs que você apontou e ainda NÃO estão resolvidos
+- [ ] **Busca do CELULAR não está ranqueada.** Corrigi só no computador. Procurar
+      "Resplandece" no celular ainda traz louvores da letra antes do próprio
+      "RESPLANDECE, Ó JERUSALÉM". Mesma regra do computador: título igual >
+      título que começa > título que contém > palavras soltas no título > letra.
+      Ignorar acento E pontuação ("resplandece jerusalem" acha "RESPLANDECE, Ó JERUSALÉM").
+- [ ] **A+ / A− pelo celular não funciona.**
+- [ ] **Caixa de busca do celular encavala a lista** (item cortado atrás do campo).
+- [ ] **Lista de Projeção no celular** — VER a lista e ADICIONAR louvores/versículos.
+      Palavras dele: é mais importante que controlar a projeção, porque o grupo
+      de louvor precisa montar o que vai ser projetado.
+      (comandos addlouvor / tirardalista / irpara já existem no computador)
+
+### Ideias novas, ainda não começadas
+- [ ] **Histórico e painel de louvores.** Guardar o que foi projetado em cada
+      culto, com o TEMPO que cada louvor ficou no ar. Painel mostrando: mais
+      cantados, mais tempo projetados, escolhidos por período (mês, últimos meses).
+- [ ] **Ligação Bíblia ↔ louvor.** Ao abrir uma passagem, sugerir louvores cuja
+      MENSAGEM combina. Exemplos dele: Isaías 60:1 ("levanta-te, resplandece")
+      → "Resplandece, ó Jerusalém"; Neemias (reconstrução) → louvor de obra e
+      reconstrução. É análise do conteúdo da letra, não busca por palavra.
+- [ ] **Categorias do culto da ICM.** Classificar os louvores por função no
+      culto: clamor, dedicação, glorificação etc. O culto sempre começa por um
+      louvor de clamor. (ele ia continuar a explicação — confirmar a lista completa)
+
+### Decisões já tomadas (para não reabrir)
+- Identificação de coletânea: **agrupada por cabeçalho** na busca por NÚMERO;
+  ranqueada por proximidade na busca por TEXTO. Sem sigla para decorar.
+- Instalador: um só programa. Com a pasta `Conteudo` do lado = completo;
+  sem ela = enxuto.
+- GitHub: repositório PÚBLICO só com código.
+  https://github.com/QuitsQuill88885/sistema-projecao-icm
+- Fonte Futura: fica no pacote que ele distribui (decisão dele). Não vai para
+  o repositório público.

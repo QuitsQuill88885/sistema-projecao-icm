@@ -8,8 +8,8 @@
 # de uma autoridade certificadora. Nao da para resolver por aqui.
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 9, 0, 0),
-    prodvers=(1, 9, 0, 0),
+    filevers=(2, 0, 0, 0),
+    prodvers=(2, 0, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -23,11 +23,11 @@ VSVersionInfo(
         '041604b0',                      # portugues do Brasil, Unicode
         [StringStruct('CompanyName', 'Sistema'),
          StringStruct('FileDescription', 'Instalador do Sistema'),
-         StringStruct('FileVersion', '1.9.0'),
+         StringStruct('FileVersion', '2.0.0'),
          StringStruct('InternalName', 'Sistema'),
          StringStruct('OriginalFilename', 'Instalar o Sistema.exe'),
          StringStruct('ProductName', 'Sistema'),
-         StringStruct('ProductVersion', '1.9.0')])
+         StringStruct('ProductVersion', '2.0.0')])
     ]),
     VarFileInfo([VarStruct('Translation', [1046, 1200])])
   ]

@@ -134,9 +134,121 @@ function stBiblia(ref, texto) {
   return { modo: 'biblia', fundo: FB.biblia, ref, linhas: [texto], tam: TAM_DEF.biblia, escala: est.escalaVers, transicao: true, fade: 400 };
 }
 
+// ---------- HISTÓRICO ----------
+// Guarda o que foi ao telão e por QUANTO TEMPO. O tempo é o que separa o louvor
+// que a igreja cantou inteiro daquele que passou de raspão — é o dado que faz o
+// painel valer alguma coisa. Só conta com a projeção ABERTA: ensaiar no painel
+// com o telão desligado não é culto e não entra na conta.
+let noAr = null;      // { q, rot, chave, ini }
+const MIN_SEG = 5;    // menos que isso foi engano de clique, não louvor cantado
+let pendentes = [];
+
+function fecharNoAr() {
+  if (!noAr) return;
+  const seg = Math.round((Date.now() - noAr.ini) / 1000);
+  if (seg >= MIN_SEG) pendentes.push({ q: noAr.q, rot: noAr.rot, chave: noAr.chave,
+                                       ini: Math.round(noAr.ini / 1000), seg });
+  noAr = null;
+  if (pendentes.length) enviarHistorico();
+}
+function abrirNoAr(q, rot, chave) {
+  if (noAr && noAr.chave === chave) return;    // mesmo item, outro slide: o relógio continua
+  fecharNoAr();
+  if (!est.projetando) return;                 // telão desligado não é culto
+  noAr = { q, rot, chave, ini: Date.now() };
+}
+let mandando = false;
+function enviarHistorico() {
+  if (mandando || !pendentes.length) return;
+  mandando = true;
+  const lote = pendentes; pendentes = [];
+  fetch('/api/historico', { method: 'POST', body: JSON.stringify(lote) })
+    .catch(() => { pendentes = lote.concat(pendentes); })   // falhou: tenta de novo depois
+    .finally(() => { mandando = false; });
+}
+// fechar o Sistema no meio de um louvor não pode perder o registro dele
+window.addEventListener('beforeunload', () => {
+  fecharNoAr();
+  if (pendentes.length && navigator.sendBeacon)
+    navigator.sendBeacon('/api/historico', JSON.stringify(pendentes));
+});
+
+// ---------- PAINEL: o que a igreja cantou ----------
+let HIST = null, histDias = 30;
+function tempoCurto(seg) {
+  if (seg < 60) return seg + 's';
+  const m = Math.round(seg / 60);
+  return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0');
+}
+function abrirPainel() {
+  fetch('/api/historico').then(r => r.json()).then(r => { HIST = r.registros || []; pintarPainel(); })
+    .catch(() => { HIST = []; pintarPainel(); });
+}
+function pintarPainel() {
+  if (!HIST) return;
+  const corte = histDias ? (Date.now() / 1000 - histDias * 86400) : 0;
+  const regs = HIST.filter(x => x.ini >= corte && x.q === 'louvor');
+  const resumo = $('#pn-resumo');
+
+  if (!regs.length) {
+    resumo.innerHTML = '';
+    ['#pn-mais', '#pn-tempo', '#pn-cultos'].forEach(k =>
+      $(k).innerHTML = '<div class="pn-vazio">Nada registrado neste período.</div>');
+    return;
+  }
+  // "culto" = um dia de projeção. É o recorte que a igreja entende.
+  const dias = new Set(regs.map(x => new Date(x.ini * 1000).toDateString()));
+  const segTotal = regs.reduce((a, x) => a + x.seg, 0);
+  resumo.innerHTML =
+    cx(regs.length, 'louvores projetados') +
+    cx(dias.size, dias.size === 1 ? 'culto' : 'cultos') +
+    cx(tempoCurto(segTotal), 'no telão');
+
+  const por = {};
+  regs.forEach(x => {
+    const k = x.rot || x.chave;
+    (por[k] = por[k] || { n: 0, seg: 0 }).n++;
+    por[k].seg += x.seg;
+  });
+  const lista = Object.entries(por);
+  linhas('#pn-mais', lista.sort((a, b) => b[1].n - a[1].n).slice(0, 10),
+         v => v.n + (v.n === 1 ? ' vez' : ' vezes'), v => v.n);
+  linhas('#pn-tempo', lista.slice().sort((a, b) => b[1].seg - a[1].seg).slice(0, 10),
+         v => tempoCurto(v.seg), v => v.seg);
+
+  // últimos cultos, do mais recente para o mais antigo
+  const porDia = {};
+  regs.forEach(x => {
+    const d = new Date(x.ini * 1000); const k = d.toDateString();
+    (porDia[k] = porDia[k] || { n: 0, seg: 0, ts: x.ini }).n++;
+    porDia[k].seg += x.seg;
+    porDia[k].ts = Math.min(porDia[k].ts, x.ini);
+  });
+  const cultos = Object.entries(porDia).sort((a, b) => b[1].ts - a[1].ts).slice(0, 10);
+  const maxC = Math.max(...cultos.map(c => c[1].n), 1);
+  $('#pn-cultos').innerHTML = cultos.map(([k, v]) => {
+    const d = new Date(v.ts * 1000);
+    const dia = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+    const sem = d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', '');
+    return '<div class="pn-l"><i class="bar" style="width:' + (100 * v.n / maxC) + '%"></i>' +
+           '<span class="nm">' + dia + ' · ' + sem + '</span>' +
+           '<span class="vl">' + v.n + ' louvores · ' + tempoCurto(v.seg) + '</span></div>';
+  }).join('');
+}
+function cx(n, rot) { return '<div class="pn-cx"><b>' + n + '</b><span>' + rot + '</span></div>'; }
+function linhas(alvo, arr, texto, peso) {
+  const max = Math.max(...arr.map(a => peso(a[1])), 1);
+  $(alvo).innerHTML = arr.map(([nome, v], i) =>
+    '<div class="pn-l"><i class="bar" style="width:' + (100 * peso(v) / max) + '%"></i>' +
+    '<span class="pos">' + (i + 1) + '</span>' +
+    '<span class="nm">' + nome + '</span>' +
+    '<span class="vl">' + texto(v) + '</span></div>').join('');
+}
+
 // ---------- LOUVOR ----------
 function projetarLouvor(idx, slide, fade) {
   const s = LOUVORES[idx];
+  if (s) abrirNoAr('louvor', rotuloLouvor(s), chaveLouvor(s));
   est.louvorIdx = idx; est.louvorSlide = slide;
   est.live = { tipo: 'louvor', idx, slide };
   // Louvor de CIAS com animação: o GIF já é a TELA PRONTA (título, letra e fundo
@@ -339,18 +451,38 @@ function daCifra(s) { return s ? CIFRAS[chaveLouvor(s)] : null; }
 // Abre a cifra numa janela própria. É PDF: o navegador já sabe abrir, com zoom e
 // rolagem nativos — que é exatamente o que o músico do banquinho precisa para
 // repetir um coro sem depender de quem passa os slides.
-let janelaCifra = null;
+let cifraAtual = null;
 function abrirCifra() {
   const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
   const c = daCifra(s);
   if (!c) { toast('Este louvor não tem cifra importada.'); return; }
-  const url = '/cifras/' + encodeURIComponent(c.pdf) + '#page=' + c.pag + '&view=FitH';
-  try {
-    if (janelaCifra && !janelaCifra.closed) { janelaCifra.location.href = url; janelaCifra.focus(); }
-    else janelaCifra = window.open(url, 'cifra', 'width=760,height=900');
-  } catch (e) { window.open(url, '_blank'); }
+  cifraAtual = { pdf: c.pdf, pag: c.pag, tom: c.tom, titulo: rotuloLouvor(s) };
+  mostrarCifra();
   est.modoCifra = true; atualizarExtras();
-  toast('Cifra: ' + c.pdf.replace(/\.pdf$/i, '') + ', página ' + c.pag + (c.tom ? ' · tom ' + c.tom : ''));
+}
+function mostrarCifra() {
+  const c = cifraAtual; if (!c) return;
+  $('#cifra-tit').textContent = c.titulo;
+  const tom = $('#cifra-tom');
+  tom.textContent = c.tom ? 'tom ' + c.tom : '';
+  tom.classList.toggle('oculto', !c.tom);
+  $('#cifra-pag').textContent = 'pág. ' + c.pag;
+  // #toolbar=0 esconde a barra do leitor de PDF: fica só a página, dentro da
+  // nossa moldura, em vez de uma janela de navegador solta por cima do Sistema
+  $('#cifra-frame').src = '/cifras/' + encodeURIComponent(c.pdf) +
+                          '#page=' + c.pag + '&toolbar=0&navpanes=0&view=FitH';
+  $('#cifra-ov').classList.remove('oculto');
+  window.Icones && window.Icones.aplicar($('#cifra-ov'));
+}
+function virarPaginaCifra(d) {
+  if (!cifraAtual) return;
+  cifraAtual.pag = Math.max(1, cifraAtual.pag + d);   // o louvor pode ocupar 2 páginas
+  mostrarCifra();
+}
+function fecharCifra() {
+  $('#cifra-ov').classList.add('oculto');
+  $('#cifra-frame').src = 'about:blank';   // solta o PDF da memória
+  est.modoCifra = false; atualizarExtras();
 }
 
 // Liga/desliga a exibição animada dos CIAS. Ela vem LIGADA: é assim que o louvor
@@ -736,6 +868,7 @@ function definirEspera(arq) { est.descansoFundo = arq; Guardar.gravar('icm_esper
 // ali quebrava o congelamento que o operador pediu justamente para preparar o
 // próximo escondido — e a congregação via a tela trocar.
 function descanso(manterCongelado) {
+  fecharNoAr();                       // saiu do ar: fecha o cronômetro
   // pedir a espera na mão é uma ordem para o telão OBEDECER: aí sim descongela
   if (est.freeze && !manterCongelado) { est.freeze = false; $('#btn-congelar').classList.remove('freeze-on'); }
   est.live = { tipo: 'descanso' };
@@ -1143,6 +1276,8 @@ function fecharMenu() { $('#menu-overlay').classList.add('oculto'); }
 function menuSecao(sec) {
   $$('.menu-aba').forEach(b => b.classList.toggle('ativo', b.dataset.sec === sec));
   $$('.menu-sec').forEach(s => s.classList.toggle('ativo', s.dataset.sec === sec));
+  // o histórico só é lido ao abrir o Painel: não pesa nada no arranque
+  if (sec === 'painel') abrirPainel();
 }
 // ---- editor de louvores ----
 function parseLetra(txt) {
@@ -1449,6 +1584,14 @@ function ligarEventos() {
   $('#tam-label').onclick = tamPadrao;                      // clicar no rótulo volta ao padrão
   $('#btn-congelar').onclick = toggleFreeze;   // "Parar de projetar" já faz o papel da espera
   const bcf = $('#btn-cifra'); if (bcf) bcf.onclick = abrirCifra;
+  $$('.pn-f').forEach(b => b.onclick = () => {
+    $$('.pn-f').forEach(x => x.classList.toggle('ativo', x === b));
+    histDias = +b.dataset.dias; pintarPainel();
+  });
+  const cx = $('#cifra-x'); if (cx) cx.onclick = fecharCifra;
+  const ca = $('#cifra-ant'); if (ca) ca.onclick = () => virarPaginaCifra(-1);
+  const cp = $('#cifra-prox'); if (cp) cp.onclick = () => virarPaginaCifra(1);
+  const cov = $('#cifra-ov'); if (cov) cov.onclick = e => { if (e.target === cov) fecharCifra(); };
   const ban = $('#btn-anim'); if (ban) ban.onclick = alternarAnimacao;
   carregarExtras();                            // cifras e animações que já foram importadas
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
@@ -1471,6 +1614,14 @@ function ligarEventos() {
   $$('[data-reset]').forEach(b => b.onclick = () => resetar(b.dataset.reset));
   document.addEventListener('keydown', e => {
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
+    // a cifra aberta também segura as teclas: setinha ali vira página, não slide
+    const cif = $('#cifra-ov');
+    if (cif && !cif.classList.contains('oculto')) {
+      if (e.key === 'Escape') fecharCifra();
+      else if (e.key === 'ArrowRight') virarPaginaCifra(1);
+      else if (e.key === 'ArrowLeft') virarPaginaCifra(-1);
+      return;
+    }
     const modal = document.querySelector('.ajuda-overlay, .menu-overlay:not(.oculto), .bv-overlay:not(.oculto)');
     if (modal) {
       if (e.key === 'Escape') { if (modal.classList.contains('ajuda-overlay')) modal.remove(); else if (modal.id === 'menu-overlay') fecharMenu(); }
@@ -1529,6 +1680,21 @@ function executarDoCelular(c) {
       adicionarLista({ tipo: 'verso', ref: c.livro + ' ' + c.cap + ':' + c.v,
                        livro: c.livro, cap: c.cap, v: c.v, on: true });
       break;
+    // o celular manda um louvor pra Lista sem projetar nada — é como o grupo de
+    // louvor monta a ordem do culto de onde estiver
+    case 'addlouvor': {
+      const s2 = LOUVORES[c.idx]; if (!s2) break;
+      adicionarLista({ tipo: 'louvor', idx: c.idx, chave: chaveLouvor(s2), rotulo: rotuloLouvor(s2) });
+      break;
+    }
+    case 'tirardalista': {
+      if (c.i >= 0 && c.i < est.fila.length) removerFila(c.i);
+      break;
+    }
+    case 'irpara': {
+      if (c.i >= 0 && c.i < est.fila.length) projetarItemLista(c.i);
+      break;
+    }
     // o celular manda o ALVO (on: true/false), não "inverta": assim dois toques
     // seguidos param no mesmo lugar em vez de congelar e descongelar
     case 'freeze':  if (c.on === undefined || !!c.on !== !!est.freeze) toggleFreeze(); break;
@@ -1558,6 +1724,10 @@ function ligarControleCelular() {
         // posição do que está no ar — o celular usa para acender o item certo
         // mesmo quando quem avançou foi o computador ou a Lista de Projeção
         louvor: est.louvorIdx, slide: est.louvorSlide, slidepp: est.slidePos,
+        // a Lista de Projeção vai inteira pro celular: o grupo de louvor precisa
+        // VER o que está montado e poder acrescentar, sem pedir pro operador
+        fila: est.fila.map(x => ({ tipo: x.tipo, rotulo: x.tipo === 'louvor' ? x.rotulo : x.ref, on: x.on === true })),
+        pos: est.setPos,
       }) });
     } catch (e) {}
   }, 1000);

@@ -404,3 +404,49 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 
 /* etiqueta da coletânea nas buscas por texto, onde não há cabeçalho de grupo */
 .item small.etq-col{color:#7f9ac0;font-size:10px;letter-spacing:.4px;margin-right:6px}
+
+/* ---------- CIFRA dentro do Sistema ----------
+   Ela abria numa janela crua do navegador, com a barra de ferramentas do leitor
+   de PDF por cima — justo o tipo de coisa que este programa existe para evitar. */
+.cifra-ov{position:fixed;inset:0;background:#060d1ae0;backdrop-filter:blur(3px);z-index:320;
+          display:flex;align-items:center;justify-content:center;padding:20px}
+.cifra-ov.oculto{display:none}
+.cifra-cx{background:var(--painel);border:1px solid var(--borda);border-radius:14px;
+          width:min(880px,96vw);height:min(92vh,940px);display:flex;flex-direction:column;
+          overflow:hidden;box-shadow:0 24px 70px #000b}
+.cifra-cab{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#101d33;
+           border-bottom:1px solid var(--borda)}
+.cifra-cab b{font-size:14px;color:#eaf0fb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.cifra-cab .ico{color:#d4761c;font-size:17px}
+.cifra-tom{background:#a8570f;color:#fff;border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:700}
+.cifra-tom.oculto{display:none}
+.cifra-pag{font-size:11.5px;color:#8fa8cf;font-variant-numeric:tabular-nums;min-width:78px;text-align:right}
+.cifra-nav{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:7px;
+           padding:4px 11px;font-size:15px;line-height:1}
+.cifra-nav:hover{background:var(--hover)}
+.cifra-x{background:transparent;color:#8fa8cf;font-size:16px;padding:4px 8px;border-radius:7px}
+.cifra-x:hover{background:var(--vermelho);color:#fff}
+/* #toolbar=0 tira a barra do leitor de PDF; o fundo branco é a própria página */
+.cifra-cx iframe{flex:1;width:100%;border:0;background:#fff}
+
+/* ---------- PAINEL dos louvores ---------- */
+.pn-filtros{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap}
+.pn-f{padding:6px 13px;border-radius:8px;background:#16233c;border:1px solid var(--borda);
+      color:#9db3d6;font-size:12px;font-weight:600}
+.pn-f:hover{background:var(--hover)}
+.pn-f.ativo{background:var(--azul2);color:#fff;border-color:var(--azul2)}
+.pn-resumo{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.pn-cx{flex:1;min-width:120px;background:#101d33;border:1px solid var(--borda);border-radius:10px;padding:11px 13px}
+.pn-cx b{display:block;font-size:22px;color:var(--ouro);font-variant-numeric:tabular-nums;line-height:1.1}
+.pn-cx span{font-size:11px;color:#7f9ac0;letter-spacing:.4px}
+.pn-tit{font-size:11px;text-transform:uppercase;letter-spacing:1.1px;color:#8fa8cf;margin:16px 0 7px}
+.pn-lista{display:flex;flex-direction:column;gap:4px}
+.pn-l{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:8px;background:#16233c;font-size:12.5px}
+.pn-l .pos{color:#7f9ac0;font-size:11px;min-width:20px;font-variant-numeric:tabular-nums}
+.pn-l .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn-l .vl{color:var(--ouro);font-weight:700;font-variant-numeric:tabular-nums}
+/* barrinha proporcional: dá a leitura em 300ms, sem precisar comparar números */
+.pn-l .bar{position:absolute;left:0;top:0;bottom:0;background:#14487a55;border-radius:8px;z-index:0}
+.pn-l{position:relative;overflow:hidden}
+.pn-l>*{position:relative;z-index:1}
+.pn-vazio{padding:20px;text-align:center;color:#6f86a8;font-style:italic;font-size:13px}
