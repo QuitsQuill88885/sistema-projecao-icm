@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema — projeção para a igreja</title>
+<meta name="description" content="Programa gratuito de projeção para igrejas. Louvores, Bíblia, avisos e slides — funcionando sem internet, em computador fraco.">
+<link rel="icon" href="sistema.png">
+<meta property="og:title" content="Sistema — projeção para a igreja">
+<meta property="og:description" content="Louvores, Bíblia, avisos e slides. Sem internet, em computador fraco. Gratuito.">
+<meta property="og:image" content="img/proj_louvor.webp">
+<style>
+/* As fontes do site sao as MESMAS que o programa projeta. Quem chega aqui ja
+   ve na tela como o louvor vai aparecer no telao da igreja. */
+@font-face{font-family:'Jost';font-weight:100 900;font-style:normal;font-display:swap;
+  src:url('Jost.ttf') format('truetype-variations')}
+@font-face{font-family:'Jost';font-weight:100 900;font-style:italic;font-display:swap;
+  src:url('JostItalic.ttf') format('truetype-variations')}
+@font-face{font-family:'Bebas';font-display:swap;src:url('bebas.otf')}
+
+:root{
+  --tinta:#0b1526;        /* o azul do proprio programa */
+  --tinta2:#101d33;
+  --borda:#1f2c40;
+  --papel:#f4f6fa;
+  --texto:#0e1725;
+  --suave:#5a6a82;
+  --ouro:#c08a1e;
+  --ouro-claro:#f5d76e;
+  --sangue:#a31a1a;       /* o vermelho da faixa da Maranata */
+  --verde:#1f7a4d;
+}
+@media (prefers-color-scheme: dark){
+  :root{--papel:#0b1526;--texto:#e7edf7;--suave:#8fa8cf;--borda:#22314a;--ouro:#e8b93c}
+}
+:root[data-theme="dark"]{--papel:#0b1526;--texto:#e7edf7;--suave:#8fa8cf;--borda:#22314a;--ouro:#e8b93c}
+:root[data-theme="light"]{--papel:#f4f6fa;--texto:#0e1725;--suave:#5a6a82;--borda:#dce3ee;--ouro:#c08a1e}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--papel);color:var(--texto);font-family:'Jost',system-ui,sans-serif;
+     font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+.faixa{max-width:1080px;margin:0 auto;padding:0 22px}
+
+/* ---------- topo: o telao primeiro. e' o que a pessoa quer ver ---------- */
+.capa{background:linear-gradient(180deg,#0b1526 0%,#16294a 62%,#0b1526 100%);color:#eaf0fb;
+      padding:52px 0 44px;border-bottom:3px solid var(--sangue)}
+.capa .faixa{display:grid;gap:30px;grid-template-columns:1fr;align-items:center}
+@media(min-width:900px){.capa .faixa{grid-template-columns:1fr 1.15fr;gap:44px}}
+.marca{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.marca img{width:46px;height:46px}
+.marca b{font-family:'Bebas',sans-serif;font-size:31px;letter-spacing:1.5px;color:var(--ouro-claro)}
+h1{font-family:'Bebas',sans-serif;font-size:clamp(35px,6.4vw,58px);line-height:1.02;
+   letter-spacing:.5px;color:#fff;text-wrap:balance;margin-bottom:15px}
+h1 em{color:var(--ouro-claro);font-style:normal}
+.capa p{color:#a8bcdc;font-size:17px;max-width:38ch;margin-bottom:8px}
+.tela-foto{border-radius:11px;overflow:hidden;border:1px solid #24344f;
+           box-shadow:0 22px 54px #0006}
+
+/* ---------- os dois botoes. e' a coisa mais importante da pagina ---------- */
+.baixar{display:flex;flex-wrap:wrap;gap:13px;margin-top:26px}
+.bt{display:flex;flex-direction:column;gap:2px;text-decoration:none;border-radius:11px;
+    padding:15px 26px;transition:transform .14s,box-shadow .14s;border:1px solid transparent}
+.bt:hover{transform:translateY(-2px);box-shadow:0 12px 26px #0005}
+.bt b{font-size:17px;font-weight:600}
+.bt small{font-size:12.5px;opacity:.82}
+.bt.forte{background:var(--verde);color:#fff}
+.bt.forte:hover{background:#249058}
+.bt.leve{background:#16233a;color:#dce6f5;border-color:#2b3c58}
+.bt.leve:hover{background:#1d2c47}
+
+/* ---------- o resto ---------- */
+section{padding:56px 0}
+section+section{border-top:1px solid var(--borda)}
+h2{font-family:'Bebas',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:8px;
+   color:var(--texto)}
+.linha-ouro{width:52px;height:3px;background:var(--ouro);border-radius:2px;margin-bottom:24px}
+.sub{color:var(--suave);max-width:62ch;margin-bottom:26px;font-size:16px}
+
+table{width:100%;border-collapse:collapse;font-size:15px}
+.rolagem{overflow-x:auto;-webkit-overflow-scrolling:touch}
+th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--borda);vertical-align:top}
+th{font-weight:600;color:var(--texto);font-size:13.5px;letter-spacing:.4px;text-transform:uppercase}
+td b{font-weight:600}
+td small{display:block;color:var(--suave);font-size:13px;margin-top:2px}
+
+/* passo a passo: numerado porque E' uma sequencia -- 2 depois de 1, de verdade */
+ol.passos{list-style:none;counter-reset:p;display:grid;gap:15px;max-width:64ch}
+ol.passos li{counter-increment:p;position:relative;padding-left:47px;font-size:16px}
+ol.passos li::before{content:counter(p);position:absolute;left:0;top:-1px;width:31px;height:31px;
+  border-radius:50%;background:var(--ouro);color:#0b1526;font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center}
+ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
+
+.aviso{background:var(--tinta2);border-left:4px solid var(--ouro);border-radius:0 9px 9px 0;
+  padding:16px 19px;color:#c6d5ec;font-size:15px;max-width:66ch;margin-top:26px;line-height:1.6}
+.aviso b{color:#fff}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .aviso{background:#eef2f9;color:#3d4d66}
+  :root:not([data-theme="dark"]) .aviso b{color:#0e1725}}
+
+.recursos{display:grid;gap:17px;grid-template-columns:repeat(auto-fit,minmax(233px,1fr))}
+.rec{border:1px solid var(--borda);border-radius:11px;padding:18px 19px;background:transparent}
+.rec b{display:block;font-size:16px;font-weight:600;margin-bottom:5px}
+.rec p{color:var(--suave);font-size:14.5px;line-height:1.55}
+
+.duplo{display:grid;gap:26px;align-items:center;grid-template-columns:1fr}
+@media(min-width:820px){.duplo{grid-template-columns:1.5fr 1fr}}
+.duplo img{border-radius:10px;border:1px solid var(--borda)}
+.duplo.invertido img{max-width:290px;margin:0 auto}
+
+footer{background:var(--tinta);color:#7f96b8;padding:40px 0;font-size:14px;
+       border-top:3px solid var(--sangue)}
+footer a{color:#a8bcdc}
+footer p{margin-bottom:9px;max-width:70ch}
+footer b{color:#cfe0f5}
+a{color:var(--ouro)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:3px solid var(--ouro);outline-offset:3px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<header class="capa">
+  <div class="faixa">
+    <div>
+      <div class="marca"><img src="sistema.png" alt=""><b>Sistema</b></div>
+      <h1>A projeção da igreja,<br><em>sem complicação.</em></h1>
+      <p>Louvores, Bíblia, avisos, cronômetro e os slides da Escola Bíblica.
+         Funciona <b>sem internet</b> e roda em computador fraco.</p>
+      <p>Gratuito, para qualquer igreja.</p>
+
+      <div class="baixar">
+        <a class="bt forte" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema.exe">
+          <b>⬇ Instalar o Sistema</b><small>58 MB · leva tudo dentro · não precisa de internet</small></a>
+        <a class="bt leve" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Baixar-o-Sistema.exe">
+          <b>Baixar o Sistema</b><small>17 MB · versão leve, busca o resto na hora</small></a>
+      </div>
+    </div>
+    <div class="tela-foto">
+      <img src="img/proj_louvor.webp" width="1280" height="720"
+           alt="Telão projetando o louvor 709, Dispõe-te, resplandece">
+    </div>
+  </div>
+</header>
+
+<section class="faixa">
+  <h2>Qual dos dois eu baixo?</h2><div class="linha-ouro"></div>
+  <p class="sub">Os dois instalam o mesmo programa. A diferença é só de onde vêm os arquivos.</p>
+  <div class="rolagem"><table>
+    <tr><th style="min-width:172px">O arquivo que chega</th><th>Tamanho</th><th>Quando usar</th></tr>
+    <tr>
+      <td><b>Instalar o Sistema.exe</b><small>o completo</small></td>
+      <td>58 MB</td>
+      <td>Vai instalar na igreja. Leva tudo dentro e roda <b>sem internet nenhuma</b>.
+          <small>Na dúvida, é este.</small></td>
+    </tr>
+    <tr>
+      <td><b>Baixar o Sistema.exe</b><small>o leve</small></td>
+      <td>17 MB</td>
+      <td>Você está com internet, ou quer passar o programa adiante.
+          Ele pergunta se é para instalar neste computador ou copiar para um pendrive.
+          <small>Cabe no WhatsApp.</small></td>
+    </tr>
+  </table></div>
+</section>
+
+<section class="faixa">
+  <h2>Como instalar</h2><div class="linha-ouro"></div>
+  <ol class="passos">
+    <li>Dois cliques no arquivo que você baixou
+        <small>ele vai estar na pasta Downloads</small></li>
+    <li>Clique em <b>Instalar</b></li>
+    <li>Espere a barrinha encher e clique em <b>Abrir o Sistema</b>
+        <small>o atalho fica na Área de Trabalho e no menu Iniciar</small></li>
+  </ol>
+  <p class="aviso">Pode aparecer um aviso azul dizendo <b>“O Windows protegeu o computador”</b>.
+     Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.
+     Isso acontece porque o programa é gratuito e não tem assinatura digital paga —
+     ela custa caro e não muda nada no programa. Não é vírus.</p>
+</section>
+
+<section class="faixa">
+  <h2>O que ele faz</h2><div class="linha-ouro"></div>
+  <div class="recursos">
+    <div class="rec"><b>Louvores</b>
+      <p>A coletânea inteira já vem dentro. Busque pelo número, pelo nome ou por um trecho
+         da letra — e ele acha mesmo se você escrever errado.</p></div>
+    <div class="rec"><b>Bíblia completa</b>
+      <p>Projete um versículo ou vários de uma vez. E ele sugere os louvores que combinam
+         com o texto que está no telão.</p></div>
+    <div class="rec"><b>Controle pelo celular</b>
+      <p>Comande a projeção do banquinho do grupo de louvor. Não precisa de internet:
+         basta os dois estarem na mesma rede.</p></div>
+    <div class="rec"><b>Escola Bíblica</b>
+      <p>Abra o PowerPoint ou o PDF que a igreja mandou e projete slide a slide,
+         como um louvor.</p></div>
+    <div class="rec"><b>Avisos e cronômetro</b>
+      <p>Escreva um aviso na hora, ou marque o tempo da oração na tela, para todos verem.</p></div>
+    <div class="rec"><b>Computador fraco</b>
+      <p>Foi feito pensando na máquina mais simples da igreja. Não precisa de internet,
+         de conta, nem de instalar mais nada.</p></div>
+  </div>
+</section>
+
+<section class="faixa">
+  <h2>Do lado de quem opera</h2><div class="linha-ouro"></div>
+  <p class="sub">A tela do operador fica no computador. A congregação só vê o telão.</p>
+  <img src="img/painel.webp" width="1400" height="788"
+       alt="Tela do operador: lista de louvores à esquerda, prévia do telão à direita"
+       style="border-radius:10px;border:1px solid var(--borda)">
+</section>
+
+<section class="faixa">
+  <div class="duplo invertido">
+    <div>
+      <h2>E do banquinho do louvor</h2><div class="linha-ouro"></div>
+      <p class="sub">O celular vira controle: passa o slide, monta a lista dos louvores do culto
+         e mostra a cifra — sem tirar o violão do colo, e sem gastar internet.</p>
+      <p class="sub">Para conectar, é só ler o QR Code que aparece no menu do programa.</p>
+    </div>
+    <img src="img/celular.webp" width="420" height="840" alt="O controle no celular">
+  </div>
+</section>
+
+<section class="faixa">
+  <h2>A palavra no telão</h2><div class="linha-ouro"></div>
+  <p class="sub">O texto bíblico com a mesma letra grande e limpa, que se lê do fundo do salão.</p>
+  <img src="img/proj_verso.webp" width="1280" height="720"
+       alt="Telão projetando Isaías 60:1" style="border-radius:10px;border:1px solid var(--borda)">
+</section>
+
+<footer>
+  <div class="faixa">
+    <p><b>Sistema</b> — desenvolvido por <b>Samuel Mariano Ribeiro</b>, 2026.</p>
+    <p>Livre para qualquer igreja usar, copiar e modificar. Código sob licença MIT,
+       conteúdo sob <a href="https://creativecommons.org/licenses/by/4.0/deed.pt-br">CC&nbsp;BY&nbsp;4.0</a>.
+       A única condição é que o nome do autor continue citado.</p>
+    <p>As letras dos louvores e as artes de fundo pertencem à Igreja Cristã Maranata
+       e não fazem parte dessa licença.</p>
+    <p style="margin-top:16px">
+      <a href="https://github.com/QuitsQuill88885/sistema-projecao-icm">Código no GitHub</a> ·
+      <a href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases">Todas as versões</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
