@@ -2,9 +2,9 @@
 """Sistema — projeção da igreja.
 Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela limpa.
 Feito para rodar como .EXE em Windows, sem internet."""
-import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket
+import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.3.0"
+VERSAO = "2.4.0"
 PORTA = 8765
 
 def raiz():
@@ -108,6 +108,84 @@ def liberar_no_firewall(porta):
 def pasta_usuario(nome):
     """Pasta de conteúdo importado pelo operador (animacoes, cifras...)."""
     return os.path.join(DADOS_USUARIO, nome)
+
+
+def pasta_melodias():
+    return pasta_usuario("melodias")
+
+
+_CATALOGO = {"ts": 0, "dados": None}
+
+
+def catalogo_do_musico():
+    """A lista do que existe, sem o conteúdo. Fica em memória: o celular pede
+    isto uma vez ao abrir, e o disco não é lido de novo a cada toque."""
+    if _CATALOGO["dados"] is not None and time.time() - _CATALOGO["ts"] < 30:
+        return _CATALOGO["dados"]
+    violao = {}
+    try:
+        cam = os.path.join(pasta_usuario("cifras"), "acordes.json")
+        with io.open(cam, encoding="utf-8") as f:
+            for chave, reg in json.load(f).items():
+                violao[chave] = reg.get("tom") or ""
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        sys.stderr.write("catalogo do musico, violao: %s" % e + chr(10))
+    melodia, instrumentos = {}, []
+    try:
+        with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
+            idx = json.load(f)
+        instrumentos = idx.get("instrumentos", [])
+        for chave, v in idx.get("louvores", {}).items():
+            melodia[chave] = v.get("tons", {})
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        sys.stderr.write("catalogo do musico, melodia: %s" % e + chr(10))
+    d = {"violao": violao, "melodia": melodia, "instrumentos": instrumentos}
+    _CATALOGO.update({"ts": time.time(), "dados": d})
+    return d
+
+
+def material_do_louvor(chave, afinacao="C"):
+    """A cifra de violão e/ou o caderno melódico de UM louvor."""
+    saida = {"ok": True, "chave": chave, "em": afinacao}
+    try:
+        cam = os.path.join(pasta_usuario("cifras"), "acordes.json")
+        with io.open(cam, encoding="utf-8") as f:
+            reg = json.load(f).get(chave)
+        if reg:
+            saida["violao"] = {"tom": reg.get("tom"), "linhas": reg.get("linhas", [])}
+    except Exception:
+        pass
+    try:
+        with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
+            idx = json.load(f)
+        # o indice das melodias e' por TITULO, nao pela chave do app
+        titulo = chave.split("|")[1] if "|" in chave else chave
+        alvo = None
+        for k, v in idx.get("louvores", {}).items():
+            if k == _simples(titulo):
+                alvo = v
+                break
+        if alvo:
+            with io.open(os.path.join(pasta_melodias(), alvo["arq"]), encoding="utf-8") as f:
+                reg = json.load(f)
+            cad = reg.get("cadernos", {}).get(afinacao)
+            if cad:
+                saida["melodia"] = cad
+                saida["tons"] = alvo.get("tons", {})
+    except Exception:
+        pass
+    return saida
+
+
+def _simples(t):
+    import unicodedata as _u
+    t = _u.normalize("NFD", (t or "").upper())
+    t = "".join(c for c in t if _u.category(c) != "Mn")
+    return re.sub(r"[^A-Z0-9 ]+", " ", t).strip()
 
 
 def ler_indice(nome):
@@ -346,6 +424,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self._json({"ok": True, "registros": ler_historico()})
         if self.path.startswith("/api/cifras"):          # em que PDF e página está cada cifra
             return self._json({"ok": True, "indice": ler_indice("cifras")})
+        if self.path.startswith("/api/musico"):
+            # O CATÁLOGO do músico: que louvores têm cifra de violão e quais têm
+            # caderno melódico, e em que tom cada instrumento lê. Só a lista —
+            # o conteúdo vem depois, um louvor por vez.
+            return self._json({"ok": True, **catalogo_do_musico()})
+        if self.path.startswith("/api/cifra/"):
+            # UM louvor, sob demanda. Quatro celulares podem estar pedindo
+            # cadernos diferentes do mesmo louvor ao mesmo tempo — cada resposta
+            # tem uns poucos kilobytes, e o servidor já atende em paralelo.
+            from urllib.parse import unquote, urlparse, parse_qs
+            u = urlparse(self.path)
+            chave = unquote(u.path[len("/api/cifra/"):])
+            afinacao = (parse_qs(u.query).get("em") or ["C"])[0]
+            return self._json(material_do_louvor(chave, afinacao))
         if self.path.startswith("/api/rede"):            # endereço e QR para o celular entrar
             porta = self.server.server_address[1]
             url = "http://%s:%d/controle.html" % (endereco_local(), porta)

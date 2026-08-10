@@ -57,8 +57,13 @@ import difflib
 from collections import Counter, defaultdict
 
 # "A", "Bm", "C#m7", "F#", "Bb", "G/B", "Dsus4", "E7M", "A7(9)"
-ACORDE = re.compile(r"^[A-G](#|b)?(m|M|maj|min|dim|aug|sus|add)?[0-9]{0,2}"
-                    r"(\+|-)?(\([#b]?[0-9]{1,2}\))?(/[A-G](#|b)?)?$")
+# Os numeros que EXISTEM em cifra: 2,4,5,6,7,9,11,13. Aceitar "[0-9]{0,2}"
+# solto deixava passar "E0" e "A1", que sao lixo de OCR e apareciam na folha do
+# musico como se fossem acorde.
+# "°" e "o" sao o diminuto, e aparecem 42 vezes so nas primeiras 200 paginas
+ACORDE = re.compile(r"^[A-G](#|b)?(m|M|maj|min|dim|aug|sus|add|°|º)?"
+                    r"(2|4|5|6|7|9|11|13)?(M|m|maj)?(\+|-)?"
+                    r"(\([#b]?(2|4|5|6|7|9|11|13)\))?(/[A-G](#|b)?)?$")
 
 # separador do cabecalho: hifen comum, en dash, em dash, ou NADA
 TRACO = "-‐‑‒–—―−"
@@ -72,6 +77,44 @@ def pasta_cifras():
 def eh_acorde(t):
     t = t.strip().strip("|")
     return bool(t) and len(t) <= 9 and bool(ACORDE.match(t))
+
+
+# Erros do OCR que FORAM MEDIDOS, nao supostos. Contagem nas 400 primeiras
+# paginas dos tres livros, olhando os tokens rejeitados dentro de linhas que
+# sao claramente de acorde:
+#     534x  "7" solto        492x  "m" solto     122x  "/A", "/E", "/C#"...
+#      72x  "Pm"              47x  "CIE", "CIO"   42x  "A°"
+# O "7" e o "m" soltos sao sufixo que nao colou; o "/X" e' o baixo que se
+# desprendeu; "Pm" e' "Em" com o E lido como P; e "CIE" e' "C/E" com a barra
+# lida como I.
+SUFIXO_SOLTO = re.compile(r"^(7|m|M|4|5|6|9|11|13|#|b|°|º|sus|maj|dim|/[A-G](#|b)?)$")
+
+
+def colar_sufixos(pares):
+    """[(x,'A'), (x,'7')] -> [(x,'A7')]. Junta o pedaco solto no acorde anterior.
+
+    Sem isto o acorde inteiro e' perdido duas vezes: o "A" entra sozinho (errado,
+    porque era A7) e o "7" e' descartado como lixo.
+    """
+    saida = []
+    for x, w in pares:
+        if saida and SUFIXO_SOLTO.match(w) and eh_acorde(saida[-1][1] + w):
+            saida[-1] = (saida[-1][0], saida[-1][1] + w)
+        else:
+            saida.append((x, w))
+    return saida
+
+
+def consertar_ocr(w):
+    """Desfaz as trocas de letra que o OCR faz, e SO aceita se o resultado for
+    acorde de verdade. Assim uma palavra comum nunca vira acorde por acidente."""
+    if eh_acorde(w):
+        return w
+    for antes, depois in (("I", "/"), ("l", "/"), ("P", "E"), ("|", "/")):
+        alvo = w.replace(antes, depois)
+        if alvo != w and eh_acorde(alvo):
+            return alvo
+    return w
 
 
 def negrito(fonte):
@@ -442,7 +485,13 @@ def montar_bloco(linhas, ini, fim):
         # por TOKEN, nao por fragmento: o PDF pode desenhar "Gm  Gm/F Gm/Eb"
         # num pedaco so, e ai o pedaco inteiro nao e' acorde nenhum.
         toks = [f for f in fs if f[2].strip()]
-        palavras = tokens_com_x(fs)
+        # O conserto do OCR so vale em linha que JA parece de acorde. Sem essa
+        # trava, "DIA" -- de "O DIA ESTA CHEGANDO" -- vira "D/A" e a linha de
+        # letra e' promovida a linha de acordes. Aparece 70 vezes nos livros.
+        crus = tokens_com_x(fs)
+        ja_bons = sum(1 for _x, w in crus if eh_acorde(w))
+        palavras = (colar_sufixos([(x, consertar_ocr(w)) for x, w in crus])
+                    if crus and ja_bons >= len(crus) * 0.5 else crus)
         # ate 1/4 de lixo tolerado: no PDF escaneado o OCR estraga um acorde
         # aqui e ali, e exigir 100%% jogava a linha inteira fora -- com todos os
         # acordes bons que estavam nela.

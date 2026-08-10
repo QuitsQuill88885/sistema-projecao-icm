@@ -80,13 +80,46 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* `display:flex` VENCE o atributo hidden — sem esta linha o quadro do PDF ficava
    aberto o tempo todo e a aba Cifra aparecia como uma tela branca vazia. */
 .cifra-quadro[hidden]{display:none}
-.cifra-topo{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#101d33;border-bottom:1px solid var(--borda)}
+.cifra-topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;background:#101d33;border-bottom:1px solid var(--borda)}
 .cifra-volta{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
              padding:8px 12px;font-size:13px;font-weight:600}
 .cifra-nome{font-size:12.5px;color:#9db3d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* o PDF ocupa tudo: o leitor do próprio navegador dá zoom e rolagem, que é o
    que o músico precisa para repetir um trecho sem depender de ninguém */
 .cifra-quadro iframe{flex:1;width:100%;border:0;background:#fff}
+/* ---- INSTRUMENTO: quadradinhos, escolhidos uma vez e guardados ---- */
+.inst-caixa{padding:10px 2px 4px}
+.inst-tit{font-size:12.5px;color:#9db3d6;margin-bottom:9px}
+.inst-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px}
+.inst{background:#131f36;border:1px solid var(--borda);border-radius:9px;padding:9px 6px;
+  text-align:center;color:#cfe0f5;font:inherit;cursor:pointer;line-height:1.3}
+.inst b{display:block;font-size:13px;font-weight:600}
+.inst small{display:block;font-size:9.5px;color:#7f9ac0;margin-top:2px}
+.inst.on{border-color:var(--ouro);background:#1b2941}
+.inst.on b{color:var(--ouro)}
+.inst-trocar{background:none;border:none;color:#7f9ac0;font-size:11.5px;text-decoration:underline;
+  padding:4px 2px;cursor:pointer}
+/* ---- a cifra desenhada, no lugar do PDF ---- */
+.folha{flex:1;overflow:auto;padding:12px 13px 30px;background:var(--fundo);
+  -webkit-overflow-scrolling:touch}
+/* monoespacada de proposito: e' o que mantem o acorde em cima da silaba certa.
+   Com fonte proporcional o alinhamento vai embora e a cifra perde a serventia. */
+.folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
+  font-size:var(--cf,13px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre}
+.folha .ac{color:var(--ouro);font-weight:700}
+.folha .no{color:#79c0ff;font-weight:700}
+.folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
+.folha .cab b{color:var(--ouro)}
+.cifra-zoom{display:flex;gap:6px;align-items:center}
+/* o seletor de tom: dois botoes e o tom no meio, como o musico ja conhece */
+.tom-cx{display:flex;gap:4px;align-items:center;margin-left:auto}
+.tom-cx button{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:7px;width:29px;height:29px;font-size:15px;cursor:pointer;line-height:1}
+.tom-cx b{color:var(--ouro);font-size:14px;min-width:34px;text-align:center;
+  font-variant-numeric:tabular-nums}
+.cifra-zoom button{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:7px;width:30px;height:30px;font-size:15px;cursor:pointer}
+
 .lista-cab{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--suave);
   font-weight:700;margin:2px 0 9px}
 .lista-dica{margin-top:12px;font-size:11.5px;line-height:1.5;color:#6f86a8;
@@ -169,6 +202,10 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
        coro, volta um refrão, procura outro louvor, e nada disso mexe no telão.
        O que a projeção está mostrando aparece só como referência discreta. -->
   <div class="aba" data-aba="cifra" hidden>
+    <div class="inst-caixa" id="inst-caixa">
+      <div class="inst-tit">Qual instrumento você toca?</div>
+      <div class="inst-grade" id="inst-grade"></div>
+    </div>
     <div class="busca"><input id="qc" placeholder="Procurar cifra de outro louvor…" autocomplete="off"></div>
     <div class="cifra-agora" id="cifra-agora"></div>
     <div class="lista" id="lista-cifras"></div>
@@ -176,8 +213,10 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
       <div class="cifra-topo">
         <button class="cifra-volta" id="cifra-volta">‹ Escolher outra</button>
         <span class="cifra-nome" id="cifra-nome"></span>
+        <span class="tom-cx" id="tom-cx"></span>
+        <span class="cifra-zoom"><button id="cf-menos" title="Letra menor">A−</button><button id="cf-mais" title="Letra maior">A+</button></span>
       </div>
-      <iframe id="cifra-pdf" title="Cifra"></iframe>
+      <div class="folha" id="folha"></div>
     </div>
   </div>
   <!-- BÍBLIA -->
@@ -329,25 +368,78 @@ function pintarFila(e) {
    Independente de propósito. O instrumentista repete um coro, volta um refrão
    ou procura outro louvor, e NADA disso mexe no telão — ele não pode ficar na
    mão de quem passa os slides. O que a projeção mostra aparece só como pista. */
-let CIFRAS = {};
+let CIFRAS = {}, MELODIAS = {}, INSTRUMENTOS = [];
 const chaveLouvor = s => (s.num || '') + '|' + s.titulo + '|' +
   ((s.slides[0] && s.slides[0].linhas[0]) || '');
+const simples = t => semAcento(t).toUpperCase().replace(/[^A-Z0-9 ]+/g, ' ').trim();
 
-fetch('/api/cifras').then(r => r.json()).then(r => {
-  CIFRAS = r.indice || {};
-  if (Object.keys(CIFRAS).length) {        // sem cifras importadas, a aba nem existe
+/* A escolha do instrumento fica GRAVADA no aparelho. O sax alto do grupo abre
+   o Sistema no domingo seguinte e já está no caderno dele — ninguém quer
+   escolher instrumento toda semana. */
+let euToco = '';
+try { euToco = localStorage.getItem('inst') || ''; } catch (e) {}
+function gravarInst(v) { try { localStorage.setItem('inst', v); } catch (e) {} }
+
+// violão é o caderno de acordes; o resto são os cadernos melódicos por afinação
+const QUEM = [
+  ['violao', 'Violão', 'acordes'],
+  ['C', 'Violino', 'flauta, teclado'],
+  ['Bb', 'Sax tenor', 'trompete, clarinete'],
+  ['Eb', 'Sax alto', 'sax barítono'],
+  ['F', 'Trompa', 'em fá']
+];
+
+fetch('/api/musico').then(r => r.json()).then(r => {
+  CIFRAS = r.violao || {}; MELODIAS = r.melodia || {}; INSTRUMENTOS = r.instrumentos || [];
+  if (Object.keys(CIFRAS).length || Object.keys(MELODIAS).length) {
     $('#aba-cifra').hidden = false;
+    pintarInstrumentos();
     listarCifras('');
   }
 }).catch(() => {});
 
+function pintarInstrumentos() {
+  const c = $('#inst-caixa'); if (!c) return;
+  // escolhido uma vez, a grade encolhe para um link — a tela é do louvor, não do menu
+  if (euToco) {
+    const eu = QUEM.find(q => q[0] === euToco);
+    c.innerHTML = '<button class="inst-trocar" id="inst-trocar">Tocando: ' +
+                  (eu ? eu[1] : euToco) + ' — trocar</button>';
+    $('#inst-trocar').onclick = () => { euToco = ''; gravarInst(''); pintarInstrumentos(); listarCifras(''); };
+    return;
+  }
+  c.innerHTML = '<div class="inst-tit">Qual instrumento você toca?</div>' +
+                '<div class="inst-grade" id="inst-grade"></div>';
+  const g = $('#inst-grade');
+  for (const par of QUEM) {
+    const b = document.createElement('button');
+    b.className = 'inst';
+    b.innerHTML = '<b>' + par[1] + '</b><small>' + par[2] + '</small>';
+    b.onclick = () => {
+      euToco = par[0]; gravarInst(par[0]);
+      pintarInstrumentos(); listarCifras($('#qc').value || '');
+    };
+    g.appendChild(b);
+  }
+}
+
+function temMaterial(s) {
+  if (euToco === 'violao') {
+    const t = CIFRAS[chaveLouvor(s)];
+    return t === undefined ? null : { tom: t };
+  }
+  const m = MELODIAS[simples(s.titulo)];
+  return m ? { tom: m[euToco] || '' } : null;
+}
+
 function listarCifras(f) {
   const c = $('#lista-cifras'); if (!c) return;
   c.innerHTML = '';
+  if (!euToco) { c.innerHTML = '<div class="vazio">Escolha o seu instrumento acima.</div>'; return; }
   const q = semAcento(f).replace(/[^a-z0-9 ]+/g, ' ').trim();
   let n = 0;
-  for (let i = 0; i < LOUVORES.length && n < 50; i++) {
-    const s = LOUVORES[i], ref = CIFRAS[chaveLouvor(s)];
+  for (let i = 0; i < LOUVORES.length && n < 60; i++) {
+    const s = LOUVORES[i], ref = temMaterial(s);
     if (!ref) continue;
     const alvo = semAcento(s.titulo).replace(/[^a-z0-9 ]+/g, ' ');
     if (q && !alvo.includes(q) && !(s.num && s.num.toLowerCase().includes(q))) continue;
@@ -355,25 +447,164 @@ function listarCifras(f) {
     d.className = 'item';
     d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>' +
                   (ref.tom ? '<span class="tom">' + ref.tom + '</span>' : '');
-    d.onclick = () => abrirCifra(s, ref);
+    d.onclick = () => abrirCifra(s);
     c.appendChild(d); n++;
   }
-  if (!n) c.innerHTML = '<div class="vazio">Nenhuma cifra encontrada.</div>';
+  if (!n) c.innerHTML = '<div class="vazio">Nenhuma ' +
+    (euToco === 'violao' ? 'cifra' : 'melodia') + ' para este instrumento.</div>';
 }
 
-function abrirCifra(s, ref) {
-  $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo +
-    (ref.tom ? '  (tom ' + ref.tom + ')' : '');
-  // #page manda o leitor do navegador abrir direto na página da cifra; o zoom e
-  // a rolagem dali em diante são dele, sem passar pelo servidor a cada gesto
-  $('#cifra-pdf').src = '/cifras/' + encodeURIComponent(ref.pdf) +
-                        '#page=' + ref.pag + '&view=FitH';
-  $('#cifra-quadro').hidden = false;
+function escapar(t) {
+  return (t || '').split('&').join('&amp;').split('<').join('&lt;');
 }
-$('#cifra-volta').onclick = () => {
-  $('#cifra-quadro').hidden = true;
-  $('#cifra-pdf').src = 'about:blank';     // solta o PDF da memória do celular
-};
+
+/* Desenha a linha de acordes ACIMA da letra, cada um na coluna que veio do PDF.
+   Em fonte monoespaçada a coluna É o caractere: acorde na coluna 8 fica em cima
+   da 8ª letra. É por isso que a folha não pode usar fonte proporcional —
+   com ela o alinhamento vai embora e a cifra perde a serventia. */
+function linhaDeAcordes(acordes) {
+  if (!acordes || !acordes.length) return '';
+  let fila = '';
+  for (const par of acordes) {
+    const col = par[0], nome = par[1];
+    // encostou no anterior: dois espacos, senao "DbmEb0" sai grudado e o musico
+    // le um acorde que nao existe
+    if (fila.length && fila.length >= col) fila += '  ';
+    while (fila.length < col) fila += ' ';
+    fila += nome;
+  }
+  return '<span class="ac">' + escapar(fila) + '</span>\n';
+}
+
+/* ---------- TRANSPOR: o tom que o músico quiser ----------
+   Como no Cifra Club: dois botões que sobem e descem meio tom, e o tom no meio.
+   Vale para a cifra de violão E para o caderno melódico — quem toca sax às
+   vezes precisa de mais um tom acima do que o caderno traz, e não vai reescrever
+   a folha na mão. Zerar volta ao tom impresso.
+
+   O deslocamento é do APARELHO e do louvor aberto: cada celular escolhe o seu,
+   e nada disso mexe no telão nem no que os outros estão lendo. */
+const SEMI = {C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,'E#':5,Fb:4,F:5,'F#':6,Gb:6,
+              G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11,'B#':0,Cb:11};
+const SUS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const BEM = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+let desloc = 0;
+
+/* Sustenido ou bemol: pela armadura do tom de destino, não por gosto.
+   Tons de bemol (F, Bb, Eb, Ab, Db, Gb e suas relativas menores) se escrevem
+   com bemol; o resto com sustenido. Escrever "A#" onde o músico espera "Bb"
+   faz ele parar para pensar no meio do louvor. */
+function usaBemol(tom) {
+  if (!tom) return false;
+  const raiz = tom.replace(/m$/, '');
+  if (raiz.includes('b')) return true;
+  if (raiz.includes('#')) return false;
+  return (tom.endsWith('m') ? ['D','G','C','F','Bb','Eb'] : ['F','Bb','Eb','Ab','Db','Gb'])
+         .includes(raiz);
+}
+
+function transpor(nota, passos, bemol) {
+  if (!passos) return nota;                 // 0 devolve INTACTO: senão "Eb" viraria "D#"
+  const m = /^([A-G])(#|b)?/.exec(nota || '');
+  if (!m) return nota;
+  const base = m[1] + (m[2] || '');
+  if (!(base in SEMI)) return nota;
+  const tab = bemol ? BEM : SUS;
+  return tab[(SEMI[base] + passos % 12 + 12) % 12] + nota.slice(m[0].length);
+}
+
+function transporAcorde(a, passos, bemol) {
+  return String(a).split('/').map(p => transpor(p, passos, bemol)).join('/');
+}
+
+function transporTom(tom, passos, bemol) {
+  if (!tom) return tom;
+  const menor = /m$/.test(tom);
+  return transpor(menor ? tom.slice(0, -1) : tom, passos, bemol) + (menor ? 'm' : '');
+}
+
+function pintarTom() {
+  const cx = document.querySelector('#tom-cx');
+  if (!cx || !folhaAtual) { if (cx) cx.innerHTML = ''; return; }
+  const bemol = usaBemol(transporTom(tomOriginal, desloc, usaBemol(tomOriginal)));
+  const agora = transporTom(tomOriginal, desloc, bemol) || '—';
+  cx.innerHTML = '<button id="tom-menos" title="Meio tom abaixo">−</button>' +
+    '<b id="tom-agora">' + agora + '</b>' +
+    '<button id="tom-mais" title="Meio tom acima">+</button>' +
+    (desloc ? '<button id="tom-zero" title="Voltar ao tom impresso">↺</button>' : '');
+  document.querySelector('#tom-menos').onclick = () => { desloc--; redesenhar(); };
+  document.querySelector('#tom-mais').onclick = () => { desloc++; redesenhar(); };
+  const z = document.querySelector('#tom-zero');
+  if (z) z.onclick = () => { desloc = 0; redesenhar(); };
+}
+
+function redesenhar() { if (folhaAtual) desenharFolha(folhaAtual); }
+
+let folhaAtual = null, tomOriginal = null;
+
+function desenharFolha(d) {
+  folhaAtual = d;
+  const f = $('#folha');
+  const daVez = euToco === 'violao' ? d.violao : d.melodia;
+  tomOriginal = daVez ? daVez.tom : null;
+  const bemol = usaBemol(transporTom(tomOriginal, desloc, usaBemol(tomOriginal)));
+  const cab = [];
+  if (desloc) cab.push('<b>' + (desloc > 0 ? '+' : '') + desloc + (Math.abs(desloc) > 1 ? ' semitons' : ' semitom') + '</b> do impresso (' +
+                       (tomOriginal || '?') + ')');
+  if (d.tons) {
+    const outros = [];
+    for (const k in d.tons) if (k !== euToco) outros.push(k + ': ' + d.tons[k]);
+    if (outros.length) cab.push(outros.join(' · '));
+  }
+  let corpo = '';
+  if (euToco === 'violao' && d.violao) {
+    for (const l of d.violao.linhas) {
+      const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], desloc, bemol)]);
+      corpo += linhaDeAcordes(a) + escapar(l.t) + '\n';
+    }
+  } else if (euToco !== 'violao' && d.melodia) {
+    for (const l of d.melodia.linhas)
+      corpo += l.n ? '<span class="no">' + escapar(l.n.map(x =>
+                       x === '|' ? x : transpor(x, desloc, bemol)).join(' ')) + '</span>\n'
+                   : escapar(l.t) + '\n';
+  } else {
+    corpo = 'Este louvor não tem material para o seu instrumento.';
+  }
+  f.innerHTML = (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
+                '<pre>' + corpo + '</pre>';
+  f.scrollTop = 0;
+  pintarTom();
+}
+
+async function abrirCifra(s) {
+  $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
+  $('#folha').innerHTML = '<p class="cab">Carregando…</p>';
+  desloc = 0;                       // louvor novo comeca no tom impresso
+  $('#cifra-quadro').hidden = false;
+  aplicarCf();
+  const em = euToco === 'violao' ? 'C' : euToco;
+  try {
+    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) +
+                          '?em=' + em).then(r => r.json());
+    desenharFolha(d);
+  } catch (e) {
+    $('#folha').innerHTML = '<p class="cab">Não consegui buscar. Veja se o computador ainda está ligado.</p>';
+  }
+}
+$('#cifra-volta').onclick = () => { $('#cifra-quadro').hidden = true; };
+
+/* Tamanho da letra: o músico está a um metro da estante, não a trinta
+   centímetros do celular. Fica gravado, como o instrumento. */
+let cf = 13;
+try { cf = parseInt(localStorage.getItem('cf') || '13', 10) || 13; } catch (e) {}
+function aplicarCf() {
+  const f = $('#folha'); if (f) f.style.setProperty('--cf', cf + 'px');
+  try { localStorage.setItem('cf', String(cf)); } catch (e) {}
+}
+$('#cf-mais').onclick = () => { cf = Math.min(26, cf + 1); aplicarCf(); };
+$('#cf-menos').onclick = () => { cf = Math.max(9, cf - 1); aplicarCf(); };
+aplicarCf();
+
 $('#qc').oninput = e => listarCifras(e.target.value);
 
 /* Qual louvor está no telão AGORA — só como referência. Um toque abre a cifra
@@ -382,11 +613,11 @@ function pistaDoTelao(e) {
   const el = $('#cifra-agora'); if (!el) return;
   const idx = (typeof e.louvor === 'number') ? e.louvor : -1;
   const s = idx >= 0 ? LOUVORES[idx] : null;
-  const ref = s ? CIFRAS[chaveLouvor(s)] : null;
+  const ref = s ? temMaterial(s) : null;
   if (!s) { el.textContent = ''; return; }
   el.innerHTML = 'No telão: <b>' + s.titulo + '</b>' +
-                 (ref ? ' — <u>toque para abrir a cifra</u>' : ' — sem cifra');
-  el.onclick = ref ? (() => abrirCifra(s, ref)) : null;
+                 (ref ? ' — <u>toque para abrir</u>' : ' — sem material para o seu instrumento');
+  el.onclick = ref ? (() => abrirCifra(s)) : null;
   el.style.cursor = ref ? 'pointer' : 'default';
 }
 
