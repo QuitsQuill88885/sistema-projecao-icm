@@ -1,0 +1,449 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b1526">
+<title>Sistema — Controle</title>
+<link rel="icon" type="image/png" href="sistema.png">
+<style>
+:root{
+  --fundo:#0b1526; --painel:#16233c; --painel2:#1e2d49; --borda:#2c3d5c;
+  --txt:#eaf0fb; --suave:#9db3d6; --ouro:#f5d76e; --verde:#2e8b57; --vermelho:#a31a1a; --azul:#14487a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--fundo);color:var(--txt);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overscroll-behavior:none}
+body{display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+button{font-family:inherit;color:inherit;border:none;cursor:pointer}
+
+/* ---- topo: o que está no telão ---- */
+header{padding:10px 14px calc(10px + env(safe-area-inset-top));background:linear-gradient(180deg,#12294a,#0d1f3a);
+  border-bottom:2px solid var(--vermelho);position:sticky;top:0;z-index:5}
+.estado{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--suave)}
+.pt{width:9px;height:9px;border-radius:50%;background:#556;flex:none}
+.estado.vivo{color:#ff9b9b} .estado.vivo .pt{background:#e23;box-shadow:0 0 8px #e23;animation:pulsa 1.6s infinite}
+.estado.frio{color:var(--ouro)} .estado.frio .pt{background:var(--ouro)}
+@keyframes pulsa{0%,100%{opacity:1}50%{opacity:.3}}
+.agora{margin-top:6px;font-size:14px;font-weight:600;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* prévia ao vivo: uma cópia do telão, do tamanho certo pro celular */
+.previa{margin-top:8px;width:min(100%,calc(24vh * 16 / 9));aspect-ratio:16/9;border-radius:9px;overflow:hidden;
+  background:#000;border:1px solid var(--borda);position:relative;margin-left:auto;margin-right:auto}
+.previa iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+.previa.vivo{border-color:#c22;box-shadow:0 0 0 1px #c22}
+.previa.frio{border-color:var(--ouro)}
+/* toque na prévia = recolher. Ela comia mais da metade da tela e sobrava uma
+   janelinha pra escolher versículo; agora o operador decide quando quer o espaço */
+.previa.mini{height:0;margin-top:0;border-width:0}
+.previa-dica{text-align:center;font-size:10.5px;color:#6f86a8;margin-top:3px;letter-spacing:.3px}
+/* projeção fechada: não adianta apertar o rodapé, então ele apaga */
+footer.fechado{opacity:.4;pointer-events:none}
+
+/* ---- abas ---- */
+nav{display:flex;gap:4px;padding:8px 10px;background:#101d33}
+nav button{flex:1;padding:9px 4px;border-radius:8px;background:transparent;color:var(--suave);
+  font-size:12.5px;font-weight:600}
+nav button.on{background:var(--painel2);color:var(--ouro)}
+
+/* ---- conteúdo ---- */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px}
+.busca{position:sticky;top:0;background:var(--fundo);padding-bottom:8px;z-index:2}
+.busca input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid var(--borda);
+  background:#0c1830;color:#fff;font-size:16px}
+.lista{display:flex;flex-direction:column;gap:5px}
+.item{padding:11px 13px;border-radius:9px;background:var(--painel);font-size:13.5px;line-height:1.3;
+  display:flex;align-items:center;gap:9px}
+/* trilha: onde estou e como voltar */
+/* o Voltar e o "onde estou" acompanham a rolagem — em Salmos 119 eles sumiam
+   lá pra cima e o operador tinha que rolar tudo de volta pra trocar de capítulo */
+.trilha{position:sticky;top:0;z-index:3;background:var(--fundo);padding:7px 0;
+        display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.volta{background:var(--painel2);border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--txt)}
+.volta:active{background:#26375a}
+.onde{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ouro)}
+.item:active{background:var(--azul)}
+.item.sel{background:var(--azul);font-weight:600}
+.item small{color:var(--ouro);font-weight:700;min-width:34px}
+.vazio{padding:26px 14px;text-align:center;color:#6f86a8;font-style:italic;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px}
+.g{padding:11px 0;text-align:center;border-radius:8px;background:var(--painel);font-size:14px}
+.g:active,.g.sel{background:var(--vermelho);font-weight:700}
+.g.junto{background:var(--ouro);color:#101d33;font-weight:700}
+/* o texto do versículo, pra ele conferir ANTES de jogar no telão.
+   sticky porque ela nasce DEPOIS da grade: em Salmos 119 caía mil pixels
+   abaixo do que cabe na tela e o recurso simplesmente não existia. */
+.leitura{position:sticky;bottom:0;z-index:4;margin-top:10px;padding:11px 13px;
+         background:#101d33;border-left:3px solid var(--ouro);box-shadow:0 -6px 12px #0a142699;
+         border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5}
+.sec{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--suave);
+  font-weight:700;margin:14px 0 7px}
+.slide{padding:12px 14px;border-radius:10px;background:var(--painel);font-size:13.5px;line-height:1.45}
+.slide.sel{background:var(--azul);font-weight:600}
+.slide b{color:var(--ouro);font-size:11px;letter-spacing:1px;display:block;margin-bottom:3px}
+
+/* ---- barra de baixo: o que mais se usa ---- */
+footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid var(--borda);
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:7px}
+.navs{display:flex;gap:6px}
+.navs button{flex:1;padding:12px 0;border-radius:10px;background:var(--azul);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.navs button:active{background:#1a5a96;transform:scale(.98)}
+.navs .prox{flex:1.4;background:var(--verde)}
+.navs .prox:active{background:#37a066}
+.extras{display:flex;gap:6px}
+.extras button{flex:1;padding:9px 0;border-radius:9px;background:var(--painel2);font-size:11.5px;font-weight:600}
+.extras button:active{background:#26375a}
+.extras .frio.on{background:var(--ouro);color:#1a1a1a}
+.off{position:fixed;inset:0;background:#0b1526f2;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;z-index:20;padding:30px;text-align:center}
+.off.oculto{display:none}
+.off h2{font-size:19px;color:var(--ouro)}
+.off p{font-size:14px;color:var(--suave);line-height:1.6;max-width:34ch}
+</style></head>
+<body>
+<header>
+  <div class="estado" id="estado"><span class="pt"></span><span id="est-txt">Conectando…</span></div>
+  <div class="previa" id="previa"><iframe id="pv" src="projecao.html?previa=1" scrolling="no"></iframe></div>
+  <div class="previa-dica" id="previa-dica">toque aqui para recolher a prévia</div>
+  <div class="agora" id="agora">—</div>
+</header>
+
+<nav>
+  <button class="on" data-aba="louvor">Louvores</button>
+  <button data-aba="biblia">Bíblia</button>
+  <button data-aba="slides">Slides</button>
+</nav>
+
+<main>
+  <!-- LOUVORES -->
+  <div class="aba" data-aba="louvor">
+    <div class="busca"><input id="q" placeholder="Número, nome ou trecho da letra…" autocomplete="off"></div>
+    <div class="lista" id="lista"></div>
+    <div id="slides-louvor"></div>
+  </div>
+  <!-- BÍBLIA -->
+  <div class="aba" data-aba="biblia" hidden>
+    <div class="trilha" id="trilha" hidden></div>
+    <div id="passo-livro">
+      <div class="busca"><input id="qb" placeholder="Livro…" autocomplete="off"></div>
+      <div class="lista" id="livros"></div>
+    </div>
+    <div id="passo-cap" hidden></div>
+    <div id="passo-vers" hidden></div>
+  </div>
+  <!-- SLIDES -->
+  <div class="aba" data-aba="slides" hidden>
+    <div class="vazio" id="sl-vazio">Abra uma apresentação no computador; ela aparece aqui.</div>
+    <div class="grid" id="sl-grade"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="navs">
+    <button id="ant">‹ Voltar</button>
+    <button class="prox" id="prox">Avançar ›</button>
+  </div>
+  <div class="extras">
+    <button id="espera">Tela de espera</button>
+    <button class="frio" id="frio">Congelar</button>
+    <button id="menor">A−</button>
+    <button id="maior">A+</button>
+  </div>
+</footer>
+
+<div class="off oculto" id="off">
+  <h2>Sem conexão com o computador</h2>
+  <p>Confira se o celular e o computador estão na mesma rede — o hotspot do celular ou o wi-fi da igreja.</p>
+  <p id="off-url"></p>
+</div>
+
+<script src="dados/louvores.js"></script>
+<script src="dados/biblia.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const LOUVORES = window.LOUVORES || [], BIBLIA = window.BIBLIA || {livros:{},ordem:[]};
+let livroSel = null, capSel = null, louvorSel = -1, falhas = 0;
+
+const semAcento = t => (t||'').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+async function enviar(cmd, extra) {
+  try {
+    await fetch('/api/comando', {method:'POST', body: JSON.stringify(Object.assign({cmd}, extra||{}))});
+    if (navigator.vibrate) navigator.vibrate(12);
+  } catch(e) {}
+}
+
+/* ---------- estado vindo do computador ---------- */
+let slidesN = -1;              // quantos slides o computador tem (-1 = ainda não sei)
+let congelandoAgora = 0;       // trava curta para o botão Congelar não piscar
+
+const TITULO_OFF = 'Sem conexão com o computador';
+function mostrarOffline(msg) {
+  const o = $('#off'); if (!o) return;
+  // sempre repõe o título certo: se ficasse com o texto do sustinho da abertura,
+  // toda queda de rede depois mandava o operador olhar o computador, que está bom
+  const t = o.querySelector('h2'); if (t) t.textContent = msg || TITULO_OFF;
+  o.classList.remove('oculto');
+}
+
+/* acende no celular o louvor e o slide que estão no telão, mesmo quando quem
+   avançou foi o computador ou a Lista de Projeção */
+function acompanhar(e) {
+  if (typeof e.louvor === 'number' && e.louvor >= 0 && e.louvor !== louvorSel) {
+    louvorSel = e.louvor;
+    listarLouvores($('#q').value);
+    mostrarSlides(e.louvor);
+  }
+  const sl = $('#slides-louvor');
+  if (sl) [...sl.querySelectorAll('.slide')].forEach((d, k) => d.classList.toggle('sel', k === e.slide));
+  const gr = $('#sl-grade');
+  if (gr) [...gr.querySelectorAll('.g')].forEach((d, k) => d.classList.toggle('sel', k === e.slidepp));
+}
+
+async function ouvir() {
+  try {
+    const r = await fetch('/api/estado').then(r => r.json());
+    // quem responde aqui é o servidor Python, que fica de pé mesmo se a tela do
+    // computador travar ou for fechada. Se ela parou de publicar, isto aqui é
+    // notícia velha — melhor avisar do que deixar o celular mentindo "AO VIVO".
+    if (r.idade > 5) { falhas = 0; mostrarOffline('O computador parou de responder'); return; }
+    falhas = 0; $('#off').classList.add('oculto');
+    const e = r.estado || {};
+    $('#agora').textContent = e.agora || '—';
+    const b = $('#estado');
+    b.className = 'estado' + (e.congelado ? ' frio' : (e.projetando ? ' vivo' : ''));
+    $('#est-txt').textContent = e.congelado ? 'CONGELADO — o telão não muda'
+      : (e.projetando ? 'AO VIVO NO TELÃO' : 'Projeção fechada');
+    // por ~2,5s depois do toque, o botão manda em si mesmo: o estado que chega
+    // ainda é anterior ao comando e faria o botão piscar de volta
+    if (Date.now() - congelandoAgora > 2500) $('#frio').classList.toggle('on', !!e.congelado);
+    $('#previa').className = 'previa' + (e.congelado ? ' frio' : (e.projetando ? ' vivo' : ''));
+    // projeção fechada: apagar o rodapé em vez de deixar o operador apertando à toa
+    document.querySelector('footer').classList.toggle('fechado', !e.projetando);
+    // aceita ZERO: sem isto a grade de slides nunca era limpa quando a
+    // apresentação saía, e sobravam botões que não faziam mais nada
+    const ns = +(e.slides || 0);
+    if (ns !== slidesN) { slidesN = ns; montarSlides(ns); }
+    acompanhar(e);
+  } catch (err) {
+    if (++falhas > 4) mostrarOffline();     // aqui é rede mesmo: título padrão
+  }
+}
+setInterval(ouvir, 900); ouvir();
+
+/* ---------- prévia ao vivo do telão ---------- */
+let telaN = -1;
+async function espelhar() {
+  try {
+    // manda o número do quadro que já temos: se não mudou, o servidor devolve
+    // só o número. Sem isto o fundo inteiro descia de novo 1,4x por segundo.
+    const r = await fetch('/api/tela?n=' + telaN).then(r => r.json());
+    if (!r.payload || r.n === telaN) return;
+    telaN = r.n;
+    const f = $('#pv');
+    if (f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify(r.payload), '*');
+  } catch (e) {}
+}
+setInterval(espelhar, 700);
+$('#pv').addEventListener('load', () => { telaN = -1; espelhar(); });
+
+/* recolher a prévia: ela ocupava mais da metade da tela e sobrava uma janelinha
+   pra escolher versículo. A escolha fica guardada no próprio celular. */
+function previaRecolhida(mini) {
+  $('#previa').classList.toggle('mini', mini);
+  $('#previa-dica').textContent = mini ? 'toque para mostrar a prévia do telão'
+                                       : 'toque aqui para recolher a prévia';
+  try { localStorage.setItem('previa-mini', mini ? '1' : ''); } catch (e) {}
+}
+const alternarPrevia = () => previaRecolhida(!$('#previa').classList.contains('mini'));
+$('#previa').onclick = alternarPrevia;
+$('#previa-dica').onclick = alternarPrevia;
+try { if (localStorage.getItem('previa-mini')) previaRecolhida(true); } catch (e) {}
+
+/* ---------- abas ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.aba').forEach(a => a.hidden = a.dataset.aba !== b.dataset.aba);
+});
+
+/* ---------- louvores ---------- */
+function listarLouvores(f) {
+  const cont = $('#lista'); cont.innerHTML = '';
+  const q = semAcento(f).trim();
+  let n = 0;
+  for (let i = 0; i < LOUVORES.length && n < 60; i++) {
+    const s = LOUVORES[i];
+    if (q) {
+      const t = (s._t || (s._t = semAcento(s.titulo))).includes(q) || (s.num && semAcento(s.num).includes(q));
+      const l = !t && (s._l || (s._l = semAcento(s.slides.map(x => x.linhas.join(' ')).join(' ')))).includes(q);
+      if (!t && !l) continue;
+    }
+    const d = document.createElement('div');
+    d.className = 'item' + (i === louvorSel ? ' sel' : '');
+    d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>';
+    d.onclick = () => { louvorSel = i; enviar('louvor', {idx: i}); listarLouvores($('#q').value); mostrarSlides(i); };
+    cont.appendChild(d); n++;
+  }
+  if (!n) cont.innerHTML = '<div class="vazio">Nada encontrado.</div>';
+}
+function mostrarSlides(i) {
+  const s = LOUVORES[i], c = $('#slides-louvor'); c.innerHTML = '';
+  if (!s) return;
+  const t = document.createElement('div'); t.className = 'sec'; t.textContent = 'Slides — toque para ir direto';
+  c.appendChild(t);
+  s.slides.forEach((sl, k) => {
+    const d = document.createElement('div'); d.className = 'slide';
+    d.innerHTML = (sl.label ? '<b>' + sl.label + '</b>' : '') +
+      sl.linhas.slice(0, 2).map(x => x.replace(//g, '')).join('<br>') + (sl.linhas.length > 2 ? '…' : '');
+    d.onclick = () => enviar('slide', {idx: i, slide: k});
+    c.appendChild(d);
+  });
+}
+$('#q').oninput = e => listarLouvores(e.target.value);
+listarLouvores('');
+
+/* ---------- bíblia ---------- */
+function listarLivros(f) {
+  const c = $('#livros'); c.innerHTML = '';
+  const q = semAcento(f).trim().replace(/\s+/g, '');
+  (BIBLIA.ordem || []).forEach(nome => {
+    if (q) {
+      // aceita como o dedo digita no celular: "1jo" acha 1 João, "sl" acha Salmos,
+      // "gn" acha Gênesis. Abreviação bíblica é a 1ª letra mais consoantes soltas,
+      // então casamos as letras na ordem em que aparecem (subsequência).
+      const n = semAcento(nome), colado = n.replace(/\s+/g, '');
+      let bate = colado.includes(q);
+      if (!bate && colado[0] === q[0]) {
+        let i = 0;
+        for (const ch of colado) if (ch === q[i]) i++;
+        bate = i === q.length;
+      }
+      if (!bate) return;
+    }
+    const d = document.createElement('div');
+    d.className = 'item' + (nome === livroSel ? ' sel' : '');
+    d.textContent = nome;
+    // livro de um capítulo só (Judas, Obadias, Filemom…) pula direto pros versículos
+    d.onclick = () => {
+      livroSel = nome;
+      capSel = (BIBLIA.livros[nome] || []).length === 1 ? 1 : null;
+      passoBiblia();
+    };
+    c.appendChild(d);
+  });
+}
+/* um passo por vez: livro -> capítulo -> versículo (sem rolar atrás das coisas) */
+// Ao VOLTAR, devolve a rolagem onde ela estava: sem isto, sair dos versículos de
+// Salmos 119 largava o operador no capítulo 1, com 150 botões pela frente.
+const rolagem = {};
+function passoAtual() { return !livroSel ? 'livro' : (!capSel ? 'cap' : 'vers'); }
+function passoBiblia(voltando) {
+  const main = document.querySelector('main');
+  if (window._passoAnterior) rolagem[window._passoAnterior] = main.scrollTop;
+  const tr = $('#trilha');
+  $('#passo-livro').hidden = !!livroSel;
+  $('#passo-cap').hidden   = !livroSel || !!capSel;
+  $('#passo-vers').hidden  = !capSel;
+  tr.hidden = !livroSel;
+  tr.innerHTML = '';
+  if (livroSel) {
+    const v = document.createElement('button'); v.className = 'volta';
+    v.textContent = capSel ? '‹ ' + livroSel + ' — capítulos' : '‹ Todos os livros';
+    v.onclick = () => {
+      if (capSel && (BIBLIA.livros[livroSel] || []).length > 1) capSel = null;
+      else { livroSel = null; capSel = null; }
+      listarLivros($('#qb').value);      // repinta pra marcar de onde você veio
+      passoBiblia(true);                 // voltando: devolve a rolagem
+    };
+    tr.appendChild(v);
+    const onde = document.createElement('span'); onde.className = 'onde';
+    onde.textContent = livroSel + (capSel ? ' ' + capSel : '');
+    tr.appendChild(onde);
+  }
+  if (livroSel && !capSel) {
+    const c = $('#passo-cap'); c.innerHTML = '<div class="sec">Escolha o capítulo</div>';
+    const g = document.createElement('div'); g.className = 'grid';
+    (BIBLIA.livros[livroSel] || []).forEach((_, k) => {
+      const b = document.createElement('div'); b.className = 'g'; b.textContent = k + 1;
+      b.onclick = () => { capSel = k + 1; passoBiblia(); };
+      g.appendChild(b);
+    });
+    c.appendChild(g);
+  }
+  if (capSel) {
+    const c = $('#passo-vers');
+    c.innerHTML = '<div class="sec">Toque para projetar · segure para juntar</div>';
+    const g = document.createElement('div'); g.className = 'grid';
+    const versos = BIBLIA.livros[livroSel][capSel - 1] || {};
+    // o operador escolhia no escuro: só uma grade de números. Agora o texto
+    // aparece aqui embaixo antes de ir pro telão.
+    const leitura = document.createElement('div'); leitura.className = 'leitura';
+    leitura.textContent = 'Toque num número para ler aqui antes de projetar.';
+    Object.keys(versos).map(Number).sort((a, b) => a - b).forEach(v => {
+      const b = document.createElement('div'); b.className = 'g'; b.textContent = v;
+      const mostrar = () => { leitura.textContent = capSel + ':' + v + '  ' + (versos[v] || ''); };
+      // Marca em vez de cronômetro: medir "faz quanto tempo" errava, porque o
+      // clique que o navegador inventa depois do toque chega tarde demais quando
+      // o dedo demora. Segurando mais de ~1,2s saíam DOIS comandos (guardar E
+      // verso) e o telão mostrava os versículos juntos e voltava pra um só.
+      let foiLongo = false, t = null;
+      b.onclick = () => {
+        if (foiLongo) { foiLongo = false; return; }   // já tratado como toque longo
+        [...g.children].forEach(x => x.classList.remove('sel', 'junto'));
+        b.classList.add('sel'); mostrar();
+        enviar('verso', {livro: livroSel, cap: capSel, v});
+      };
+      b.oncontextmenu = e => e.preventDefault();     // segurar não abre menu do navegador
+      // segurar = guardar na lista; com 2 ou mais marcados o Sistema já projeta juntos
+      const comecou = () => { foiLongo = false; t = setTimeout(() => {
+        foiLongo = true; t = null;
+        b.classList.add('junto'); mostrar();
+        if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
+        enviar('guardar', {livro: livroSel, cap: capSel, v});
+      }, 500); };
+      const parou = () => { if (t) { clearTimeout(t); t = null; } };
+      b.addEventListener('touchstart', comecou, {passive: true});
+      b.addEventListener('touchend', parou);
+      b.addEventListener('touchmove', parou, {passive: true});
+      b.addEventListener('mousedown', comecou);
+      b.addEventListener('mouseup', parou);
+      b.addEventListener('mouseleave', parou);
+      g.appendChild(b);
+    });
+    c.appendChild(g); c.appendChild(leitura);
+  }
+  // indo pra frente começa do topo; voltando, devolve onde o operador parou
+  const agora = passoAtual();
+  main.scrollTop = voltando ? (rolagem[agora] || 0) : 0;
+  window._passoAnterior = agora;
+}
+$('#qb').oninput = e => listarLivros(e.target.value);
+listarLivros('');
+
+/* ---------- slides importados ---------- */
+function montarSlides(n) {
+  const g = $('#sl-grade'); g.innerHTML = '';
+  $('#sl-vazio').hidden = n > 0;
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('div'); b.className = 'g'; b.textContent = i + 1;
+    b.onclick = () => enviar('slidepp', {i});
+    g.appendChild(b);
+  }
+}
+
+/* ---------- botões de baixo ---------- */
+$('#prox').onclick   = () => enviar('prox');
+$('#ant').onclick    = () => enviar('ant');
+$('#espera').onclick = () => enviar('descanso');
+// Congelar acendia só depois de dar a volta inteira (comando 600ms + estado
+// 1000ms + leitura 900ms = até 2,5s de silêncio). O operador tocava de novo
+// achando que não pegou e desfazia. Agora acende na hora e manda o ALVO,
+// não "inverta" — então tocar duas vezes não desfaz.
+$('#frio').onclick   = () => {
+  const on = !$('#frio').classList.contains('on');
+  $('#frio').classList.toggle('on', on);
+  congelandoAgora = Date.now();
+  enviar('freeze', {on});
+};
+$('#maior').onclick  = () => enviar('mais');
+$('#menor').onclick  = () => enviar('menos');
+</script>
+</body></html>

@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# O repositório guarda o PROGRAMA. O conteúdo fica de fora, de propósito.
+#
+# Não é frescura de organização: a fonte Futura é comercial e licenciada, e os
+# louvores, a Bíblia, os fundos e as animações dos CIAS são material da Igreja
+# Cristã Maranata. Nada disso é nosso para redistribuir. Quem instalar traz o
+# próprio conteúdo — o Sistema já sabe importar tudo pelo menu.
+# ---------------------------------------------------------------------------
+
+# --- conteúdo da igreja (NUNCA subir) ---
+dados/louvores.js
+dados/biblia.js
+dados/*_backup_*.js
+fundos/
+fontes/
+animacoes/
+cifras/
+
+# --- material que o usuário importa na máquina dele ---
+slides_importados/
+*.pkr
+*.rar
+
+# --- coisas geradas pela compilação ---
+build/
+build_inst/
+dist/
+*.exe
+*.zip
+__pycache__/
+*.pyc
+*.spec.bak
+
+# --- rascunhos e sistema ---
+_medir.html
+*.tmp
+Thumbs.db
+desktop.ini
+
+# backup do historico antigo (que tinha o conteudo dentro)
+.git_antigo_com_conteudo/

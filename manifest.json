@@ -1,0 +1,15 @@
+{
+  "name": "Sistema",
+  "short_name": "Sistema",
+  "description": "Projeção da igreja — louvores, Bíblia, avisos e slides.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1526",
+  "theme_color": "#0f2f5e",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "sistema.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "sistema.png", "sizes": "256x256", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,34 @@
+# Identidade do executavel para o Windows.
+# É daqui que o firewall, o gerenciador de tarefas e as propriedades do
+# arquivo tiram o nome do programa. Sem isto o Windows mostra o nome cru
+# do arquivo e deixa os campos em branco.
+#
+# ATENCAO: isto define o NOME. O aviso "Fonte desconhecida" / "Editor
+# desconhecido" vem da ASSINATURA DIGITAL, que exige um certificado pago
+# de uma autoridade certificadora. Nao da para resolver por aqui.
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 6, 0, 0),
+    prodvers=(1, 6, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        '041604b0',                      # portugues do Brasil, Unicode
+        [StringStruct('CompanyName', 'Sistema'),
+         StringStruct('FileDescription', 'Instalador do Sistema'),
+         StringStruct('FileVersion', '1.6.0'),
+         StringStruct('InternalName', 'Sistema'),
+         StringStruct('OriginalFilename', 'Instalar o Sistema.exe'),
+         StringStruct('ProductName', 'Sistema'),
+         StringStruct('ProductVersion', '1.6.0')])
+    ]),
+    VarFileInfo([VarStruct('Translation', [1046, 1200])])
+  ]
+)

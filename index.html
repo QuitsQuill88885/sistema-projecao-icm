@@ -1,0 +1,269 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema</title>
+<link rel="icon" type="image/png" sizes="256x256" href="sistema.png">
+<link rel="apple-touch-icon" href="sistema.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2f5e">
+<link rel="stylesheet" href="app.css?v=11">
+</head><body>
+<div id="app">
+  <header>
+    <button id="btn-menu" class="hamb" title="Configurações, editor de louvores e avisos"><span></span><span></span><span></span></button>
+    <div class="marca"><span id="marca-svg"></span>
+      <b class="marca-igreja" id="marca-igreja">Projeção</b>
+    </div>
+    <nav class="tabs">
+      <button class="tab ativo" data-aba="louvor"><span class="ico" data-i="louvor"></span>Louvor</button>
+      <button class="tab" data-aba="biblia"><span class="ico" data-i="biblia"></span>Bíblia</button>
+      <button class="tab" data-aba="timer"><span class="ico" data-i="timer"></span>Timer</button>
+      <button class="tab" data-aba="relogio"><span class="ico" data-i="relogio"></span>Relógio</button>
+      <button class="tab" data-aba="texto"><span class="ico" data-i="texto"></span>Texto</button>
+      <button class="tab" data-aba="slides"><span class="ico" data-i="slides"></span>Slides</button>
+      <button class="tab" data-aba="fundos"><span class="ico" data-i="fundos"></span>Fundos</button>
+    </nav>
+    <button id="btn-estilo" class="estilo-btn"><span class="ico" data-i="estilo"></span><span id="estilo-nome">Estilo: Limpo</span></button>
+  </header>
+
+  <main>
+    <!-- ================= CONTEÚDO (esquerda, muda por aba) ================= -->
+    <section id="conteudo">
+      <!-- LOUVOR -->
+      <div class="view ativo" data-aba="louvor">
+        <div class="col col-lista">
+          <div class="busca"><input id="busca-louvor" placeholder="Buscar por nome, número ou trecho da letra…" autocomplete="off"></div>
+          <div class="lista" id="lista-louvores"></div>
+        </div>
+        <div class="col col-slides">
+          <h3 id="tit-slides">Slides do louvor</h3>
+          <div class="lista" id="lista-slides"><div class="vazio">Escolha um louvor à esquerda</div></div>
+        </div>
+      </div>
+      <!-- BÍBLIA -->
+      <div class="view" data-aba="biblia">
+        <div class="col col-livros">
+          <div class="busca"><input id="busca-livro" placeholder="Livro…" autocomplete="off"></div>
+          <div class="lista" id="lista-livros"></div>
+        </div>
+        <div class="col col-cv">
+          <h3 id="tit-caps">Capítulos</h3>
+          <div class="grid-num" id="grid-caps"></div>
+          <h3 id="tit-vers">Versículos</h3>
+          <div class="grid-num" id="grid-vers"><div class="vazio">Escolha um livro e capítulo</div></div>
+        </div>
+      </div>
+      <!-- TIMER -->
+      <div class="view centro" data-aba="timer">
+        <div class="card">
+          <h2>Cronômetro</h2>
+          <div class="row">
+            <button class="big-btn ouro" data-min="5">5 minutos</button>
+            <button class="big-btn" data-min="3">3 min</button>
+            <button class="big-btn" data-min="10">10 min</button>
+            <input type="number" id="timer-min" min="1" max="120" value="5" style="width:80px"> min
+            <input type="text" id="timer-rotulo" placeholder="Rótulo" value="Oração" style="flex:1;min-width:120px">
+          </div>
+          <div class="timer-display" id="timer-view">05:00</div>
+          <div class="row">
+            <button class="big-btn verde" id="timer-iniciar">Iniciar e Projetar</button>
+            <button class="big-btn" id="timer-pausar">Pausar</button>
+            <button class="big-btn vermelho" id="timer-parar">Parar</button>
+          </div>
+        </div>
+      </div>
+      <!-- RELÓGIO -->
+      <div class="view centro" data-aba="relogio">
+        <div class="card">
+          <h2>Relógio</h2>
+          <div class="timer-display" id="relogio-view">--:--</div>
+          <div class="row"><button class="big-btn verde" id="relogio-projetar">Projetar Relógio</button></div>
+        </div>
+      </div>
+      <!-- TEXTO -->
+      <div class="view centro" data-aba="texto">
+        <div class="card" style="width:min(820px,96%)">
+          <h2>Texto &amp; Avisos</h2>
+          <label class="campo-lbl">Avisos prontos — clique para preencher</label>
+          <div class="av-lista" id="av-lista"></div>
+          <label class="campo-lbl" for="texto-titulo" style="margin-top:18px">Título</label>
+          <input type="text" id="texto-titulo" placeholder="Ex.: AVISO" autocomplete="off">
+          <label class="campo-lbl" for="texto-livre" style="margin-top:14px">Texto</label>
+          <textarea id="texto-livre" placeholder="Escreva aqui. Cada linha aparece numa linha da tela."></textarea>
+          <label class="campo-lbl" style="margin-top:16px">Fundo</label>
+          <div class="fundos-liso" id="fundos-liso"></div>
+          <div class="row" style="margin-top:16px">
+            <button class="big-btn verde" id="texto-projetar">Projetar</button>
+          </div>
+        </div>
+      </div>
+      <!-- SLIDES (PowerPoint / PDF) -->
+      <div class="view centro" data-aba="slides">
+        <div class="card" style="width:min(880px,96%)">
+          <h2>Slides da Escola Bíblica</h2>
+          <div class="dica">Abra a apresentação em <b>PowerPoint</b> ou <b>PDF</b> que a igreja enviou. O Sistema converte e você projeta com <b>Voltar</b> e <b>Avançar</b>, como um louvor.</div>
+          <div class="row">
+            <button class="big-btn verde" id="sl-abrir">Abrir apresentação…</button>
+            <span class="sl-status" id="sl-status"></span>
+          </div>
+          <div class="sl-grade" id="sl-grade"></div>
+        </div>
+      </div>
+      <!-- FUNDOS -->
+      <div class="view centro" data-aba="fundos">
+        <div class="card" style="width:min(880px,96%)">
+          <h2>Fundos</h2>
+          <div class="dica">Clique na imagem para projetar. Ao passar o mouse, defina a <b>tela de espera</b> — exibida automaticamente entre os louvores — ou remova o fundo.</div>
+          <div class="fundo-cats" id="fundo-cats"></div>
+          <div class="grid-fundos" id="grid-fundos"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAINEL DE PROJEÇÃO (direita, sempre visível) ================= -->
+    <aside id="painel">
+      <div class="estado-barra" id="estado-barra">
+        <span class="dot" id="dot"></span>
+        <span class="estado-txt" id="est-proj">Projeção fechada</span>
+      </div>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=11"></iframe>
+        <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
+      <div class="agora" id="agora">Pronto.</div>
+      <div class="nav2">
+        <button class="ctrl nav" id="btn-anterior" title="Slide anterior (seta ←)"><span class="ico" data-i="ant"></span></button>
+        <button class="ctrl projetar" id="btn-projecao"><span class="ico" data-i="play"></span> Abrir Projeção</button>
+        <button class="ctrl nav" id="btn-proximo" title="Próximo slide (seta → ou Espaço)"><span class="ico" data-i="prox"></span></button>
+      </div>
+      <div class="barra-ferr">
+        <button class="ff" id="btn-congelar" title="Segura a imagem no telão enquanto você prepara (tecla F)"><span class="ico" data-i="congelar"></span> Congelar</button>
+        <span class="sep"></span>
+        <button class="ff mini" id="btn-menor" title="Diminuir a letra">A−</button>
+        <button class="ff mini tam-label" id="tam-label" title="Voltar ao tamanho padrão">Padrão</button>
+        <button class="ff mini" id="btn-maior" title="Aumentar a letra">A+</button>
+      </div>
+      <div class="fila-tit-row">
+        <h3 class="fila-tit">Lista de projeção</h3>
+        <button class="mini-btn" id="btn-limpar" title="Esvaziar a lista">Limpar</button>
+      </div>
+      <div class="fila-itens" id="fila-itens"><div class="vazio">Dê dois cliques em um louvor ou versículo para montar a lista.</div></div>
+    </aside>
+  </main>
+
+  <!-- ================= MENU LATERAL (☰ Configurações) ================= -->
+  <div id="menu-overlay" class="menu-overlay oculto">
+    <aside class="menu-lateral">
+      <div class="menu-topo">
+        <h2>Configurações</h2>
+        <button id="menu-fechar" class="menu-x" title="Fechar">✕</button>
+      </div>
+      <nav class="menu-abas">
+        <button class="menu-aba ativo" data-sec="inicio">Início</button>
+        <button class="menu-aba" data-sec="igreja">Minha igreja</button>
+        <button class="menu-aba" data-sec="louvores">Meus louvores</button>
+        <button class="menu-aba" data-sec="celular">Celular</button>
+        <button class="menu-aba" data-sec="sistema">Sistema</button>
+      </nav>
+      <div class="menu-corpo">
+        <!-- INÍCIO -->
+        <section class="menu-sec ativo" data-sec="inicio">
+          <div class="ini-marca" id="ini-marca"></div>
+          <h3 class="ini-tit">Sistema</h3>
+          <p class="ini-sub" id="ini-igreja">Projeção para a sua igreja</p>
+          <div class="ini-cards">
+            <button class="ini-card" data-ir="igreja"><b>Minha igreja</b><small>Nome e horários dos cultos</small></button>
+            <button class="ini-card" data-ir="louvores"><b>Meus louvores</b><small>Adicionar ou corrigir letras</small></button>
+            <button class="ini-card" id="ini-rever"><b>Como funciona</b><small>Rever a apresentação</small></button>
+            <button class="ini-card" data-ir="sistema"><b>Sistema</b><small>Restaurar o padrão</small></button>
+          </div>
+          <p class="ini-rodape"><span id="ini-versao">Versão 1.0.0</span> · Feito para a Igreja Cristã Maranata · funciona sem internet</p>
+        </section>
+        <!-- CELULAR -->
+        <section class="menu-sec" data-sec="celular">
+          <p class="dica">Controle a projeção pelo celular, do banquinho do grupo de louvor. <b>Não precisa de internet</b> — só que os dois estejam na mesma rede.</p>
+          <div class="cel-caixa">
+            <div class="cel-qr" id="cel-qr"></div>
+            <div class="cel-info">
+              <label class="campo-lbl">Endereço para abrir no celular</label>
+              <div class="cel-url" id="cel-url">…</div>
+              <button class="big-btn" id="cel-copiar">Copiar endereço</button>
+            </div>
+          </div>
+          <h3 class="menu-h3">Como conectar</h3>
+          <ol class="cel-passos">
+            <li>No celular, ligue o <b>roteador wi-fi</b> (ponto de acesso).</li>
+            <li>No computador, conecte-se a essa rede do celular.</li>
+            <li>Aponte a câmera do celular para o código acima — ou digite o endereço no navegador.</li>
+          </ol>
+          <p class="dica" style="margin-top:14px">Se a igreja tiver wi-fi, é mais simples ainda: deixe os dois na rede da igreja e pule os dois primeiros passos.</p>
+        </section>
+        <!-- MEUS LOUVORES -->
+        <section class="menu-sec" data-sec="louvores">
+          <p class="dica">Adicione um louvor que não está na lista, ou corrija a letra de um existente.
+            Separe os slides com <b>uma linha em branco</b>. Escreva <b>CORO</b>, <b>FINAL</b> ou <b>BIS</b> sozinho numa linha para virar rótulo amarelo.</p>
+          <div class="row">
+            <input type="text" id="ed-num" placeholder="Nº" style="width:80px">
+            <input type="text" id="ed-titulo" placeholder="Título do louvor" style="flex:1;min-width:180px">
+          </div>
+          <textarea id="ed-letra" placeholder="CORO&#10;PRIMEIRA LINHA DO CORO,&#10;SEGUNDA LINHA.&#10;&#10;PRIMEIRA LINHA DO SEGUNDO SLIDE,&#10;SEGUNDA LINHA."></textarea>
+          <div class="row" style="margin-top:12px">
+            <button class="big-btn verde" id="ed-salvar">Salvar louvor</button>
+            <button class="big-btn" id="ed-limpar">Limpar campos</button>
+          </div>
+          <h3 class="menu-h3">Louvores que você adicionou</h3>
+          <div id="ed-lista" class="ed-lista"><div class="vazio">Nenhum ainda.</div></div>
+        </section>
+        <!-- MINHA IGREJA -->
+        <section class="menu-sec" data-sec="igreja">
+          <p class="dica">Marque os cultos da sua igreja e o horário. O sistema usa isso para montar o aviso do dia sozinho.</p>
+          <input type="text" id="ig-nome" placeholder="Nome da igreja (ex.: ICM Iperó)">
+          <input type="text" id="ig-endereco" placeholder="Endereço (opcional)" style="margin-top:8px">
+          <div id="ig-cultos" class="ig-cultos"></div>
+          <div class="ig-rodape">
+            <button class="big-btn verde" id="ig-salvar">Salvar</button>
+            <span class="ig-salvo" id="ig-salvo">Alterações são salvas neste computador</span>
+          </div>
+        </section>
+        <!-- SISTEMA -->
+        <section class="menu-sec" data-sec="sistema">
+          <p class="dica">Ajustes gerais e restauração.</p>
+          <div class="reset-row"><div><b>Apresentação inicial</b><small>Rever como o Sistema funciona e reconfigurar a igreja.</small></div>
+            <button class="big-btn" id="btn-rever">Ver de novo</button></div>
+          <h3 class="menu-h3">Voltar ao padrão</h3>
+          <div class="reset-row"><div><b>Fundos</b><small>Restaura os fundos originais e apaga os que você adicionou.</small></div>
+            <button class="big-btn" data-reset="fundos">Restaurar</button></div>
+          <div class="reset-row"><div><b>Tamanhos de letra</b><small>Volta A−/A+ ao padrão em tudo.</small></div>
+            <button class="big-btn" data-reset="tamanhos">Restaurar</button></div>
+          <div class="reset-row"><div><b>Meus louvores</b><small>Apaga os louvores que você adicionou.</small></div>
+            <button class="big-btn" data-reset="louvores">Restaurar</button></div>
+          <div class="reset-row"><div><b>Apresentações</b><small>Apaga os PowerPoints e PDFs já importados.</small></div>
+            <button class="big-btn" data-reset="slides">Restaurar</button></div>
+          <div class="reset-row perigo"><div><b>Tudo</b><small>Devolve o sistema ao estado de fábrica.</small></div>
+            <button class="big-btn vermelho" data-reset="tudo">Restaurar tudo</button></div>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- ================= BOAS-VINDAS / APRESENTAÇÃO ================= -->
+<div id="bemvindo" class="bv-overlay oculto">
+  <div class="bv-box">
+    <div class="bv-passos" id="bv-passos"></div>
+    <div class="bv-corpo" id="bv-corpo"></div>
+    <div class="bv-rodape">
+      <button class="bv-pular" id="bv-pular">Pular apresentação</button>
+      <div class="bv-navs">
+        <button class="big-btn" id="bv-voltar">Voltar</button>
+        <button class="big-btn verde" id="bv-avancar">Continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="dados/biblia.js"></script>
+<script src="dados/louvores.js?v=11"></script>
+<script src="dados/fundos.js"></script>
+<script src="dados/galeria.js?v=11"></script>
+<script src="icones.js?v=11"></script>
+<script src="app.js?v=11"></script>
+</body></html>
