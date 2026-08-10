@@ -1,6 +1,23 @@
-Licença MIT
+SISTEMA — projeção para a Igreja Cristã Maranata
+Copyright (c) 2026 Samuel Mariano Ribeiro
 
-Copyright (c) 2026 Samuel — Sistema (projeção da Igreja Cristã Maranata de Iperó)
+Este projeto tem DUAS licenças, porque tem duas naturezas:
+
+  CÓDIGO ............ Licença MIT (abaixo)
+  CONTEÚDO ORIGINAL . Creative Commons Atribuição 4.0 (LICENSE-CONTEUDO.md)
+
+As duas permitem uso livre, inclusive comercial, com uma única condição: o
+nome do autor precisa continuar citado. Não há obrigação de colocar o crédito
+na tela do programa — basta ele não ser apagado dos arquivos.
+
+Os créditos completos, e a lista do que NÃO pertence ao autor, estão em
+CREDITOS.md. Leia esse arquivo antes de redistribuir.
+
+==========================================================================
+LICENÇA MIT — vale para o código deste projeto
+==========================================================================
+
+Copyright (c) 2026 Samuel Mariano Ribeiro
 
 É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia
 deste software e dos arquivos de documentação associados (o "Software"), para
@@ -20,19 +37,25 @@ DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA
 FORMA, DECORRENTE DE, FORA DE OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS
 NEGOCIAÇÕES NO SOFTWARE.
 
---------------------------------------------------------------------------
+==========================================================================
+O QUE ESTA LICENÇA **NÃO** COBRE
+==========================================================================
 
-IMPORTANTE — esta licença cobre apenas o CÓDIGO deste projeto.
+O programa acompanha material que é de terceiros e continua sendo deles. Isso
+não é detalhe jurídico: é a diferença entre publicar em paz e ter o repositório
+derrubado. A lista completa, com a licença de cada item, está em CREDITOS.md.
 
-O conteúdo que acompanha o programa NÃO está coberto por ela e pertence a
-terceiros:
+Em resumo:
 
-  - fontes/    Fontes tipográficas (a família Futura é comercial e licenciada;
-               Bebas Neue é distribuída sob a SIL Open Font License).
-  - fundos/    Artes de fundo da Igreja Cristã Maranata.
-  - dados/louvores.js   Letras da coletânea de louvores da Igreja Cristã Maranata.
-  - dados/biblia.js     Texto bíblico (Almeida Revista e Corrigida).
+  dados/louvores.js  Letras da coletânea da Igreja Cristã Maranata
+  dados/biblia.js    Texto bíblico (Almeida Revista e Corrigida)
+  cifras/            Cifras das coletâneas oficiais
+  animacoes/         Animações dos CIAS
+  fundos/            Artes de fundo da igreja
 
-Esse conteúdo está aqui apenas para uso da própria igreja e não deve ser
-redistribuído separadamente. Para usar este código em outro lugar, forneça as
-suas próprias fontes e imagens.
+Nada disso pertence ao autor e nada disso pode ser relicenciado por ele. Quem
+for usar este código em outro lugar deve trazer o seu próprio conteúdo.
+
+As fontes tipográficas que vão embutidas (Jost e Bebas Neue) têm licença
+própria, a SIL Open Font License, e são livres — os textos estão em
+fontes/OFL-Jost.txt e fontes/OFL-Bebas.txt e devem viajar junto com elas.

@@ -2,17 +2,37 @@
 <meta charset="utf-8"><title>Projeção — ICM Iperó</title>
 <style>
 @font-face{font-family:'Bebas';src:url('fontes/bebas.otf');font-display:swap}
-/* A fonte oficial da ICM é a Futura Heavy: os PowerPoints da igreja declaram
-   "Futura Hv BT" — 21.168 vezes na Coletânea das Igrejas, 11.839 nos Avulsos.
-   PRIMEIRO usamos a que está INSTALADA no Windows, que é o que os próprios
-   arquivos oficiais fazem; o arquivo embutido é só a reserva para a máquina
-   que não tiver, e depois dele vem uma geométrica parecida. */
-@font-face{font-family:'FuturaBk';font-display:swap;
-  src:local('Futura Hv BT'), local('Futura Heavy'), local('FuturaBT-Heavy'),
-      local('Futura'), url('fontes/futura_heavy.ttf');}
-@font-face{font-family:'FuturaBkIt';font-display:swap;
-  src:local('Futura Hv BT Italic'), local('Futura Heavy Italic'),
-      url('fontes/futura_heavy_italic.ttf');}
+/* AS CINCO FONTES DO SISTEMA
+   ---------------------------------------------------------------------
+   Tudo o que a projecao precisa vem DENTRO do pacote. O programa nao
+   pergunta nada ao Windows, nao procura fonte instalada, nao depende de
+   nada estar presente na maquina. Instalou, funciona -- igual em todo
+   computador, o novo e o mais fraquinho.
+
+   O desenho e a JOST, da indestructible type: uma geometrica classica
+   redesenhada do zero, sob a SIL Open Font License. Pode ser copiada, embutida
+   e distribuida de graca e para sempre. A licenca vai junto, em
+   fontes/OFL-Jost.txt, como a propria licenca exige.
+
+   A Jost e VARIAVEL (peso 100 a 900), entao dois arquivos cobrem os
+   cinco estilos. O peso 800 foi escolhido por medicao: reproduz a
+   espessura da haste do padrao do presbiterio, e as quebras de linha
+   caem nos mesmos pontos.
+
+   As familias no fim de cada lista ('Segoe UI', sans-serif) sao apenas
+   a rede de seguranca do navegador -- nunca entram em uso, porque o
+   arquivo embutido sempre carrega.
+   --------------------------------------------------------------------- */
+@font-face{font-family:'Sistema A1';font-weight:400;font-style:normal;font-display:block;
+  src:url('fontes/Jost.ttf') format('truetype-variations');}
+@font-face{font-family:'Sistema A2';font-weight:400;font-style:italic;font-display:block;
+  src:url('fontes/JostItalic.ttf') format('truetype-variations');}
+@font-face{font-family:'Sistema A3';font-weight:800 900;font-style:normal;font-display:block;
+  src:url('fontes/Jost.ttf') format('truetype-variations');}
+@font-face{font-family:'Sistema A4';font-weight:800 900;font-style:italic;font-display:block;
+  src:url('fontes/JostItalic.ttf') format('truetype-variations');}
+@font-face{font-family:'Sistema A5';font-weight:500;font-style:normal;font-display:block;
+  src:url('fontes/Jost.ttf') format('truetype-variations');}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:#000;overflow:hidden}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */
@@ -24,11 +44,11 @@ html,body{height:100%;background:#000;overflow:hidden}
 .txt{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;
      text-align:center;line-height:1.3;text-shadow:0 2px 8px #000a;padding:0 5.5%}
 .linha{display:block}
-#bib-ref,#lou-tit{font-family:'Bebas','Arial Narrow',sans-serif;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+#bib-ref,#lou-tit{font-family:'Bebas',sans-serif;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
 #bib-ref{color:#f5d76e;font-size:6.9cqh}
 #lou-tit{color:#fff3a3;font-size:6.4cqh}
-#bib-txt{font-family:'FuturaBkIt','FuturaBk','Segoe UI',sans-serif;color:#fff;font-style:italic;font-size:5.55cqh;flex-direction:column;gap:.15em}
-#lou-txt{font-family:'FuturaBk','Segoe UI',sans-serif;color:#fff;font-size:6.4cqh;flex-direction:column;text-transform:uppercase}
+#bib-txt{font-family:'Sistema A4','Sistema A3',sans-serif;color:#fff;font-style:italic;font-size:5.55cqh;flex-direction:column;gap:.15em}
+#lou-txt{font-family:'Sistema A3',sans-serif;color:#fff;font-size:6.4cqh;flex-direction:column;text-transform:uppercase}
 #lou-txt .bloco{text-align:left;display:inline-block;width:76%}   /* largura fixa: borda esquerda alinhada em TODOS os slides (margem ~12% p/ centralizar) */
 #lou-txt .bloco .linha{display:block;margin:.16em 0}
 #lou-txt .label-coro{display:block;color:#ffff00;font-style:italic;font-size:.72em;letter-spacing:1px;margin-bottom:.12em}
@@ -36,16 +56,16 @@ html,body{height:100%;background:#000;overflow:hidden}
 /* wrapper de medição p/ auto-ajuste (shrink-to-fit) */
 .fitw{display:flex;flex-direction:column;gap:.12em;max-width:100%}
 /* "fim" no canto inferior direito do último slide do louvor */
-#fim-tag{position:absolute;right:2.6%;bottom:2.4%;font-family:'FuturaBk','Segoe UI',sans-serif;color:#fff;
+#fim-tag{position:absolute;right:2.6%;bottom:2.4%;font-family:'Sistema A3',sans-serif;color:#fff;
          opacity:.72;font-size:3.4cqh;letter-spacing:.5px;display:none;text-shadow:0 2px 6px #000b}
-#grande{inset:0;font-family:'Bebas','Segoe UI',sans-serif;color:#fff;font-size:24cqh;
+#grande{inset:0;font-family:'Bebas',sans-serif;color:#fff;font-size:24cqh;
         font-variant-numeric:tabular-nums;letter-spacing:2px;text-shadow:0 4px 24px #000c;flex-direction:column}
 #grande small{font-size:5cqh;color:#f5d76e;letter-spacing:3px;text-transform:uppercase;margin-bottom:2cqh}
-#livre{top:12%;height:76%;font-family:'FuturaBk','Segoe UI',sans-serif;color:#fff;font-size:6cqh;flex-direction:column;text-shadow:0 2px 10px #000c}
+#livre{top:12%;height:76%;font-family:'Sistema A3',sans-serif;color:#fff;font-size:6cqh;flex-direction:column;text-shadow:0 2px 10px #000c}
 #livre .fitw{gap:.22em;align-items:center;text-align:center}
-#livre .mk{font-weight:700;font-size:1.25em;letter-spacing:1px;margin-bottom:.15em;display:block}
+#livre .mk{font-weight:900;font-size:1.25em;letter-spacing:1px;margin-bottom:.15em;display:block}
 .mk{color:#ffff00}   /* trecho/título amarelo (louvor, texto, avisos) */
-#livre .mk{font-weight:700}
+#livre .mk{font-weight:900}
 /* ---- ESTILO LIMPO (1 Padrão): faixa no topo (2%..17%) ---- */
 .e-limpo #bib-ref{top:2.2%;height:14.5%}
 .e-limpo #bib-txt{top:22%;height:74%}
@@ -57,14 +77,14 @@ html,body{height:100%;background:#000;overflow:hidden}
 .e-mapa #lou-tit{top:3%;height:9%;left:13.5%;right:1.5%}
 .e-mapa #lou-txt{top:14%;height:74%}
 /* ---- MULTI-VERSÍCULO: vários juntos, referência dourada + texto branco itálico ---- */
-#bib-multi{font-family:'FuturaBk','Segoe UI',sans-serif;flex-direction:column;align-items:center;
+#bib-multi{font-family:'Sistema A3',sans-serif;flex-direction:column;align-items:center;
            justify-content:center;text-align:left;padding:0 6% 0 8%}
 .e-limpo #bib-multi{top:20%;height:77%}
 .e-mapa #bib-multi{top:28%;height:69%}
 #bib-multi .fitw{align-items:flex-start;gap:0}
-#bib-multi .vm-ref{color:#f5d76e;font-weight:700;display:block;margin-top:.5em;line-height:1.1}
+#bib-multi .vm-ref{color:#f5d76e;font-weight:900;display:block;margin-top:.5em;line-height:1.1}
 #bib-multi .vm-ref.first{margin-top:0}
-#bib-multi .vm-txt{color:#fff;font-family:'FuturaBkIt','FuturaBk',sans-serif;font-style:italic;display:block;line-height:1.18;margin-top:.05em}
+#bib-multi .vm-txt{color:#fff;font-family:'Sistema A4','Sistema A3',sans-serif;font-style:italic;display:block;line-height:1.18;margin-top:.05em}
 </style></head>
 <body>
 <div id="tela" class="e-limpo">

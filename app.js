@@ -134,6 +134,85 @@ function stBiblia(ref, texto) {
   return { modo: 'biblia', fundo: FB.biblia, ref, linhas: [texto], tam: TAM_DEF.biblia, escala: est.escalaVers, transicao: true, fade: 400 };
 }
 
+// ---------- SUGESTÕES: louvores que combinam com o versículo ----------
+// A tabela vem PRONTA (dados/sugestoes.js): o computador da igreja não calcula
+// nada para os três primeiros. O "ver mais" é que calcula, e só naquele momento,
+// para aquele versículo — assim a lista não tem fim e mesmo assim nada pesa.
+let sugMostradas = 3, sugCalculadas = null;
+function codVers(livro, cap, v) {
+  const li = BIBLIA.ordem.indexOf(livro);
+  return li < 0 ? null : li + '.' + cap + '.' + v;
+}
+function sugerirPara(livro, cap, v) {
+  const cx = $('#sug'); if (!cx) return;
+  sugMostradas = 3; sugCalculadas = null;
+  const k = codVers(livro, cap, v);
+  const base = (window.SUGESTOES && k && window.SUGESTOES[k]) || [];
+  if (!base.length) { cx.classList.add('oculto'); return; }
+  cx.classList.remove('oculto');
+  pintarSug(base.map(a => a[0]));
+}
+function pintarSug(idxs) {
+  const c = $('#sug-lista'); if (!c) return;
+  c.innerHTML = '';
+  idxs.slice(0, sugMostradas).forEach(i => {
+    const s = LOUVORES[i]; if (!s) return;
+    const d = document.createElement('div'); d.className = 'sug-l';
+    d.innerHTML = '<small>' + (numLouvor(s) || '—') + ' ' + siglaCol(s) + '</small>' +
+                  '<span class="nm">' + s.titulo + '</span>' +
+                  '<button class="add" title="Guardar na Lista de Projeção">+</button>';
+    d.onclick = ev => {
+      if (ev.target.classList.contains('add')) {
+        ev.stopPropagation();
+        adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s), rotulo: rotuloLouvor(s) });
+        return;
+      }
+      selecionarLouvor(i, true); trocarAba('louvor');
+    };
+    c.appendChild(d);
+  });
+  const b = $('#sug-mais');
+  if (b) b.style.display = idxs.length > sugMostradas ? '' : 'none';
+  $('#sug').dataset.todos = JSON.stringify(idxs);
+}
+// "ver mais": daqui pra frente é calculado na hora, com o índice temático que
+// já está carregado. A Maranata tem centenas de louvores por tema — cortar em
+// três seria desperdiçar o acervo.
+// O índice temático tem 881 KB. Carregar sempre pesaria no arranque do micro
+// da igreja para um recurso que talvez ninguém use no culto — então ele só é
+// buscado no primeiro "ver mais", e daí em diante fica na memória.
+let temasPedidos = false;
+function carregarTemas(feito) {
+  if (window.TEMAS) return feito();
+  if (temasPedidos) return;
+  temasPedidos = true;
+  const sc = document.createElement('script');
+  sc.src = 'dados/temas.js';
+  sc.onload = feito;
+  sc.onerror = () => { temasPedidos = false; toast('Não consegui abrir a lista de temas.'); };
+  document.head.appendChild(sc);
+}
+function maisSugestoes() {
+  if (!window.TEMAS) { carregarTemas(maisSugestoes); return; }
+  const cx = $('#sug');
+  let todos = JSON.parse(cx.dataset.todos || '[]');
+  if (!sugCalculadas && est.bibPos) {
+    const t = versoTexto(est.bibPos) || '';
+    const ps = soLetras(t).split(' ').filter(p => p.length > 2);
+    const pontos = new Map();
+    TEMAS.louvores.forEach((pesos, i) => {
+      let sc = 0;
+      for (const p of ps) if (pesos[p]) sc += pesos[p];
+      if (sc > 3) pontos.set(i, sc);
+    });
+    todos.forEach(i => pontos.delete(i));
+    sugCalculadas = [...pontos.entries()].sort((a, b) => b[1] - a[1]).map(a => a[0]);
+    todos = todos.concat(sugCalculadas);
+  }
+  sugMostradas += 3;
+  pintarSug(todos);
+}
+
 // ---------- HISTÓRICO ----------
 // Guarda o que foi ao telão e por QUANTO TEMPO. O tempo é o que separa o louvor
 // que a igreja cantou inteiro daquele que passou de raspão — é o dado que faz o
@@ -291,6 +370,48 @@ function semAcento(t) { return (t || '').normalize('NFD').replace(/[\u0300-\u036
 // procura "resplandece jerusalem" tem que achar "RESPLANDECE, Ó JERUSALÉM"
 function soLetras(t) { return semAcento(t).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 
+// ---- busca que perdoa erro de escrita ----------------------------------
+// Quem digita errado digita PELO SOM. Então reduzimos a palavra ao som antes de
+// comparar: "resplandesse" e "resplandece" viram a mesma coisa, "querro" e
+// "quero" também. A chave é calculada uma vez por louvor e fica guardada, então
+// no momento da busca é só comparar texto curto — leve no computador da igreja.
+function som(p) {
+  p = (p || '').normalize('NFD').toLowerCase();
+  p = p.replace(/c\u0327/g, 's');                    // cedilha ANTES do c -> k
+  p = p.replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+  if (!p) return '';
+  p = p.replace(/lh/g, 'L').replace(/nh/g, 'N').replace(/ch/g, 'X');
+  p = p.replace(/xc/g, 's').replace(/sc/g, 's');     // exceto = eseto
+  p = p.replace(/c([ei])/g, 's$1').replace(/c/g, 'k').replace(/q/g, 'k').replace(/ku/g, 'k');
+  p = p.replace(/ph/g, 'f');
+  p = p.replace(/([aeiou])s([aeiou])/g, '$1z$2').replace(/z/g, 's');
+  p = p.replace(/r{2,}/g, 'r').replace(/l{2,}/g, 'l').replace(/h/g, '');
+  p = p.replace(/[mn]$/, 'n').replace(/y/g, 'i');
+  return p.replace(/(.)\1+/g, '$1');
+}
+// distância de edição com corte: só interessa saber se está a <= teto trocas,
+// e desistir cedo é o que mantém isso barato em 2.459 louvores
+function perto(a, b, teto) {
+  teto = teto || 2;
+  if (Math.abs(a.length - b.length) > teto) return false;
+  let ant = []; for (let j = 0; j <= b.length; j++) ant.push(j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let melhor = i;
+    for (let j = 1; j <= b.length; j++) {
+      const v = Math.min(ant[j] + 1, cur[j - 1] + 1, ant[j - 1] + (a[i - 1] !== b[j - 1] ? 1 : 0));
+      cur.push(v); if (v < melhor) melhor = v;
+    }
+    if (melhor > teto) return false;
+    ant = cur;
+  }
+  return ant[b.length] <= teto;
+}
+// o som tem que sair do texto ORIGINAL: soLetras já tirou o cedilha, e sem ele
+// "coração" virava "korakao" em vez de "korasao" — "korason" não achava nada
+function somDaFrase(t) {
+  return (t || '').split(/[^A-Za-zÀ-ÿ]+/).filter(Boolean).map(som);
+}
+
 // QUÃO PERTO o louvor está do que foi digitado — quanto maior, mais acima.
 // A ordem que o operador espera: título igual, título que COMEÇA com aquilo,
 // título que contém, título com todas as palavras soltas, e só no fim a LETRA.
@@ -306,6 +427,15 @@ function pontuarLouvor(s, alvo, palavras) {
   const letra = s._ll || (s._ll = soLetras(s.slides.map(x => x.linhas.join(' ')).join(' ')));
   if (letra.includes(alvo)) return 300;
   if (palavras.length > 1 && palavras.every(p => letra.includes(p))) return 200;
+  // NADA bateu escrito certo: tenta pelo SOM. Vale menos que o acerto exato,
+  // mas salva quem digitou "resplandesse" ou "querro".
+  const sons = s._sm || (s._sm = somDaFrase(s.titulo));
+  const alvoSom = window._somBusca || [];
+  if (alvoSom.length && sons.length) {
+    const casadas = alvoSom.filter(a => sons.some(b => b === a || perto(a, b, a.length > 5 ? 2 : 1)));
+    if (casadas.length === alvoSom.length) return 150 - Math.min(sons.length, 40);
+    if (casadas.length && alvoSom.length > 1) return 80;
+  }
   return 0;
 }
 // ---- coletâneas ----------------------------------------------------------
@@ -326,7 +456,7 @@ function nomeCol(s) { return NOME_COL[s.col] || String(s.col || '').toUpperCase(
 function ehCias(s) { return s.col === 'CIA 2018'; }
 // etiqueta curta da coletânea, usada quando a lista vem ranqueada (sem grupo)
 function siglaCol(s) {
-  return { 'Coletânea 2018': '2018', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
+  return { 'Coletânea 2018': 'COLETÂNEA', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
            'Avulsos 2018': 'AVULSO', 'Meus louvores': 'MEU' }[s.col] || '';
 }
 // "AV" não é número: nos Avulsos a coluna fica com um traço em vez de repetir a sigla
@@ -336,7 +466,8 @@ function numInt(s) { const n = numLouvor(s); return /^\d+$/.test(n) ? parseInt(n
 // onde não existe o cabeçalho de grupo para dizer de que coletânea ele é
 function rotuloLouvor(s) {
   const n = numLouvor(s), c = nomeCol(s);
-  const curto = { 'COLETÂNEA 2018': '2018', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
+  // palavra, nunca outro número: "709 2018" parecia um código duplo
+  const curto = { 'COLETÂNEA 2018': 'COLETÂNEA', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
                   'MEUS LOUVORES': 'MEU', 'CIAS': 'CIAS' }[c] || c;
   return (n ? n + ' ' : '') + curto + ' · ' + s.titulo;
 }
@@ -349,6 +480,7 @@ function renderListaLouvores(filtro) {
   const soNumero = /^\d+$/.test(f) ? parseInt(f, 10) : null;
   const alvo = soLetras(filtro);
   const palavras = alvo ? alvo.split(' ').filter(Boolean) : [];
+  window._somBusca = alvo ? somDaFrase(filtro) : [];   // usado pelo desempate fonético
   const achados = [];
   LOUVORES.forEach((s, i) => {
     let pontos = 1;
@@ -543,7 +675,14 @@ function selecionarCap(c, elDom) {
   nums.forEach(v => {
     const b = document.createElement('div'); b.className = 'gnum'; b.dataset.v = v; b.textContent = v;
     b.title = versObj[v];
-    b.onclick = () => { est.setPos = -1; projetarVerso(est.livro, c, v); };          // 1 clique = PROJETA
+    // 1 clique PROJETA. Se esse versículo já está na Lista, a navegação continua
+    // obedecendo a Lista — antes o clique fazia setPos = -1 e o Sistema "esquecia"
+    // os outros escolhidos, virando leitura solta do capítulo.
+    b.onclick = () => {
+      est.setPos = -1;
+      projetarVerso(est.livro, c, v);
+      devolverPosicaoNaFila({ livro: est.livro, cap: c, v });
+    };
     b.ondblclick = () => { adicionarLista({ tipo: 'verso', ref: est.livro + ' ' + c + ':' + v, livro: est.livro, cap: c, v, on: true }); }; // 2 cliques = GUARDA
     g.appendChild(b);
   });
@@ -562,6 +701,7 @@ function marcarVersosNaFila() {
   $$('#grid-vers .gnum').forEach(e => e.classList.toggle('na-fila', na.has(+e.dataset.v)));
 }
 function projetarVerso(livro, cap, v) {
+  sugerirPara(livro, cap, v);   // louvores que combinam com este versículo
   const texto = BIBLIA.livros[livro] && BIBLIA.livros[livro][cap - 1] && BIBLIA.livros[livro][cap - 1][v];
   if (texto == null) return false;
   est.bibPos = { livro, cap, v }; est.live = { tipo: 'biblia' };
@@ -1584,6 +1724,7 @@ function ligarEventos() {
   $('#tam-label').onclick = tamPadrao;                      // clicar no rótulo volta ao padrão
   $('#btn-congelar').onclick = toggleFreeze;   // "Parar de projetar" já faz o papel da espera
   const bcf = $('#btn-cifra'); if (bcf) bcf.onclick = abrirCifra;
+  const sm = $('#sug-mais'); if (sm) sm.onclick = maisSugestoes;
   $$('.pn-f').forEach(b => b.onclick = () => {
     $$('.pn-f').forEach(x => x.classList.toggle('ativo', x === b));
     histDias = +b.dataset.dias; pintarPainel();
@@ -1669,7 +1810,8 @@ function executarDoCelular(c) {
   switch (c.cmd) {
     case 'louvor':  if (LOUVORES[c.idx]) selecionarLouvor(c.idx); break;
     case 'slide':   if (LOUVORES[c.idx]) { if (est.louvorIdx !== c.idx) selecionarLouvor(c.idx); projetarLouvor(c.idx, c.slide, false); } break;
-    case 'verso':   est.setPos = -1; projetarVerso(c.livro, c.cap, c.v); break;
+    case 'verso':   est.setPos = -1; projetarVerso(c.livro, c.cap, c.v);
+                    devolverPosicaoNaFila(c); break;   // mesmo cuidado do computador
     case 'slidepp': projetarSlide(c.i); break;
     // toque longo no versículo pelo celular: guarda na lista já marcado. Com dois
     // ou mais marcados, reprojetarVista (dentro de adicionarLista) manda juntos.

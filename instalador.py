@@ -70,6 +70,9 @@ def instalar(progresso):
     progresso(90, "Fixando no menu Iniciar…")
     fixar_no_iniciar(exe)
 
+    progresso(93, "Guardando o instalador…")
+    guardar_instalador()
+
     progresso(95, "Finalizando…")
     time.sleep(0.4)
     progresso(100, "Pronto!")
@@ -113,6 +116,28 @@ def copiar_conteudo_extra(progresso=None):
     return copiados
 
 
+def guardar_instalador():
+    """Leva uma cópia do instalador para dentro da pasta do programa.
+
+    Assim ele não fica largado na Área de Trabalho ou em Downloads, onde um
+    irmão mais velho clica sem querer e reinstala tudo do zero no meio da
+    semana. Quem precisar dele de verdade acha em "Instalador" dentro dos
+    dados do Sistema.
+    """
+    try:
+        atual = os.path.abspath(sys.executable)
+        if not atual.lower().endswith(".exe"):
+            return ""
+        destino = os.path.join(DADOS, "Instalador")
+        os.makedirs(destino, exist_ok=True)
+        copia = os.path.join(destino, os.path.basename(atual))
+        if os.path.abspath(copia).lower() != atual.lower():
+            shutil.copy2(atual, copia)
+        return copia
+    except Exception:
+        return ""
+
+
 def fechar_sistema_aberto(espera=6.0):
     """Fecha o Sistema se ele estiver rodando.
 
@@ -121,12 +146,16 @@ def fechar_sistema_aberto(espera=6.0):
     .exe em uso: a cópia falhava arquivo por arquivo e a versão velha continuava.
     Pedimos para fechar com jeito primeiro; só insistimos se ele não sair.
     """
-    alvo = os.path.join(DESTINO, "Sistema.exe").lower()
-    try:
-        subprocess.run(["taskkill", "/IM", "Sistema.exe"],
-                       capture_output=True, timeout=10, **SEM_JANELA)
-    except Exception:
-        pass
+    # Quem clicou em instalar JÁ decidiu: fecha na hora, sem pedir licença nem
+    # esperar. O pedido gentil ia primeiro, mas o Sistema podia estar com uma
+    # janela de projeção aberta e não sair — e a instalação ficava pendurada.
+    for args in (["taskkill", "/IM", "Sistema.exe"],
+                 ["taskkill", "/F", "/IM", "Sistema.exe"]):
+        try:
+            subprocess.run(args, capture_output=True, timeout=8, **SEM_JANELA)
+        except Exception:
+            pass
+        time.sleep(0.4)
     fim = time.time() + espera
     while time.time() < fim:
         try:
@@ -324,13 +353,26 @@ button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-rad
 <script src="icones.js"></script>
 <script>
   document.getElementById('marca').innerHTML = (window.Icones && window.Icones.MARCA) ? window.Icones.MARCA(78) : '';
-  function comecar(){ tela(2); window.pywebview.api.instalar(); }
+  function comecar(){ tela(2); acompanhar(); window.pywebview.api.instalar(); }
   function tela(n){ for(const k of [1,2,3]) document.getElementById('tela'+k).classList.toggle('oculto', k!==n); }
-  window.avancar = (pct, txt) => {
-    document.getElementById('preenche').style.width = pct + '%';
-    document.getElementById('passo').textContent = txt;
-    if (pct >= 100) setTimeout(() => tela(3), 500);
-  };
+  // A TELA vem buscar o progresso. O caminho contrario (Python empurrando para
+  // a tela de outra thread) travava o instalador em "Preparando..." para sempre.
+  let relogio = null;
+  function acompanhar(){
+    if (relogio) return;
+    relogio = setInterval(async () => {
+      try {
+        const d = await window.pywebview.api.progresso();
+        document.getElementById('preenche').style.width = (d.pct || 0) + '%';
+        document.getElementById('passo').textContent = d.txt || '';
+        if (d.fim) {
+          clearInterval(relogio); relogio = null;
+          document.getElementById('preenche').style.width = '100%';
+          setTimeout(() => tela(d.exe ? 3 : 2), 400);
+        }
+      } catch (e) {}
+    }, 200);
+  }
   function abrir(){ window.pywebview.api.abrir(); }
   function pastas(){ window.pywebview.api.pastas(); }
   function sair(){ window.pywebview.api.sair(); }
@@ -342,6 +384,16 @@ class Api:
     def __init__(self):
         self.janela = None
         self.exe = ""
+        self.estado = {"pct": 0, "txt": ""}
+        self.terminou = False
+
+    def progresso(self):
+        """A tela chama isto de tempo em tempo. Chamada JS -> Python é segura;
+        o contrário (Python -> JS de outra thread) trava."""
+        d = dict(self.estado)
+        d["fim"] = self.terminou
+        d["exe"] = bool(self.exe)
+        return d
 
     def instalar(self):
         def tarefa():
@@ -355,15 +407,17 @@ class Api:
             except Exception:
                 pythoncom = None
             def progresso(pct, txt):
-                try:
-                    self.janela.evaluate_js("window.avancar(%d, %s)" % (pct, repr(txt).replace("'", '"')))
-                except Exception:
-                    pass
+                # SÓ guarda. Antes isto chamava evaluate_js daqui, de uma thread
+                # de trabalho: o Python esperava a thread da janela, a janela
+                # esperava a resposta, e o instalador congelava em "Preparando…"
+                # para sempre. Agora a TELA é que vem buscar (ver progresso()).
+                self.estado = {"pct": pct, "txt": txt}
             try:
                 self.exe = instalar(progresso)
             except Exception as e:
                 progresso(100, "Erro: " + str(e))
             finally:
+                self.terminou = True
                 if pythoncom:
                     try: pythoncom.CoUninitialize()
                     except Exception: pass
@@ -387,6 +441,22 @@ class Api:
         except Exception: pass
 
 
+def main_silencioso():
+    """Instala sem abrir janela. Serve para conferir a instalação de verdade e
+    para instalar em vários computadores da igreja sem ficar clicando."""
+    def p(pct, txt):
+        print("  %3d%%  %s" % (pct, txt))
+        sys.stdout.flush()
+    try:
+        import pythoncom
+        pythoncom.CoInitialize()
+    except Exception:
+        pass
+    exe = instalar(p)
+    print("instalado em: %s" % exe)
+    return 0
+
+
 def main():
     import webview, tempfile
     api = Api()
@@ -407,4 +477,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--silencioso" in sys.argv:
+        sys.exit(main_silencioso())
     main()

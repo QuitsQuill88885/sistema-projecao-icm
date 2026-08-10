@@ -346,6 +346,10 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .ini-card b{font-size:13.5px;color:var(--txt)}
 .ini-card small{font-size:11.5px;color:#7f96b8;line-height:1.4}
 .ini-rodape{text-align:center;color:#61789b;font-size:11px;margin-top:22px}
+/* autoria: discreta de proposito -- nao disputa atencao com o culto,
+   mas fica visivel para quem abrir o menu e olhar. */
+.ini-autor{text-align:center;color:#4d6183;font-size:10.5px;margin-top:5px;letter-spacing:.2px}
+.ini-autor b{color:#7e93b4;font-weight:600}
 .ig-rodape{display:flex;align-items:center;gap:12px;margin-top:14px}
 .ig-salvo{font-size:11.5px;color:#61789b;transition:.2s}
 .ig-salvo.on{color:var(--verde);font-weight:600}
@@ -450,3 +454,29 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .pn-l{position:relative;overflow:hidden}
 .pn-l>*{position:relative;z-index:1}
 .pn-vazio{padding:20px;text-align:center;color:#6f86a8;font-style:italic;font-size:13px}
+
+/* ---------- SUGESTÕES de louvor para o versículo ---------- */
+.sug{border-top:1px solid var(--borda);background:#101d33;padding:8px 12px 10px;flex:0 0 auto}
+.sug.oculto{display:none}
+.sug-cab{display:flex;align-items:center;gap:7px;font-size:10.5px;text-transform:uppercase;
+         letter-spacing:1px;color:#8fa8cf;margin-bottom:7px}
+.sug-cab b{font-weight:700;flex:1}
+.sug-cab .ico{color:var(--ouro);font-size:13px}
+.sug-mais{background:#16233c;border:1px solid var(--borda);color:#9db3d6;border-radius:7px;
+          padding:3px 10px;font-size:10.5px;font-weight:600;text-transform:none;letter-spacing:0}
+.sug-mais:hover{background:var(--hover);color:#fff}
+.sug-lista{display:flex;flex-direction:column;gap:4px;max-height:132px;overflow-y:auto}
+.sug-l{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;
+       background:#16233c;font-size:12.5px;cursor:pointer}
+.sug-l:hover{background:var(--hover)}
+.sug-l small{color:#7f9ac0;min-width:58px;font-variant-numeric:tabular-nums}
+.sug-l .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug-l .add{background:var(--painel2);color:var(--ouro);border-radius:6px;padding:2px 9px;
+            font-size:13px;font-weight:700;line-height:1.2}
+.sug-l .add:hover{background:var(--azul2);color:#fff}
+
+/* creditos na aba Sistema: texto corrido, tom baixo, sem botao */
+.cred-bloco{background:#131c2b;border:1px solid #1f2c40;border-radius:10px;padding:13px 15px;color:#7e93b4;font-size:12px;line-height:1.55}
+.cred-bloco p{margin:0 0 9px}
+.cred-bloco p:last-child{margin:0}
+.cred-bloco b{color:#a9bcd8;font-weight:600}

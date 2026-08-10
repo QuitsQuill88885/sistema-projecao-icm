@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=11">
+<link rel="stylesheet" href="app.css?v=12">
 </head><body>
 <div id="app">
   <header>
@@ -50,6 +50,14 @@
           <div class="grid-num" id="grid-caps"></div>
           <h3 id="tit-vers">Versículos</h3>
           <div class="grid-num" id="grid-vers"><div class="vazio">Escolha um livro e capítulo</div></div>
+          <!-- Louvores que combinam com o versículo no ar. Só aparece quando há
+               sugestão: sem versículo escolhido, a faixa nem existe. -->
+          <div class="sug oculto" id="sug">
+            <div class="sug-cab"><span class="ico" data-i="louvor"></span>
+              <b>Louvores para este versículo</b>
+              <button class="sug-mais" id="sug-mais">ver mais</button></div>
+            <div class="sug-lista" id="sug-lista"></div>
+          </div>
         </div>
       </div>
       <!-- TIMER -->
@@ -125,7 +133,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=11"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=12"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -200,6 +208,9 @@
             <button class="ini-card" data-ir="sistema"><b>Sistema</b><small>Restaurar o padrão</small></button>
           </div>
           <p class="ini-rodape"><span id="ini-versao">Versão 1.0.0</span> · Feito para a Igreja Cristã Maranata · funciona sem internet</p>
+          <!-- A autoria fica aqui: discreta, sem atrapalhar quem só quer operar
+               o culto, mas presente e encontrável por quem for procurar. -->
+          <p class="ini-autor">Desenvolvido por <b>Samuel Mariano Ribeiro</b></p>
         </section>
         <!-- CELULAR -->
         <section class="menu-sec" data-sec="celular">
@@ -282,7 +293,23 @@
             <button class="big-btn" data-reset="slides">Restaurar</button></div>
           <div class="reset-row perigo"><div><b>Tudo</b><small>Devolve o sistema ao estado de fábrica.</small></div>
             <button class="big-btn vermelho" data-reset="tudo">Restaurar tudo</button></div>
-        </section>
+        
+          <h3 class="menu-h3">Sobre o Sistema</h3>
+          <div class="cred-bloco">
+            <p><b>Sistema</b> — projeção para igrejas.<br>
+               Desenvolvido por <b>Samuel Mariano Ribeiro</b>, 2026.</p>
+            <p>O código é livre: pode ser copiado, modificado e usado por qualquer
+               igreja, inclusive comercialmente. A única condição é que o nome do
+               autor continue citado. Código sob licença MIT, conteúdo sob
+               Creative Commons Atribuição 4.0.</p>
+            <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
+               fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
+               licença.</p>
+            <p>Fontes: <b>Jost</b> (indestructible type) e <b>Bebas Neue</b>
+               (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
+               com o programa.</p>
+          </div>
+</section>
       </div>
     </aside>
   </div>
@@ -305,9 +332,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=11"></script>
+<script src="dados/louvores.js?v=12"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=11"></script>
-<script src="icones.js?v=11"></script>
-<script src="app.js?v=11"></script>
+<script src="dados/galeria.js?v=12"></script>
+<!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
+<script src="dados/sugestoes.js"></script>
+<script src="icones.js?v=12"></script>
+<script src="app.js?v=12"></script>
 </body></html>

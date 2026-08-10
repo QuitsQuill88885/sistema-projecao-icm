@@ -45,10 +45,13 @@ nav button{flex:1;padding:9px 4px;border-radius:8px;background:transparent;color
 nav button.on{background:var(--painel2);color:var(--ouro)}
 
 /* ---- conteúdo ---- */
-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px}
+/* SEM respiro em cima: com padding-top, sobrava uma faixa de 10px ACIMA da
+   caixa de busca grudada, e os itens passavam por ali aparecendo cortados.
+   O respiro foi para dentro da própria caixa. */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px}
 /* A caixa gruda no topo, mas sem fundo em cima e sem ficar acima dos cabeçalhos
    ela deixava a lista aparecer POR TRÁS — item cortado ao meio, atrás do campo. */
-.busca{position:sticky;top:0;background:var(--fundo);padding:8px 0;z-index:6}
+.busca{position:sticky;top:0;background:var(--fundo);padding:10px 0 8px;z-index:6}
 .busca input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid var(--borda);
   background:#0c1830;color:#fff;font-size:16px}
 .lista{display:flex;flex-direction:column;gap:5px}
@@ -57,7 +60,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px}
 /* trilha: onde estou e como voltar */
 /* o Voltar e o "onde estou" acompanham a rolagem — em Salmos 119 eles sumiam
    lá pra cima e o operador tinha que rolar tudo de volta pra trocar de capítulo */
-.trilha{position:sticky;top:0;z-index:3;background:var(--fundo);padding:7px 0;
+.trilha{position:sticky;top:0;z-index:3;background:var(--fundo);padding:10px 0 7px;
         display:flex;align-items:center;gap:9px;margin-bottom:9px}
 .volta{background:var(--painel2);border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--txt)}
 .volta:active{background:#26375a}
@@ -426,6 +429,40 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
 // mesma regra do computador: sem acento E sem pontuação, para "resplandece
 // jerusalem" achar "RESPLANDECE, Ó JERUSALÉM"
 const soLetras = t => semAcento(t).replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+// Quem digita errado digita PELO SOM: "resplandesse" e "resplandece" viram a
+// mesma coisa. A chave sai do texto ORIGINAL, senão o cedilha se perde.
+function som(p) {
+  p = (p || '').normalize('NFD').toLowerCase();
+  p = p.replace(/c\u0327/g, 's');
+  p = p.replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+  if (!p) return '';
+  p = p.replace(/lh/g,'L').replace(/nh/g,'N').replace(/ch/g,'X');
+  p = p.replace(/xc/g,'s').replace(/sc/g,'s');
+  p = p.replace(/c([ei])/g,'s$1').replace(/c/g,'k').replace(/q/g,'k').replace(/ku/g,'k');
+  p = p.replace(/ph/g,'f');
+  p = p.replace(/([aeiou])s([aeiou])/g,'$1z$2').replace(/z/g,'s');
+  p = p.replace(/r{2,}/g,'r').replace(/l{2,}/g,'l').replace(/h/g,'');
+  p = p.replace(/[mn]$/,'n').replace(/y/g,'i');
+  return p.replace(/(.)\1+/g,'$1');
+}
+function perto(a, b, teto) {
+  teto = teto || 2;
+  if (Math.abs(a.length - b.length) > teto) return false;
+  let ant = []; for (let j = 0; j <= b.length; j++) ant.push(j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let melhor = i;
+    for (let j = 1; j <= b.length; j++) {
+      const v = Math.min(ant[j]+1, cur[j-1]+1, ant[j-1] + (a[i-1] !== b[j-1] ? 1 : 0));
+      cur.push(v); if (v < melhor) melhor = v;
+    }
+    if (melhor > teto) return false;
+    ant = cur;
+  }
+  return ant[b.length] <= teto;
+}
+const somDaFrase = t => (t||'').split(/[^A-Za-zÀ-ÿ]+/).filter(Boolean).map(som);
+let SOM_BUSCA = [];
+
 // Quão perto do que foi digitado. Título antes da letra, sempre: procurar
 // "Jesus" tem que trazer os louvores CHAMADOS Jesus, não os mil que o citam.
 function pontuar(s, alvo, palavras) {
@@ -438,12 +475,19 @@ function pontuar(s, alvo, palavras) {
   const letra = s._ll || (s._ll = soLetras(s.slides.map(x => x.linhas.join(' ')).join(' ')));
   if (letra.includes(alvo)) return 300;
   if (palavras.length > 1 && palavras.every(p => letra.includes(p))) return 200;
+  const sons = s._sm || (s._sm = somDaFrase(s.titulo));
+  if (SOM_BUSCA.length && sons.length) {
+    const ok = SOM_BUSCA.filter(a => sons.some(b => b === a || perto(a, b, a.length > 5 ? 2 : 1)));
+    if (ok.length === SOM_BUSCA.length) return 150 - Math.min(sons.length, 40);
+    if (ok.length && SOM_BUSCA.length > 1) return 80;
+  }
   return 0;
 }
 function listarLouvores(f) {
   const cont = $('#lista'); cont.innerHTML = '';
   const alvo = soLetras(f);
   const palavras = alvo ? alvo.split(' ').filter(Boolean) : [];
+  SOM_BUSCA = alvo ? somDaFrase(f) : [];
   const soNum = /^\d+$/.test(alvo) ? parseInt(alvo, 10) : null;
   const achados = [];
   LOUVORES.forEach((s, i) => {

@@ -24,7 +24,7 @@ VSVersionInfo(
         [StringStruct('CompanyName', 'Samuel Mariano Ribeiro'),
          StringStruct('FileDescription', 'Instalador do Sistema'),
          StringStruct('FileVersion', '2.3.0'),
-         StringStruct('InternalName', 'Sistema'),
+         StringStruct('InternalName', 'Baixar o Sistema'),
          StringStruct('LegalCopyright', 'Copyright (c) 2026 Samuel Mariano Ribeiro - MIT / CC BY 4.0'),
          StringStruct('LegalTrademarks', 'Sistema, de Samuel Mariano Ribeiro'),
          StringStruct('OriginalFilename', 'Instalar o Sistema.exe'),

@@ -1,10 +1,14 @@
 # ---------------------------------------------------------------------------
 # O repositório guarda o PROGRAMA. O conteúdo fica de fora, de propósito.
 #
-# Não é frescura de organização: a fonte Futura é comercial e licenciada, e os
-# louvores, a Bíblia, os fundos e as animações dos CIAS são material da Igreja
-# Cristã Maranata. Nada disso é nosso para redistribuir. Quem instalar traz o
-# próprio conteúdo — o Sistema já sabe importar tudo pelo menu.
+# Não é frescura de organização: os louvores, a Bíblia, os fundos, as cifras e
+# as animações dos CIAS são material da Igreja Cristã Maranata. Nada disso é
+# nosso para redistribuir. Quem instalar traz o próprio conteúdo — o Sistema já
+# sabe importar tudo pelo menu.
+#
+# As FONTES são exceção e sobem junto: são livres (SIL Open Font License) e o
+# programa não funciona sem elas. Quem clonar este repositório consegue
+# compilar na hora, sem procurar fonte nenhuma.
 # ---------------------------------------------------------------------------
 
 # --- conteúdo da igreja (NUNCA subir) ---
@@ -12,9 +16,16 @@ dados/louvores.js
 dados/biblia.js
 dados/*_backup_*.js
 fundos/
-fontes/
 animacoes/
 cifras/
+
+# --- fontes: só as livres, e a licença de cada uma vai junto ---
+fontes/*
+!fontes/Jost.ttf
+!fontes/JostItalic.ttf
+!fontes/bebas.otf
+!fontes/OFL-Jost.txt
+!fontes/OFL-Bebas.txt
 
 # --- material que o usuário importa na máquina dele ---
 slides_importados/
