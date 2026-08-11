@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><title>slide de verdade</title>
+<style>html,body{margin:0;height:100%}#f{position:fixed;inset:0;border:0;width:100vw;height:100vh}</style></head>
+<body><iframe id="f" src="projecao.html"></iframe>
+<script src="dados/louvores.js"></script>
+<script>
+/* Projeta um slide REAL do catálogo, do jeito que a igreja vai ver.
+   ?t=trecho do título &s=número do slide (1 em diante)
+   Serve para conferir a letra depois de mexer no dado. Pode apagar. */
+const P = new URLSearchParams(location.search);
+const alvo = (P.get('t') || 'SE DEUS QUISER').toUpperCase();
+const nSlide = Math.max(1, +(P.get('s') || 2)) - 1;
+const lista = (window.LOUVORES || window.louvores || []);
+const louvor = lista.find(x => (x.titulo || '').toUpperCase().includes(alvo));
+const f = document.getElementById('f');
+// o louvores.js tem 1,9 MB e segura a leitura da página: quando ele termina,
+// o iframe JÁ carregou e o onload nunca dispara. Por isso mandamos assim que
+// der, sem depender dele.
+const mandar = () => setTimeout(() => {
+  if (!louvor) { document.title = 'não achei: ' + alvo; return; }
+  const sl = (louvor.slides || [])[nSlide] || (louvor.slides || [])[0];
+  const maior = Math.max(...(louvor.slides || []).map(s => (s.linhas || []).length + (s.label ? 1 : 0)));
+  f.contentWindow.postMessage(JSON.stringify({
+    modo: 'louvor', estilo: 'mapa',
+    fundo: nSlide === 0 ? 'fundos/louvor1_mapa.jpg' : 'fundos/louvor2_mapa.jpg',
+    titulo: nSlide === 0 ? ((louvor.num ? louvor.num + ' - ' : '') + louvor.titulo) : '',
+    label: sl.label || '', linhas: sl.linhas || [], tam: 5.75, linhasRef: maior,
+  }), '*');
+}, 500);
+if (f.contentDocument && f.contentDocument.readyState === 'complete') mandar();
+else f.onload = mandar;
+</script></body></html>
