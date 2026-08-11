@@ -355,6 +355,11 @@ function carregarTemas(feito) {
   temasEsperando.push(feito);
   if (temasPedidos) return;
   temasPedidos = true;
+  // as FIGURAS vêm junto: são 7 KB e só servem aqui. Se elas falharem, o resto
+  // continua funcionando como antes — a ponte das figuras apenas não entra.
+  const fig = document.createElement('script');
+  fig.src = 'dados/tipologia.js';
+  document.head.appendChild(fig);
   const sc = document.createElement('script');
   sc.src = 'dados/temas.js';
   sc.onload = () => { const fila = temasEsperando; temasEsperando = []; fila.forEach(f => f()); };
@@ -422,6 +427,20 @@ function consultaDoVerso(livro, cap, v) {
     for (const p of fam) if (doTrecho.has(p)) bate++;
     if (bate < 2) continue;
     for (const p of fam) { const g = TEMAS.idf[p]; if (g) q[p] = Math.max(q[p] || 0, 0.55 * g); }
+  }
+  // A PONTE DAS FIGURAS. A igreja não lê o texto só pela palavra: o marido é
+  // Cristo, a esposa é a Igreja, a herança é a terra prometida. Sem isto,
+  // Deuteronômio 24 — o primeiro marido que não pode tornar a tomar a mulher —
+  // não encostava em "QUEM PODERÁ" nem em "UM DIA EU QUIS TE DEIXAR", e o
+  // Sistema sugeria bênção genérica.
+  // UM gatilho basta (a família precisa de dois): o gatilho da figura é
+  // específico, e cada figura carrega o peso da sua fundamentação.
+  const TIP = window.TIPOLOGIA;
+  if (TIP) for (const f of TIP) {
+    let achou = false;
+    for (const p of f.g) if (doTrecho.has(p)) { achou = true; break; }
+    if (!achou) continue;
+    for (const p of f.t) { const g = TEMAS.idf[p]; if (g) q[p] = Math.max(q[p] || 0, f.p * g); }
   }
   return q;
 }
@@ -508,20 +527,24 @@ function abrirPainel() {
 function pintarPainel() {
   if (!HIST) return;
   const corte = histDias ? (Date.now() / 1000 - histDias * 86400) : 0;
-  const regs = HIST.filter(x => x.ini >= corte && x.q === 'louvor');
+  const periodo = HIST.filter(x => x.ini >= corte);
+  const regs = periodo.filter(x => x.q === 'louvor');
+  const vers = periodo.filter(x => x.q === 'verso');
   const resumo = $('#pn-resumo');
 
+  pintarVersiculos(vers);
   if (!regs.length) {
-    resumo.innerHTML = '';
+    resumo.innerHTML = vers.length ? cx(vers.length, 'versículos projetados') : '';
     ['#pn-mais', '#pn-tempo', '#pn-cultos'].forEach(k =>
       $(k).innerHTML = '<div class="pn-vazio">Nada registrado neste período.</div>');
     return;
   }
   // "culto" = um dia de projeção. É o recorte que a igreja entende.
-  const dias = new Set(regs.map(x => new Date(x.ini * 1000).toDateString()));
+  const dias = new Set(periodo.map(x => new Date(x.ini * 1000).toDateString()));
   const segTotal = regs.reduce((a, x) => a + x.seg, 0);
   resumo.innerHTML =
     cx(regs.length, 'louvores projetados') +
+    (vers.length ? cx(vers.length, 'versículos projetados') : '') +
     cx(dias.size, dias.size === 1 ? 'culto' : 'cultos') +
     cx(tempoCurto(segTotal), 'no telão');
 
@@ -555,6 +578,31 @@ function pintarPainel() {
            '<span class="nm">' + dia + ' · ' + sem + '</span>' +
            '<span class="vl">' + v.n + ' louvores · ' + tempoCurto(v.seg) + '</span></div>';
   }).join('');
+}
+// A PALAVRA que foi ao telão. O Samuel cobrou duas vezes: o louvor tinha
+// painel e o versículo não tinha nenhum — e é a Palavra que rege o culto.
+function pintarVersiculos(vers) {
+  const alvoV = $('#pn-vers'), alvoL = $('#pn-livros');
+  if (!alvoV || !alvoL) return;
+  if (!vers.length) {
+    alvoV.innerHTML = alvoL.innerHTML =
+      '<div class="pn-vazio">Nenhum versículo projetado neste período.</div>';
+    return;
+  }
+  const porRef = {}, porLivro = {};
+  vers.forEach(x => {
+    const ref = (x.rot || '').replace(/\s*\(\+\d+\)$/, '');   // "(+3)" é quantos foram juntos
+    (porRef[ref] = porRef[ref] || { n: 0, seg: 0 }).n++;
+    porRef[ref].seg += x.seg;
+    // o livro é tudo antes do último espaço ("1 Coríntios 13:4" -> "1 Coríntios")
+    const livro = ref.replace(/\s+\d+:\d+.*$/, '') || ref;
+    (porLivro[livro] = porLivro[livro] || { n: 0, seg: 0 }).n++;
+    porLivro[livro].seg += x.seg;
+  });
+  linhas('#pn-vers', Object.entries(porRef).sort((a, b) => b[1].n - a[1].n || b[1].seg - a[1].seg).slice(0, 10),
+         v => v.n + (v.n === 1 ? ' vez' : ' vezes') + ' · ' + tempoCurto(v.seg), v => v.n);
+  linhas('#pn-livros', Object.entries(porLivro).sort((a, b) => b[1].n - a[1].n).slice(0, 10),
+         v => v.n + (v.n === 1 ? ' versículo' : ' versículos'), v => v.n);
 }
 function cx(n, rot) { return '<div class="pn-cx"><b>' + n + '</b><span>' + rot + '</span></div>'; }
 function linhas(alvo, arr, texto, peso) {
@@ -1120,6 +1168,9 @@ function projetarVerso(livro, cap, v) {
   sugerirPara(livro, cap, v);   // louvores que combinam com este versículo
   const texto = BIBLIA.livros[livro] && BIBLIA.livros[livro][cap - 1] && BIBLIA.livros[livro][cap - 1][v];
   if (texto == null) return false;
+  // o versículo entra no histórico como o louvor entra: sem isto o Painel dos
+  // versículos não teria o que contar, por mais bonito que ficasse a tela
+  abrirNoAr('verso', livro + ' ' + cap + ':' + v, 'v|' + livro + '|' + cap + '|' + v);
   est.bibPos = { livro, cap, v }; est.live = { tipo: 'biblia' };
   projetar(stBiblia(livro + ' ' + cap + ':' + v, texto));
   renderFila(); marcarVerso();
@@ -1214,6 +1265,11 @@ function projetarVersiculosJuntos() {
   const itens = versos.map(x => ({ ref: x.livro + ' - ' + x.cap + ':' + x.v, texto: versoTexto(x) }));
   const u = versos[versos.length - 1]; est.bibPos = { livro: u.livro, cap: u.cap, v: u.v };   // continuar leitura após o último
   est.juntos = true; est.setPos = -1; est.vistaFim = null; est.contAfter = 0;
+  // vários versículos juntos: conta o PRIMEIRO como o que está no ar (é a
+  // referência que a congregação lê no alto) e guarda quantos foram juntos
+  const p = versos[0];
+  abrirNoAr('verso', p.livro + ' ' + p.cap + ':' + p.v + (versos.length > 1 ? ' (+' + (versos.length - 1) + ')' : ''),
+            'v|' + p.livro + '|' + p.cap + '|' + p.v);
   est.live = { tipo: 'bibmulti', n: itens.length, ref: itens.length === 1 ? itens[0].ref.replace(' - ', ' ') : '' };
   projetar({ modo: 'bibmulti', fundo: FB.biblia, itens, tam: TAM_DEF.biblia, escala: est.escalaVers, transicao: true, fade: 400 });
   renderFila();

@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=22">
+<link rel="stylesheet" href="app.css?v=23">
 </head><body>
 <div id="app">
   <header>
@@ -133,7 +133,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=22"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=23"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -265,8 +265,8 @@
         <!-- PAINEL: o que a igreja cantou, e por quanto tempo. O tempo separa
              o louvor cantado inteiro daquele que passou de raspão. -->
         <section class="menu-sec" data-sec="painel">
-          <h3>Painel dos louvores</h3>
-          <p class="menu-p">O que foi ao telão nos cultos, e quanto tempo cada um ficou.</p>
+          <h3>Painel do culto</h3>
+          <p class="menu-p">Os louvores e a Palavra que foram ao telão, e quanto tempo cada um ficou.</p>
           <div class="pn-filtros">
             <button class="pn-f ativo" data-dias="30">Últimos 30 dias</button>
             <button class="pn-f" data-dias="90">3 meses</button>
@@ -278,6 +278,10 @@
           <div class="pn-lista" id="pn-mais"></div>
           <h4 class="pn-tit">Mais tempo no telão</h4>
           <div class="pn-lista" id="pn-tempo"></div>
+          <h4 class="pn-tit">Versículos mais projetados</h4>
+          <div class="pn-lista" id="pn-vers"></div>
+          <h4 class="pn-tit">Livros mais usados</h4>
+          <div class="pn-lista" id="pn-livros"></div>
           <h4 class="pn-tit">Últimos cultos</h4>
           <div class="pn-lista" id="pn-cultos"></div>
         </section>
@@ -348,11 +352,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=22"></script>
+<script src="dados/louvores.js?v=23"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=22"></script>
+<script src="dados/galeria.js?v=23"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=22"></script>
-<script src="app.js?v=22"></script>
+<script src="icones.js?v=23"></script>
+<script src="app.js?v=23"></script>
 </body></html>
