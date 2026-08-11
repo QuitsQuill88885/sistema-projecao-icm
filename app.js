@@ -2137,7 +2137,18 @@ async function verificarAtualizacao(silenciosa) {
     return;
   }
   if (!r.tem) {
-    if (!silenciosa && st) st.textContent = 'Você já está na versão mais nova (' + r.atual + ').';
+    // a melhor versão de todas — atualizada E completa — merece o dourado:
+    // é a sensação de plano PRO, só que de graça
+    let tudo = null;
+    try { tudo = await fetch('/api/conteudo').then(x => x.json()); } catch (e) {}
+    if (st) {
+      if (tudo && !tudo.falta) {
+        st.innerHTML = '<b class="st-ouro">Você está com a melhor versão do Sistema: ' +
+                       'completa e atualizada (' + r.atual + ').</b>';
+      } else if (!silenciosa) {
+        st.textContent = 'Você já está na versão mais nova (' + r.atual + ').';
+      }
+    }
     return;
   }
   if (st) st.textContent = 'Existe a versão ' + r.nova + ' (você está na ' + r.atual + ').';
@@ -2155,6 +2166,39 @@ async function verificarAtualizacao(silenciosa) {
       if (a.fim) clearInterval(t);
     }, 800);
   }, 'Atualizar agora');
+}
+
+/* ---------- COMPLETAR O SISTEMA ----------
+   Quem instalou o essencial (58 MB) completa por aqui: baixa as animações,
+   cifras e melodias da nuvem, direto para os dados — sem reinstalar nada.
+   A linha só aparece quando o conteúdo realmente falta. */
+function ligarCompletar() {
+  const linha = $('#linha-completar'), st = $('#comp-status'), b = $('#btn-completar');
+  if (!b) return;
+  fetch('/api/conteudo').then(r => r.json()).then(r => {
+    if (r && r.falta) linha.hidden = false;
+  }).catch(() => {});
+  b.onclick = () => {
+    confirmar('Baixar as animações dos CIAS, as cifras e os cadernos de melodia '
+              + '(cerca de <b>590 MB</b>)?<br><br>Precisa de internet. O Sistema '
+              + 'continua funcionando normalmente enquanto baixa.', async () => {
+      await fetch('/api/conteudo', { method: 'POST', body: '{}' });
+      b.disabled = true;
+      const t = setInterval(async () => {
+        let a = null;
+        try { a = await fetch('/api/conteudo').then(x => x.json()); } catch (e) { return; }
+        if (!a) return;
+        if (a.erro) { clearInterval(t); b.disabled = false; st.textContent = a.erro; return; }
+        st.textContent = (a.txt || 'Baixando…') + (a.pct ? ' — ' + a.pct + '%' : '');
+        if (a.fim) {
+          clearInterval(t);
+          toast('Pronto! As animações e cifras já estão no Sistema.');
+          linha.hidden = true;
+          carregarExtras();          // os botões de animação e cifra acordam na hora
+        }
+      }, 900);
+    }, 'Baixar agora');
+  };
 }
 
 /* ---------- EXPORTAR PARA PENDRIVE ----------
@@ -2246,6 +2290,7 @@ function ligarEventos() {
   const ir = $('#ini-rever'); if (ir) ir.onclick = () => { fecharMenu(); abrirBemVindo(true); };
   ligarAtualizacao();
   ligarExportarUsb();
+  ligarCompletar();
   const bc = $('#btn-contato');
   if (bc) bc.onclick = () => {
     const mail = 'samuelsaxdiesel@gmail.com';

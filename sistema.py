@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.5.5"
+VERSAO = "2.5.6"
 PORTA = 8765
 
 def raiz():
@@ -219,9 +219,10 @@ DONO_GITHUB = "QuitsQuill88885"
 REPO_GITHUB = "sistema-projecao-icm"
 ARQ_INSTALADOR = "Instalar-o-Sistema.exe"
 
-# andamento das duas tarefas demoradas, para a tela ir perguntando
+# andamento das tarefas demoradas, para a tela ir perguntando
 ATUALIZA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
 EXPORTA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
+COMPLETA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
 
 
 def _versao_tupla(v):
@@ -291,6 +292,65 @@ def _atualizar_thread():
     except Exception:
         ATUALIZA.update({"erro": "Não consegui baixar a atualização. Confira a internet e "
                                  "tente de novo — nada foi mexido.",
+                         "fim": True, "rodando": False})
+
+
+def conteudo_falta():
+    """True se as animações/cifras/melodias ainda não estão neste computador.
+
+    É o que decide se o botão "Completar o Sistema" aparece: quem instalou o
+    essencial vê o botão; quem já tem tudo, não."""
+    for nome in ("animacoes", "cifras", "melodias"):
+        try:
+            tem = any(a for a in os.listdir(pasta_usuario(nome))
+                      if a != "LEIA-ME.txt")
+        except OSError:
+            tem = False
+        if not tem:
+            return True
+    return False
+
+
+def _completar_thread():
+    """Baixa o Conteudo.zip da nuvem e abre direto nos dados do usuário.
+
+    É o caminho do "Completar o Sistema": o essencial vira completo sem
+    pendrive, sem reinstalar e sem baixar o programa de novo."""
+    import tempfile
+    import zipfile
+    import urllib.request
+    try:
+        url = ("https://github.com/%s/%s/releases/latest/download/Conteudo.zip"
+               % (DONO_GITHUB, REPO_GITHUB))
+        zt = os.path.join(tempfile.mkdtemp(), "Conteudo.zip")
+        req = urllib.request.Request(url, headers={"User-Agent": "Sistema"})
+        COMPLETA.update({"pct": 1, "txt": "Baixando as animações e cifras…", "erro": ""})
+        with urllib.request.urlopen(req, timeout=60) as r, open(zt, "wb") as f:
+            total = int(r.headers.get("Content-Length") or 0)
+            feito = 0
+            while True:
+                peda = r.read(262144)
+                if not peda:
+                    break
+                f.write(peda)
+                feito += len(peda)
+                if total:
+                    COMPLETA.update({"pct": int(feito * 90.0 / total),
+                                     "txt": "Baixando… %d de %d MB"
+                                            % (feito // 1048576, total // 1048576)})
+        COMPLETA.update({"pct": 93, "txt": "Guardando o conteúdo…"})
+        with zipfile.ZipFile(zt) as z:
+            z.extractall(DADOS_USUARIO)
+        try:
+            os.remove(zt)
+        except OSError:
+            pass
+        _CATALOGO["dados"] = None      # o catálogo do músico renasce com as melodias
+        COMPLETA.update({"pct": 100, "txt": "Pronto! Animações, cifras e melodias instaladas.",
+                         "fim": True, "rodando": False})
+    except Exception:
+        COMPLETA.update({"erro": "Não consegui baixar. Confira a internet e tente de "
+                                 "novo — nada foi mexido.",
                          "fim": True, "rodando": False})
 
 
@@ -656,6 +716,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self._json({"ok": True, **ATUALIZA})
         if self.path.startswith("/api/pendrives"):
             return self._json({"ok": True, "pendrives": pendrives_plugados()})
+        if self.path.startswith("/api/conteudo"):       # falta conteúdo? e o andamento
+            return self._json({"ok": True, "falta": conteudo_falta(), **COMPLETA})
         if self.path.startswith("/api/exportar-usb"):    # andamento da exportação
             return self._json({"ok": True, **EXPORTA})
         if self.path.startswith("/api/rede"):            # endereço e QR para o celular entrar
@@ -714,6 +776,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     ATUALIZA.update({"rodando": True, "pct": 0, "txt": "Começando…",
                                      "erro": "", "fim": False})
                     threading.Thread(target=_atualizar_thread, daemon=True).start()
+            return self._json({"ok": True})
+        if self.path.startswith("/api/conteudo"):        # começa a completar
+            with TRAVA:
+                if not COMPLETA["rodando"]:
+                    COMPLETA.update({"rodando": True, "pct": 0, "txt": "Começando…",
+                                     "erro": "", "fim": False})
+                    threading.Thread(target=_completar_thread, daemon=True).start()
             return self._json({"ok": True})
         if self.path.startswith("/api/exportar-usb"):    # começa a exportação
             try:

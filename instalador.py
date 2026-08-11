@@ -547,16 +547,33 @@ class Api:
 def main_silencioso():
     """Instala sem abrir janela. Serve para conferir a instalação de verdade e
     para instalar em vários computadores da igreja sem ficar clicando."""
+    # chamado pelo "completo" de um arquivo só, NÃO existe console nenhum:
+    # sys.stdout é None e um print desprotegido derruba a instalação inteira
+    # (aconteceu: AttributeError no flush, com janela de erro na cara do
+    # usuário). Escrever no console é cortesia; instalar é a obrigação.
     def p(pct, txt):
-        print("  %3d%%  %s" % (pct, txt))
-        sys.stdout.flush()
+        if not sys.stdout:
+            return
+        try:
+            print("  %3d%%  %s" % (pct, txt))
+            sys.stdout.flush()
+        except Exception:
+            pass
+    # a telinha de carregamento abre sozinha com o .exe; no modo silencioso
+    # ninguém a fechava e ela ficava pendurada na tela até o fim
+    fechar_splash()
     try:
         import pythoncom
         pythoncom.CoInitialize()
     except Exception:
         pass
     exe = instalar(p)
-    print("instalado em: %s" % exe)
+    p(100, "instalado")
+    if sys.stdout:
+        try:
+            print("instalado em: %s" % exe)
+        except Exception:
+            pass
     # --reabrir: quem chamou foi o botão "Buscar atualizações" de dentro do
     # Sistema — o programa foi fechado para atualizar, e o operador está
     # esperando ele voltar sozinho.

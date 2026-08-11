@@ -59,7 +59,6 @@ h1 em{color:var(--ouro-claro);font-style:normal}
 .tela-foto{border-radius:11px;overflow:hidden;border:1px solid #24344f;
            box-shadow:0 22px 54px #0006}
 
-/* ---------- os dois botoes. e' a coisa mais importante da pagina ---------- */
 .baixar{display:flex;flex-wrap:wrap;gap:13px;margin-top:26px}
 .bt{display:flex;flex-direction:column;gap:2px;text-decoration:none;border-radius:11px;
     padding:15px 26px;transition:transform .14s,box-shadow .14s;border:1px solid transparent}
@@ -79,12 +78,38 @@ h2{font-family:'Bebas',sans-serif;font-size:32px;letter-spacing:1px;margin-botto
 .linha-ouro{width:52px;height:3px;background:var(--ouro);border-radius:2px;margin-bottom:24px}
 .sub{color:var(--suave);max-width:62ch;margin-bottom:26px;font-size:16px}
 
-table{width:100%;border-collapse:collapse;font-size:15px}
-.rolagem{overflow-x:auto;-webkit-overflow-scrolling:touch}
-th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--borda);vertical-align:top}
-th{font-weight:600;color:var(--texto);font-size:13.5px;letter-spacing:.4px;text-transform:uppercase}
-td b{font-weight:600}
-td small{display:block;color:var(--suave);font-size:13px;margin-top:2px}
+/* ---------- as tres versoes, lado a lado, com a listinha do que vem ---------- */
+/* o respiro extra embaixo descola os cards da linha divisoria da proxima
+   secao — a sombra do card em destaque encostava nela */
+#versoes{padding-bottom:82px}
+.versoes{display:grid;gap:18px;grid-template-columns:1fr;align-items:stretch}
+@media(min-width:880px){.versoes{grid-template-columns:1fr 1fr 1fr}}
+.ver{border:1px solid var(--borda);border-radius:13px;padding:22px 21px 19px;
+     display:flex;flex-direction:column;gap:0;background:transparent;position:relative}
+.ver.destaque{border-color:var(--ouro);box-shadow:0 10px 34px #0002}
+.ver .selo{position:absolute;top:-12px;left:20px;background:var(--ouro);color:#0b1526;
+     font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+     border-radius:20px;padding:3px 12px}
+.ver h3{font-size:19px;font-weight:600;margin-bottom:1px}
+.ver .tam{font-family:'Bebas',sans-serif;font-size:29px;color:var(--ouro);letter-spacing:.5px}
+.ver .para{color:var(--suave);font-size:14px;min-height:3.2em;margin:7px 0 13px;line-height:1.5}
+.ver ul{list-style:none;display:grid;gap:8px;margin-bottom:18px;font-size:14.2px}
+.ver li{display:flex;gap:9px;align-items:flex-start;line-height:1.45}
+.ver li .ok{color:var(--verde);font-weight:700;flex:0 0 15px}
+.ver li .nao{color:#b8433a;font-weight:700;flex:0 0 15px}
+.ver li small{display:block;color:var(--suave);font-size:12.5px}
+/* nota que vale para os DOIS itens de cima: alinhada com o texto deles,
+   sem icone proprio — o Samuel achou confuso um textinho para cada X.
+   display:block: como o li e' flex, o <b> no meio virava coluna solta */
+.ver li.nota{display:block;color:var(--suave);font-size:12.5px;padding-left:24px;margin-top:-3px;line-height:1.45}
+/* rotulo + letra miuda empilhados dentro do item (senao o flex poe lado a lado) */
+.ver li .tx{flex:1}
+.ver li .tx small{display:block;color:var(--suave);font-size:12.5px;margin-top:1px}
+.ver .acao{margin-top:auto;text-align:center;text-decoration:none;border-radius:10px;
+     padding:13px 10px;font-weight:600;font-size:15.5px;transition:transform .14s}
+.ver .acao:hover{transform:translateY(-2px)}
+.ver .acao.verde{background:var(--verde);color:#fff}
+.ver .acao.escura{background:var(--tinta2);color:#dce6f5;border:1px solid var(--borda)}
 
 /* passo a passo: numerado porque E' uma sequencia -- 2 depois de 1, de verdade */
 ol.passos{list-style:none;counter-reset:p;display:grid;gap:15px;max-width:64ch}
@@ -94,21 +119,43 @@ ol.passos li::before{content:counter(p);position:absolute;left:0;top:-1px;width:
   display:flex;align-items:center;justify-content:center}
 ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
 
-.aviso{background:var(--tinta2);border-left:4px solid var(--ouro);border-radius:0 9px 9px 0;
-  padding:16px 19px;color:#c6d5ec;font-size:15px;max-width:66ch;margin-top:26px;line-height:1.6}
-.aviso b{color:#fff}
-@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .aviso{background:#eef2f9;color:#3d4d66}
-  :root:not([data-theme="dark"]) .aviso b{color:#0e1725}}
+/* o aviso do Windows apresentado como o que ele e': um quadro do proprio
+   Windows, com os DOIS cliques desenhados na ordem */
+.escudo{border:1px solid var(--borda);border-radius:13px;max-width:66ch;margin-top:32px;
+        overflow:hidden}
+/* o "Como instalar" centralizado, como o Samuel sugeriu: os passos e o quadro
+   do aviso no meio da pagina, com a linha de ouro acompanhando */
+.centro-inst{text-align:left}
+@media(min-width:880px){
+  .centro-inst h2{text-align:center}
+  .centro-inst .linha-ouro{margin-left:auto;margin-right:auto}
+  .centro-inst ol.passos{margin:0 auto}
+  .centro-inst .escudo{margin-left:auto;margin-right:auto}
+}
+.escudo .cab{background:var(--tinta2);color:#fff;padding:13px 19px;font-weight:600;font-size:15px}
+.escudo .corpo{padding:17px 19px;font-size:15px;line-height:1.6;color:var(--texto)}
+.escudo .corpo b{color:var(--ouro)}
+.escudo .passinhos{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.escudo .passinhos span{border:1px solid var(--borda);border-radius:8px;padding:7px 13px;
+        font-size:14px;font-weight:600}
+.escudo .passinhos .seta{border:none;color:var(--suave);align-self:center}
 
 .recursos{display:grid;gap:17px;grid-template-columns:repeat(auto-fit,minmax(233px,1fr))}
 .rec{border:1px solid var(--borda);border-radius:11px;padding:18px 19px;background:transparent}
 .rec b{display:block;font-size:16px;font-weight:600;margin-bottom:5px}
 .rec p{color:var(--suave);font-size:14.5px;line-height:1.55}
 
-.duplo{display:grid;gap:26px;align-items:center;grid-template-columns:1fr}
-@media(min-width:820px){.duplo{grid-template-columns:1.5fr 1fr}}
-.duplo img{border-radius:10px;border:1px solid var(--borda)}
-.duplo.invertido img{max-width:290px;margin:0 auto}
+/* o cochicho: a unica frase do site que NAO explica — planta a curiosidade
+   da sugestao automatica sem contar como funciona */
+.cochicho{color:var(--suave);font-style:italic;font-size:14.5px;max-width:58ch;
+          margin:18px auto 0;text-align:center;line-height:1.6}
+.duplo{display:grid;gap:30px;align-items:center;grid-template-columns:1fr}
+@media(min-width:820px){.duplo{grid-template-columns:1.4fr 1fr}}
+/* a foto do celular e' RETRATO: nunca deixar mais larga que um celular de
+   verdade, e sempre inteira na tela, sem cortar nem esticar */
+.foto-celular{width:min(270px,72vw);margin:0 auto;border-radius:22px;
+              border:1px solid var(--borda);box-shadow:0 16px 40px #0003}
+.moldura{border-radius:10px;border:1px solid var(--borda);overflow:hidden}
 
 footer{background:var(--tinta);color:#7f96b8;padding:40px 0;font-size:14px;
        border-top:3px solid var(--sangue)}
@@ -132,61 +179,106 @@ a{color:var(--ouro)}
       <p>Gratuito, para qualquer igreja.</p>
 
       <div class="baixar">
-        <a class="bt forte" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema.exe">
-          <b>⬇ Instalar o Sistema</b><small>58 MB · leva tudo dentro · não precisa de internet</small></a>
-        <a class="bt leve" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Baixar-o-Sistema.exe">
-          <b>Baixar o Sistema</b><small>17 MB · versão leve, busca o resto na hora</small></a>
+        <a class="bt forte" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema-completo.exe">
+          <b>Baixar o Sistema completo</b><small>647 MB · com as animações, cifras e melodias · instala sem internet</small></a>
+        <a class="bt leve" href="#versoes">
+          <b>Ver as três versões</b><small>tem um instalador de 17 MB que cabe no WhatsApp</small></a>
       </div>
     </div>
     <div class="tela-foto">
       <img src="img/proj_louvor.webp" width="1280" height="720"
-           alt="Telão projetando o louvor 709, Dispõe-te, resplandece">
+           alt="Telão projetando o louvor 709, Resplandece, ó Jerusalém">
     </div>
   </div>
 </header>
 
-<section class="faixa">
-  <h2>Qual dos dois eu baixo?</h2><div class="linha-ouro"></div>
-  <p class="sub">Os dois instalam o mesmo programa. A diferença é só de onde vêm os arquivos.</p>
-  <div class="rolagem"><table>
-    <tr><th style="min-width:172px">O arquivo que chega</th><th>Tamanho</th><th>Quando usar</th></tr>
-    <tr>
-      <td><b>Instalar o Sistema.exe</b><small>o completo</small></td>
-      <td>58 MB</td>
-      <td>Vai instalar na igreja. Leva tudo dentro e roda <b>sem internet nenhuma</b>.
-          <small>Na dúvida, é este.</small></td>
-    </tr>
-    <tr>
-      <td><b>Baixar o Sistema.exe</b><small>o leve</small></td>
-      <td>17 MB</td>
-      <td>Você está com internet, ou quer passar o programa adiante.
-          Ele pergunta se é para instalar neste computador ou copiar para um pendrive.
-          <small>Cabe no WhatsApp. Se o computador já tiver as animações e cifras,
-          ele copia tudo junto para o pendrive.</small></td>
-    </tr>
-    <tr>
-      <td><b>Sistema completo (tudo dentro).zip</b><small>com as animações e cifras</small></td>
-      <td>637 MB</td>
-      <td>A versão com <b>tudo</b>: programa, animações dos CIAS, cifras e cadernos
-          de melodia. Descompacte e rode o instalador com a pasta Conteudo do lado.
-          <small><a href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Sistema-completo.zip">Baixar o pacote completo</a></small></td>
-    </tr>
-  </table></div>
+<section class="faixa" id="versoes">
+  <h2>Qual eu baixo?</h2><div class="linha-ouro"></div>
+  <p class="sub">Os três instalam o mesmo programa. A diferença é o que vem junto —
+     e a listinha de cada um diz tudo.</p>
+
+  <div class="versoes">
+
+    <div class="ver destaque">
+      <span class="selo">Recomendado para a igreja</span>
+      <h3>Sistema completo</h3>
+      <div class="tam">647 MB</div>
+      <p class="para">Para o computador que vai projetar o culto. Um arquivo só,
+         dois cliques: ele se abre e se instala sozinho, sem depender de internet.</p>
+      <ul>
+        <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
+        <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
+        <li><span class="ok">✓</span>Animações dos CIAS</li>
+        <li><span class="ok">✓</span>Cifras de violão e cadernos de melodia</li>
+        <li><span class="ok">✓</span>Instala sem conexão com a internet</li>
+        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
+      </ul>
+      <a class="acao verde" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema-completo.exe">Baixar o completo</a>
+    </div>
+
+    <div class="ver">
+      <h3>Sistema essencial</h3>
+      <div class="tam">58 MB</div>
+      <p class="para">O programa para projetar: louvores, Bíblia e fundos.
+         É o suficiente para a projeção do culto acontecer.</p>
+      <ul>
+        <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
+        <li><span class="ok">✓</span>Controle no celular do músico</li>
+        <li><span class="nao">✕</span>Animações dos CIAS</li>
+        <li><span class="nao">✕</span>Cifras de violão e cadernos de melodia</li>
+        <li class="nota">As duas podem ser trazidas depois: pelo botão
+            <b>Completar o Sistema</b>, dentro do próprio programa (com
+            internet), ou por pendrive.</li>
+        <li><span class="ok">✓</span>Instala sem conexão com a internet</li>
+        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
+      </ul>
+      <a class="acao escura" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema.exe">Baixar o essencial</a>
+    </div>
+
+    <div class="ver">
+      <h3>Instalador</h3>
+      <div class="tam">17 MB</div>
+      <p class="para">É só o arquivo instalador — por isso é tão pequeno: ele
+         baixa o Sistema da nuvem na hora de instalar. Cabe no WhatsApp.</p>
+      <ul>
+        <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
+        <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
+        <li><span class="ok">✓</span>Animações dos CIAS</li>
+        <li><span class="ok">✓</span><span class="tx">Cifras de violão e cadernos de melodia
+          <small>na hora de instalar, você escolhe: o completo ou só o essencial</small></span></li>
+        <li><span class="nao">✕</span><span class="tx">Instala sem conexão com a internet
+          <small>precisa estar conectado para a instalação inicial; também grava
+          pendrive para instalar na igreja sem internet</small></span></li>
+        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
+      </ul>
+      <a class="acao escura" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Baixar-o-Sistema.exe">Baixar o instalador</a>
+    </div>
+
+  </div>
 </section>
 
-<section class="faixa">
+<section class="faixa centro-inst">
   <h2>Como instalar</h2><div class="linha-ouro"></div>
   <ol class="passos">
     <li>Dois cliques no arquivo que você baixou
-        <small>ele vai estar na pasta Downloads</small></li>
+        <small>ele vai estar na pasta Downloads; o completo demora um instante
+        para abrir — é ele arrumando as coisas, a telinha do Sistema aparece</small></li>
     <li>Clique em <b>Instalar</b></li>
     <li>Espere a barrinha encher e clique em <b>Abrir o Sistema</b>
         <small>o atalho fica na Área de Trabalho e no menu Iniciar</small></li>
   </ol>
-  <p class="aviso">Pode aparecer um aviso azul dizendo <b>“O Windows protegeu o computador”</b>.
-     Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.
-     Isso acontece porque o programa é gratuito e não tem assinatura digital paga —
-     ela custa caro e não muda nada no programa. Não é vírus.</p>
+
+  <div class="escudo">
+    <div class="cab">Se aparecer “O Windows protegeu o computador”</div>
+    <div class="corpo">
+      É um aviso padrão do Windows para programas gratuitos sem assinatura digital
+      paga — ela custa caro e não muda nada no programa. <b>Não é vírus.</b>
+      São dois cliques para passar:
+      <div class="passinhos">
+        <span>Mais informações</span><span class="seta">→</span><span>Executar assim mesmo</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="faixa">
@@ -196,8 +288,8 @@ a{color:var(--ouro)}
       <p>A coletânea inteira já vem dentro. Busque pelo número, pelo nome ou por um trecho
          da letra — e ele acha mesmo se você escrever errado.</p></div>
     <div class="rec"><b>Bíblia completa</b>
-      <p>Projete um versículo ou vários de uma vez. E ele sugere os louvores que combinam
-         com o texto que está no telão.</p></div>
+      <p>Projete um versículo ou vários de uma vez, com a referência na faixa e o
+         texto inteiro, sem abreviação.</p></div>
     <div class="rec"><b>Controle pelo celular</b>
       <p>Comande a projeção do banquinho do grupo de louvor. Não precisa de internet:
          basta os dois estarem na mesma rede.</p></div>
@@ -206,37 +298,46 @@ a{color:var(--ouro)}
          como um louvor.</p></div>
     <div class="rec"><b>Avisos e cronômetro</b>
       <p>Escreva um aviso na hora, ou marque o tempo da oração na tela, para todos verem.</p></div>
-    <div class="rec"><b>Computador fraco</b>
-      <p>Foi feito pensando na máquina mais simples da igreja. Não precisa de internet,
-         de conta, nem de instalar mais nada.</p></div>
+    <div class="rec"><b>Atualiza sozinho</b>
+      <p>Quando sai versão nova, o programa avisa e se atualiza com um clique —
+         baixando só o programa, nunca o conteúdo pesado de novo.</p></div>
   </div>
 </section>
 
 <section class="faixa">
   <h2>Do lado de quem opera</h2><div class="linha-ouro"></div>
   <p class="sub">A tela do operador fica no computador. A congregação só vê o telão.</p>
-  <img src="img/painel.webp" width="1400" height="788"
-       alt="Tela do operador: lista de louvores à esquerda, prévia do telão à direita"
-       style="border-radius:10px;border:1px solid var(--borda)">
+  <div class="moldura"><img src="img/painel.webp" width="1400" height="788"
+       alt="Tela do operador: lista de louvores à esquerda, prévia do telão à direita"></div>
 </section>
 
 <section class="faixa">
-  <div class="duplo invertido">
+  <div class="duplo">
     <div>
       <h2>E do banquinho do louvor</h2><div class="linha-ouro"></div>
-      <p class="sub">O celular vira controle: passa o slide, monta a lista dos louvores do culto
-         e mostra a cifra — sem tirar o violão do colo, e sem gastar internet.</p>
-      <p class="sub">Para conectar, é só ler o QR Code que aparece no menu do programa.</p>
+      <p class="sub">O celular vira controle da projeção inteira: passa os slides, monta a
+         lista dos louvores do culto, projeta os versículos que o pastor citar e ainda
+         mostra a cifra no caderno do seu instrumento — tudo sem tirar o violão do colo,
+         e sem gastar um tostão de internet.</p>
+      <p class="sub">Para conectar, é só apontar a câmera do celular para o QR Code que
+         aparece no menu do programa, em <b>Configurações → Celular</b>. Da segunda vez
+         em diante, o navegador já lembra o caminho.</p>
     </div>
-    <img src="img/celular.webp" width="420" height="840" alt="O controle no celular">
+    <img class="foto-celular" src="img/celular.webp" width="420" height="840"
+         alt="O controle no celular do músico">
   </div>
 </section>
 
-<section class="faixa">
+<section class="faixa" style="padding-bottom:84px">
   <h2>A palavra no telão</h2><div class="linha-ouro"></div>
-  <p class="sub">O texto bíblico com a mesma letra grande e limpa, que se lê do fundo do salão.</p>
-  <img src="img/proj_verso.webp" width="1280" height="720"
-       alt="Telão projetando Isaías 60:1" style="border-radius:10px;border:1px solid var(--borda)">
+  <p class="sub">Na hora da mensagem, o versículo sobe ao telão com a mesma letra grande
+     e limpa que se lê do fundo do salão, no desenho que a igreja já conhece — a faixa
+     com a referência em cima e o texto inteiro embaixo, sem abreviação.</p>
+  <div class="moldura"><img src="img/proj_verso.webp" width="1280" height="720"
+       alt="Telão projetando Isaías 60:1"></div>
+  <p class="cochicho">E há quem diga que, quando a palavra sobe ao telão, o Sistema
+     sabe entregar ao operador o louvor certo para aquela hora — como quem conhece a
+     igreja há anos. Nós não vamos explicar. Instale e repare.</p>
 </section>
 
 <footer>
@@ -249,7 +350,8 @@ a{color:var(--ouro)}
        e não fazem parte dessa licença.</p>
     <p style="margin-top:16px">
       <a href="https://github.com/QuitsQuill88885/sistema-projecao-icm">Código no GitHub</a> ·
-      <a href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases">Todas as versões</a>
+      <a href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases">Todas as versões</a> ·
+      <a href="mailto:samuelsaxdiesel@gmail.com">Falar com o desenvolvedor</a>
     </p>
   </div>
 </footer>

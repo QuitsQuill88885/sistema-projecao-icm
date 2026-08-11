@@ -43,6 +43,10 @@ DONO = "QuitsQuill88885"
 REPO = "sistema-projecao-icm"
 ARQUIVO = "Instalar-o-Sistema.exe"
 URL = "https://github.com/%s/%s/releases/latest/download/%s" % (DONO, REPO, ARQUIVO)
+# o pacote de conteudo (animacoes dos CIAS, cifras e cadernos de melodia):
+# quem escolhe "completo" baixa este zip tambem, e ele vira a pasta Conteudo
+ARQ_CONTEUDO = "Conteudo.zip"
+URL_CONTEUDO = "https://github.com/%s/%s/releases/latest/download/%s" % (DONO, REPO, ARQ_CONTEUDO)
 
 SEM_JANELA = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
 
@@ -246,6 +250,32 @@ def baixar(destino, progresso, url=URL):
     return destino
 
 
+def baixar_e_extrair_conteudo(pasta_destino, progresso, de=30, ate=97):
+    """Baixa o Conteudo.zip e o abre em `pasta_destino`\\Conteudo — o formato
+    que o instalador espera achar do lado dele.
+
+    O zip tem as pastas animacoes/, cifras/ e melodias/ na raiz. O progresso
+    e' remapeado para a faixa [de..ate] da barra de quem chamou."""
+    import tempfile
+    import zipfile
+    zt = os.path.join(tempfile.mkdtemp(), ARQ_CONTEUDO)
+    faixa = max(1, ate - 3 - de)
+    baixar(zt,
+           lambda p, t: progresso(de + int(p * faixa / 85.0),
+                                  t.replace("Baixando…",
+                                            "Baixando as animações e cifras…")),
+           URL_CONTEUDO)
+    progresso(ate - 2, "Abrindo o pacote de conteúdo…")
+    alvo = os.path.join(pasta_destino, "Conteudo")
+    with zipfile.ZipFile(zt) as z:
+        z.extractall(alvo)
+    try:
+        os.remove(zt)
+    except OSError:
+        pass
+    return alvo
+
+
 def espaco_livre(pasta):
     try:
         livre = ctypes.c_ulonglong(0)
@@ -319,11 +349,11 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
        faz o que você mandar com ele.</p>
     <div class="cartoes">
       <button class="cartao" onclick="aqui()">
-        <span class="ic">💻</span><b>Instalar neste computador</b>
+        <span class="ic" data-ic="pc"></span><b>Instalar neste computador</b>
         <small>Baixa e instala agora. É só esperar.</small></button>
       <button class="cartao" onclick="ir(2)">
-        <span class="ic">📦</span><b>Levar para outro computador</b>
-        <small>Baixa o instalador completo e guarda onde você quiser.</small></button>
+        <span class="ic" data-ic="caixa"></span><b>Levar para outro computador</b>
+        <small>Baixa o instalador e guarda onde você quiser.</small></button>
     </div>
   </div>
 
@@ -333,6 +363,23 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
     <div class="quadros" id="quadros"></div>
     <p class="dica">O arquivo completo tem <b>58 MB</b> e roda em qualquer
        computador <b>sem internet nenhuma</b>. É o que levar para a igreja.</p>
+    <button class="voltar" onclick="ir(1)">voltar</button>
+  </div>
+
+  <!-- 6: completo ou essencial? A pergunta vem DEPOIS do destino: primeiro
+       o onde, depois o quanto. -->
+  <div class="tela oculto" id="t6">
+    <p class="sub">Qual Sistema você quer?</p>
+    <div class="cartoes">
+      <button class="cartao" onclick="escolhido(true)">
+        <span class="ic" data-ic="estrela"></span><b>Completo — uns 640 MB para baixar</b>
+        <small>Com as animações dos CIAS, as cifras e os cadernos de melodia.
+               É o do computador da igreja.</small></button>
+      <button class="cartao" onclick="escolhido(false)">
+        <span class="ic" data-ic="pena"></span><b>Essencial — 58 MB</b>
+        <small>Louvores, Bíblia e fundos. As animações e cifras podem ser
+               baixadas depois, por dentro do próprio Sistema.</small></button>
+    </div>
     <button class="voltar" onclick="ir(1)">voltar</button>
   </div>
 
@@ -362,10 +409,24 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
 <script>
 const $ = s => document.querySelector(s);
 $('#marca').innerHTML = (window.Icones && window.Icones.MARCA) ? window.Icones.MARCA(74) : '';
+// Icones proprios em SVG — NADA de emoji: cada Windows desenha emoji de um
+// jeito, e em maquina velha viram quadradinhos.
+const SVG = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em">' + p + '</svg>';
+const IC = {
+  pc:       SVG('<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M12 16.5v3M8.5 19.5h7"/>'),
+  caixa:    SVG('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>'),
+  estrela:  SVG('<path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.4l6.1-.8z"/>'),
+  pena:     SVG('<path d="M20.2 4.8a6 6 0 0 0-8.5 0L5 11.5V19h7.5l6.7-6.7a6 6 0 0 0 1-7.5z"/><path d="M16 8L2 22M17.5 15H9"/>'),
+  baixo:    SVG('<path d="M12 3v14M5 12l7 7 7-7"/><path d="M4 21h16"/>'),
+  pendrive: SVG('<rect x="8" y="9" width="8" height="12" rx="2"/><rect x="10" y="3" width="4" height="6" rx="1"/><path d="M11.5 5.5h1"/>'),
+  pasta:    SVG('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+};
+document.querySelectorAll('[data-ic]').forEach(el => { el.innerHTML = IC[el.dataset.ic] || ''; });
 
 function ir(n){
-  for (const k of [1,2,3,4,5]) $('#t'+k).classList.toggle('oculto', k !== n);
-  $('#titulo').textContent = (n === 2) ? 'Levar para outro computador' : 'Baixar o Sistema';
+  for (const k of [1,2,3,4,5,6]) $('#t'+k).classList.toggle('oculto', k !== n);
+  $('#titulo').textContent = (n === 2) ? 'Levar para outro computador'
+                            : (n === 6) ? 'Completo ou essencial?' : 'Baixar o Sistema';
   if (n === 2) destinos();
 }
 
@@ -377,26 +438,35 @@ async function destinos(){
   let d = {downloads:'', usb:[]};
   try { d = await window.pywebview.api.destinos(); } catch(e){}
   let h = `<button class="quadro" onclick="salvar('downloads')">
-             <span class="ic">⬇️</span><b>Downloads</b>
+             <span class="ic">${IC.baixo}</span><b>Downloads</b>
              <small>a pasta de sempre</small></button>`;
   if (d.usb && d.usb.length){
     for (const u of d.usb)
       h += `<button class="quadro" onclick="salvar('usb','${u.letra.replace(/\\\\/g,'\\\\\\\\')}')">
-              <span class="ic">🔌</span><b>${u.nome}</b>
+              <span class="ic">${IC.pendrive}</span><b>${u.nome}</b>
               <small>${u.letra.replace('\\\\','')} · ${u.livre} livres</small></button>`;
   } else {
     h += `<button class="quadro" disabled>
-            <span class="ic">🔌</span><b>Pendrive</b>
+            <span class="ic">${IC.pendrive}</span><b>Pendrive</b>
             <small>nenhum plugado</small></button>`;
   }
   h += `<button class="quadro" onclick="salvar('escolher')">
-          <span class="ic">📁</span><b>Escolher pasta</b>
+          <span class="ic">${IC.pasta}</span><b>Escolher pasta</b>
           <small>eu digo onde</small></button>`;
   cx.innerHTML = h;
 }
 
-function aqui(){ ir(3); acompanhar(); window.pywebview.api.instalar_aqui(); }
-function salvar(tipo, letra){ ir(3); acompanhar(); window.pywebview.api.exportar(tipo, letra || ''); }
+// A ação escolhida espera a resposta da tela 6 (completo ou essencial?).
+let pendente = null;
+function aqui(){ pendente = {acao:'aqui'}; ir(6); }
+function salvar(tipo, letra){ pendente = {acao:'salvar', tipo:tipo, letra:letra || ''}; ir(6); }
+function escolhido(completo){
+  if (!pendente) { ir(1); return; }
+  ir(3); acompanhar();
+  if (pendente.acao === 'aqui') window.pywebview.api.instalar_aqui(completo);
+  else window.pywebview.api.exportar(pendente.tipo, pendente.letra, completo);
+  pendente = null;
+}
 
 let relogio = null;
 function acompanhar(){
@@ -479,13 +549,21 @@ class Api:
     def _p(self, pct, txt):
         self.estado = {"pct": pct, "txt": txt}
 
-    def instalar_aqui(self):
-        """Baixa o instalador completo e roda ele em silêncio. Um clique só."""
+    def instalar_aqui(self, completo=False):
+        """Baixa o instalador e roda ele em silêncio. Um clique só.
+
+        Com `completo`, baixa também o Conteudo.zip e deixa a pasta Conteudo
+        ao lado do instalador — ele copia tudo sozinho, como no pendrive."""
         def tarefa():
             import tempfile
             self.modo = "instalar"
-            alvo = os.path.join(tempfile.mkdtemp(), ARQUIVO)
-            baixar(alvo, self._p)
+            pasta = tempfile.mkdtemp()
+            alvo = os.path.join(pasta, ARQUIVO)
+            if completo:
+                baixar(alvo, lambda p, t: self._p(int(p * 28 / 85.0), t))
+                baixar_e_extrair_conteudo(pasta, self._p, 28, 86)
+            else:
+                baixar(alvo, self._p)
             self._p(88, "Instalando o Sistema…")
             r = subprocess.run([alvo, "--silencioso"], capture_output=True,
                                text=True, **SEM_JANELA)
@@ -501,8 +579,11 @@ class Api:
                         "Trabalho e no menu Iniciar.")
         return self._rodar(tarefa)
 
-    def exportar(self, tipo, letra=""):
-        """Baixa o instalador completo e deixa ele no destino escolhido."""
+    def exportar(self, tipo, letra="", completo=False):
+        """Baixa o instalador e deixa ele no destino escolhido.
+
+        Com `completo`, garante a pasta Conteudo junto: copiando a deste
+        computador se ela existir, ou baixando o Conteudo.zip da nuvem."""
         def tarefa():
             self.modo = "exportar"
             if tipo == "downloads":
@@ -526,24 +607,27 @@ class Api:
             alvo = os.path.join(pasta, "Instalar o Sistema.exe")
             baixar(alvo, self._p)
 
-            # Se ESTE computador tem as animações, cifras e melodias, elas vão
-            # junto — é a única forma de chegarem ao outro computador, porque
-            # são pesadas demais para viajar dentro do .exe ou pela internet
-            # da igreja. Se não couberem, o instalador vai mesmo assim, e o
-            # aviso diz com todas as letras o que ficou para trás.
-            achadas = conteudo_local()
+            # Quem pediu COMPLETO leva a pasta Conteudo junto: copiada deste
+            # computador se ele a tiver (de graça, sem internet), ou baixada
+            # da nuvem. Se não couber, o instalador vai mesmo assim e o aviso
+            # diz com todas as letras o que ficou para trás.
             levou, faltou = [], 0
-            if achadas:
-                precisa = sum(t for _n, _p2, t in achadas)
+            if completo:
+                achadas = conteudo_local()
+                precisa = (sum(t for _n, _p2, t in achadas)
+                           if achadas else 640 * 1024 * 1024)
                 livre2 = espaco_livre(pasta)
                 if 0 <= livre2 < precisa + 20 * 1024 * 1024:
                     faltou = precisa + 20 * 1024 * 1024 - livre2
-                else:
-                    self._p(90, "Levando as animações, cifras e melodias…")
+                elif achadas:
+                    self._p(88, "Levando as animações, cifras e melodias…")
                     copiar_conteudo(pasta, achadas,
-                                    lambda x: self._p(90 + int(x * 8),
+                                    lambda x: self._p(88 + int(x * 10),
                                                       "Levando as animações, cifras e melodias…"))
                     levou = [n for n, _p2, _t in achadas]
+                else:
+                    baixar_e_extrair_conteudo(pasta, self._p, 86, 97)
+                    levou = ["animacoes", "cifras", "melodias"]
 
             self._p(99, "Conferindo…")
             self._explicar(pasta, levou)
