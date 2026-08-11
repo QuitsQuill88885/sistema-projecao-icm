@@ -19,7 +19,7 @@ da letra — com ou sem acento, com ou sem vírgula. A busca traz primeiro o lou
 cujo **título** bate, e só depois os que citam aquilo no meio da letra.
 
 **Coletâneas convivendo.** O mesmo número existe em coletâneas diferentes com
-letras diferentes: o 60 da Coletânea 2018 e o 60 dos CIAS são louvores distintos.
+letras diferentes: o 60 da Coletânea 2018 e o 60 das CIAS são louvores distintos.
 Procurando por número, o Sistema mostra os dois, cada um debaixo do nome da sua
 coletânea. Não há sigla para decorar.
 
@@ -59,7 +59,7 @@ fundos e seus louvores próprios não são tocados** — eles ficam em
 | Louvores e Bíblia | material da Igreja Cristã Maranata |
 | Fundos de tela | idem |
 | Fonte de projeção | tipografia comercial, licenciada |
-| Animações dos CIAS | pacote oficial da igreja |
+| Animações das CIAS | pacote oficial da igreja |
 | Cifras | coletâneas publicadas pela ICM |
 
 Nada disso é nosso para redistribuir. Quem clonar precisa trazer o próprio

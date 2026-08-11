@@ -43,7 +43,7 @@ DONO = "QuitsQuill88885"
 REPO = "sistema-projecao-icm"
 ARQUIVO = "Instalar-o-Sistema.exe"
 URL = "https://github.com/%s/%s/releases/latest/download/%s" % (DONO, REPO, ARQUIVO)
-# o pacote de conteudo (animacoes dos CIAS, cifras e cadernos de melodia):
+# o pacote de conteudo (animacoes das CIAS, cifras e cadernos de melodia):
 # quem escolhe "completo" baixa este zip tambem, e ele vira a pasta Conteudo
 ARQ_CONTEUDO = "Conteudo.zip"
 URL_CONTEUDO = "https://github.com/%s/%s/releases/latest/download/%s" % (DONO, REPO, ARQ_CONTEUDO)
@@ -116,7 +116,7 @@ def pasta_downloads():
 # As pastas de conteúdo pesado que o instalador NÃO carrega dentro do .exe
 # (juntas passam de 580 MB). Se ESTE computador as tem, a exportação leva
 # junto, numa pasta "Conteudo" ao lado do instalador. Foi a falta disto que
-# fez as animações dos CIAS nunca chegarem à igreja: o pendrive levava só o
+# fez as animações das CIAS nunca chegarem à igreja: o pendrive levava só o
 # programa, e o programa sem a pasta instala calado, sem os botões.
 PASTAS_CONTEUDO = ("animacoes", "cifras", "melodias")
 
@@ -373,7 +373,7 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
     <div class="cartoes">
       <button class="cartao" onclick="escolhido(true)">
         <span class="ic" data-ic="estrela"></span><b>Completo — uns 640 MB para baixar</b>
-        <small>Com as animações dos CIAS, as cifras e os cadernos de melodia.
+        <small>Com as animações das CIAS, as cifras e os cadernos de melodia.
                É o do computador da igreja.</small></button>
       <button class="cartao" onclick="escolhido(false)">
         <span class="ic" data-ic="pena"></span><b>Essencial — 58 MB</b>

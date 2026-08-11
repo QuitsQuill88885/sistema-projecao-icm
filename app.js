@@ -162,7 +162,7 @@ function codVers(livro, cap, v) {
 // O mesmo louvor está em várias coletâneas: são 2.459 entradas no catálogo para
 // pouco mais de 1.500 louvores distintos, e a tabela de sugestões repete o mesmo
 // em 15.122 dos 25.806 versículos (Gênesis 1:1 sugeria "DEUS CRIOU OS CÉUS E A
-// TERRA" duas vezes, uma dos CIAS e outra da Antiga). Numa lista de três, isso é
+// TERRA" duas vezes, uma das CIAS e outra da Antiga). Numa lista de três, isso é
 // um terço da tela desperdiçado, e numa roda é "repetir fora de hora".
 //
 // SÃO DUAS CHAVES, porque nenhuma delas sozinha reconhece a cópia.
@@ -171,7 +171,7 @@ function codVers(livro, cap, v) {
 //   Doze letras da primeira linha porque as coletâneas quebram a linha em pontos
 //   diferentes, e comparar a linha inteira separava justamente o que é igual.
 //   pela LETRA — junta o que a coletânea REBATIZOU, e aí o título não serve de
-//   nada: 71 dos CIAS é "JESUS VIU A MULTIDÃO" e 9997 da Antiga é "JESUS VIU A
+//   nada: 71 das CIAS é "JESUS VIU A MULTIDÃO" e 9997 da Antiga é "JESUS VIU A
 //   MULTIDÃO (A MULTIPLICAÇÃO)", mesma letra palavra por palavra; 353 é
 //   "DEIXA-ME CHORAR" e 3371 é "DEIXA-ME CHORAR AOS TEUS PÉS". Só pelo título,
 //   esses pares entravam os dois na mesma volta da roda e o operador via o mesmo
@@ -211,7 +211,7 @@ function carregarHistoricoSug() {
   sugHistPedido = true;
   fetch('/api/historico').then(r => r.json()).then(r => {
     // duas contagens, uma por chave, para a projeção do 9997 contar também para
-    // o 71 dos CIAS — que é o mesmo louvor com outro nome. A chave de título sai
+    // o 71 das CIAS — que é o mesmo louvor com outro nome. A chave de título sai
     // direto do que está gravado; a da letra só o catálogo tem, então o registro
     // é reencontrado pelo louvor que o gerou.
     const porTit = new Map(), porLet = new Map(), porChave = new Map();
@@ -595,7 +595,7 @@ function telasDoLouvor(idx) {
 }
 function louvorProximo() {
   const s = LOUVORES[est.louvorIdx]; if (!s) return;
-  // conta as telas do que está NO AR: o GIF dos CIAS costuma ter menos telas que
+  // conta as telas do que está NO AR: o GIF das CIAS costuma ter menos telas que
   // o texto, e usar a contagem do texto deixaria telas fantasma no fim
   if (est.louvorSlide < telasDoLouvor(est.louvorIdx) - 1) projetarLouvor(est.louvorIdx, est.louvorSlide + 1, false);
   else finalizarLouvor();   // acabou o louvor -> vai pra tela de espera; o PRÓXIMO "Avançar" engata o seguinte
@@ -682,7 +682,7 @@ function pontuarLouvor(s, alvo, palavras) {
 }
 // ---- coletâneas ----------------------------------------------------------
 // O mesmo número existe em coletâneas diferentes com letras diferentes: o 60 da
-// Coletânea 2018 e o 60 dos CIAS são louvores distintos. Alguém anuncia só
+// Coletânea 2018 e o 60 das CIAS são louvores distintos. Alguém anuncia só
 // "sessenta" ou "setenta CIAS" e o operador tem segundos para achar o certo.
 // A lista mostra os resultados AGRUPADOS por coletânea, com o nome escrito:
 // ele digita o número e vê os dois, cada um debaixo do seu cabeçalho.
@@ -751,7 +751,7 @@ function renderListaLouvores(filtro) {
   });
 
   // Agrupar por coletânea resolve a ambiguidade do NÚMERO (o 60 da 2018 e o 60
-  // dos CIAS). Mas em busca por TEXTO o grupo brigaria com a ordem de
+  // das CIAS). Mas em busca por TEXTO o grupo brigaria com a ordem de
   // proximidade — o cabeçalho se repetiria a cada linha. Então: número agrupa,
   // texto vem ranqueado, com a coletânea escrita em cada linha.
   const agrupar = !f || soNumero !== null;
@@ -808,7 +808,7 @@ function selecionarLouvor(i, semProjetar) {
   if (!semProjetar) projetarLouvor(i, 0, false);
   else marcarSlide();
 }
-// ---- recursos extras do louvor (cifra e animação dos CIAS) ----------------
+// ---- recursos extras do louvor (cifra e animação das CIAS) ----------------
 // A animação é importada pelo menu e fica na pasta do usuário; se o operador
 // nunca importou nada, ANIMACOES fica vazio e o botão nem aparece — nada de
 // botão morto no painel.
@@ -1030,13 +1030,13 @@ function fecharCifra() {
   est.modoCifra = false; atualizarExtras();
 }
 
-// Liga/desliga a exibição animada dos CIAS. Ela vem LIGADA: é assim que o louvor
+// Liga/desliga a exibição animada das CIAS. Ela vem LIGADA: é assim que o louvor
 // de criança se apresenta. Desligando, cai no texto normal.
 function alternarAnimacao() {
   est.modoAnim = est.modoAnim === false;      // undefined/true -> false; false -> true
   atualizarExtras();
   if (est.louvorIdx >= 0) projetarLouvor(est.louvorIdx, est.louvorSlide || 0, true);
-  toast(est.modoAnim === false ? 'Exibindo o texto deste louvor.' : 'Exibindo a animação dos CIAS.');
+  toast(est.modoAnim === false ? 'Exibindo o texto deste louvor.' : 'Exibindo a animação das CIAS.');
 }
 
 // Mostra/esconde os botões conforme o louvor que está selecionado agora.
@@ -2179,7 +2179,7 @@ function ligarCompletar() {
     if (r && r.falta) linha.hidden = false;
   }).catch(() => {});
   b.onclick = () => {
-    confirmar('Baixar as animações dos CIAS, as cifras e os cadernos de melodia '
+    confirmar('Baixar as animações das CIAS, as cifras e os cadernos de melodia '
               + '(cerca de <b>590 MB</b>)?<br><br>Precisa de internet. O Sistema '
               + 'continua funcionando normalmente enquanto baixa.', async () => {
       await fetch('/api/conteudo', { method: 'POST', body: '{}' });

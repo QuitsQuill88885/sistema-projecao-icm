@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><title>fotos do site</title>
+<style>html,body{margin:0;height:100%}#f{position:fixed;inset:0;border:0;width:100vw;height:100vh}</style></head>
+<body><iframe id="f" src="projecao.html"></iframe>
+<script>
+/* Arreio só para refazer as fotos do site (proj_louvor / proj_verso) com a
+   calibração da transmissão. Pode apagar sem dó.
+   SEM ASPAS no versículo: o Sistema projeta o texto como ele é, igual ao
+   Glorifica. As aspas de antes eram invenção da foto, não do programa. */
+const P=new URLSearchParams(location.search);
+const t=P.get('t')||'louvor';
+const amostras={
+  louvor:{modo:'louvor',estilo:'mapa',fundo:'fundos/louvor1_mapa.jpg',
+    titulo:'709 - RESPLANDECE, Ó JERUSALÉM',tam:5.75,linhas:[
+    'RESPLANDECE Ó JERUSALÉM!','PORQUE NASCE SOBRE TI A TUA LUZ.',
+    'JERUSALÉM, ÉS ILUMINADA PELA GLÓRIA','DO SENHOR, AS TUAS RUAS SÃO DE OURO,',
+    'Ó QUANTO ALMEJO NELAS ANDAR.']},
+  verso:{modo:'biblia',estilo:'mapa',fundo:'fundos/biblia_mapa.jpg',ref:'Isaías 60:1',tam:5.55,linhas:[
+    'LEVANTA-TE, resplandece, porque vem a tua luz, e a glória do Senhor vai nascendo sobre ti;']},
+};
+const f=document.getElementById('f');
+f.onload=()=>setTimeout(()=>{f.contentWindow.postMessage(JSON.stringify(amostras[t]),'*');},400);
+</script></body></html>

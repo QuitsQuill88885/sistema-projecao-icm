@@ -37,6 +37,9 @@
 :root[data-theme="light"]{--papel:#f4f6fa;--texto:#0e1725;--suave:#5a6a82;--borda:#dce3ee;--ouro:#c08a1e}
 
 *{margin:0;padding:0;box-sizing:border-box}
+/* clicar em "ver as outras versoes" DESLIZA ate la, nao teleporta.
+   scroll-padding: a secao nao encosta no topo da tela ao chegar */
+html{scroll-behavior:smooth;scroll-padding-top:18px}
 body{background:var(--papel);color:var(--texto);font-family:'Outfit',system-ui,sans-serif;
      font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
 /* height:auto e' o que impede a foto de esticar no celular: sem ele a largura
@@ -59,7 +62,9 @@ h1 em{color:var(--ouro-claro);font-style:normal}
 .tela-foto{border-radius:11px;overflow:hidden;border:1px solid #24344f;
            box-shadow:0 22px 54px #0006}
 
-.baixar{display:flex;flex-wrap:wrap;gap:13px;margin-top:26px}
+/* um botao principal e, embaixo dele, um discreto e comprido — nao dois
+   botoes disputando a atencao de quem chegou para baixar */
+.baixar{display:flex;flex-direction:column;gap:10px;margin-top:26px;max-width:430px}
 .bt{display:flex;flex-direction:column;gap:2px;text-decoration:none;border-radius:11px;
     padding:15px 26px;transition:transform .14s,box-shadow .14s;border:1px solid transparent}
 .bt:hover{transform:translateY(-2px);box-shadow:0 12px 26px #0005}
@@ -67,12 +72,21 @@ h1 em{color:var(--ouro-claro);font-style:normal}
 .bt small{font-size:12.5px;opacity:.82}
 .bt.forte{background:var(--verde);color:#fff}
 .bt.forte:hover{background:#249058}
-.bt.leve{background:#16233a;color:#dce6f5;border-color:#2b3c58}
-.bt.leve:hover{background:#1d2c47}
+.bt-menor{display:block;text-align:center;text-decoration:none;border-radius:9px;
+  padding:10px 16px;font-size:14px;color:#a8bcdc;border:1px solid #2b3c58;
+  background:transparent;transition:background .14s,color .14s}
+.bt-menor:hover{background:#16233a;color:#dce6f5}
 
 /* ---------- o resto ---------- */
 section{padding:56px 0}
-section+section{border-top:1px solid var(--borda)}
+/* a linha entre as secoes NAO vai de ponta a ponta da tela: ela respeita a
+   mesma margem do texto. Encostada nas bordas, e ainda colada embaixo do
+   quadro anterior, dava aquela sensacao de desalinhado no celular. */
+section+section{position:relative}
+section+section::before{content:'';position:absolute;top:0;left:22px;right:22px;
+  height:1px;background:var(--borda)}
+@media(min-width:1124px){section+section::before{left:calc((100% - 1080px)/2 + 22px);
+  right:calc((100% - 1080px)/2 + 22px)}}
 h2{font-family:'Bebas',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:8px;
    color:var(--texto)}
 .linha-ouro{width:52px;height:3px;background:var(--ouro);border-radius:2px;margin-bottom:24px}
@@ -118,6 +132,12 @@ ol.passos li::before{content:counter(p);position:absolute;left:0;top:-1px;width:
   border-radius:50%;background:var(--ouro);color:#0b1526;font-weight:700;font-size:15px;
   display:flex;align-items:center;justify-content:center}
 ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
+/* no celular o numero encolhe e o texto chega mais perto da margem — assim a
+   coluna dos passos fica alinhada com o quadro do aviso, logo abaixo */
+@media(max-width:620px){
+  ol.passos li{padding-left:38px}
+  ol.passos li::before{width:26px;height:26px;font-size:13.5px;top:1px}
+}
 
 /* o aviso do Windows apresentado como o que ele e': um quadro do proprio
    Windows, com os DOIS cliques desenhados na ordem */
@@ -135,10 +155,18 @@ ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
 .escudo .cab{background:var(--tinta2);color:#fff;padding:13px 19px;font-weight:600;font-size:15px}
 .escudo .corpo{padding:17px 19px;font-size:15px;line-height:1.6;color:var(--texto)}
 .escudo .corpo b{color:var(--ouro)}
-.escudo .passinhos{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.escudo .passinhos{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;align-items:center}
 .escudo .passinhos span{border:1px solid var(--borda);border-radius:8px;padding:7px 13px;
         font-size:14px;font-weight:600}
-.escudo .passinhos .seta{border:none;color:var(--suave);align-self:center}
+.escudo .passinhos .seta{border:none;color:var(--suave);align-self:center;padding:0 2px}
+/* no celular os dois cliques nao cabem lado a lado: em vez de deixar a seta
+   pendurada no fim da linha, eles descem um sob o outro e a seta aponta p/ baixo */
+@media(max-width:620px){
+  .escudo .passinhos{flex-direction:column;align-items:flex-start;gap:7px}
+  .escudo .passinhos span{width:100%;text-align:center}
+  .escudo .passinhos .seta{width:auto;align-self:center;transform:rotate(90deg);
+    padding:2px 0;font-size:15px}
+}
 
 .recursos{display:grid;gap:17px;grid-template-columns:repeat(auto-fit,minmax(233px,1fr))}
 .rec{border:1px solid var(--borda);border-radius:11px;padding:18px 19px;background:transparent}
@@ -163,7 +191,7 @@ footer a{color:#a8bcdc}
 footer p{margin-bottom:9px;max-width:70ch}
 footer b{color:#cfe0f5}
 a{color:var(--ouro)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 :focus-visible{outline:3px solid var(--ouro);outline-offset:3px;border-radius:6px}
 </style>
 </head>
@@ -181,8 +209,7 @@ a{color:var(--ouro)}
       <div class="baixar">
         <a class="bt forte" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema-completo.exe">
           <b>Baixar o Sistema completo</b><small>647 MB · com as animações, cifras e melodias · instala sem internet</small></a>
-        <a class="bt leve" href="#versoes">
-          <b>Ver as três versões</b><small>tem um instalador de 17 MB que cabe no WhatsApp</small></a>
+        <a class="bt-menor" href="#versoes">Ver as outras versões</a>
       </div>
     </div>
     <div class="tela-foto">
@@ -208,7 +235,7 @@ a{color:var(--ouro)}
       <ul>
         <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
         <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
-        <li><span class="ok">✓</span>Animações dos CIAS</li>
+        <li><span class="ok">✓</span>Animações das CIAS</li>
         <li><span class="ok">✓</span>Cifras de violão e cadernos de melodia</li>
         <li><span class="ok">✓</span>Instala sem conexão com a internet</li>
         <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
@@ -224,7 +251,7 @@ a{color:var(--ouro)}
       <ul>
         <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
         <li><span class="ok">✓</span>Controle no celular do músico</li>
-        <li><span class="nao">✕</span>Animações dos CIAS</li>
+        <li><span class="nao">✕</span>Animações das CIAS</li>
         <li><span class="nao">✕</span>Cifras de violão e cadernos de melodia</li>
         <li class="nota">As duas podem ser trazidas depois: pelo botão
             <b>Completar o Sistema</b>, dentro do próprio programa (com
@@ -243,7 +270,7 @@ a{color:var(--ouro)}
       <ul>
         <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
         <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
-        <li><span class="ok">✓</span>Animações dos CIAS</li>
+        <li><span class="ok">✓</span>Animações das CIAS</li>
         <li><span class="ok">✓</span><span class="tx">Cifras de violão e cadernos de melodia
           <small>na hora de instalar, você escolhe: o completo ou só o essencial</small></span></li>
         <li><span class="nao">✕</span><span class="tx">Instala sem conexão com a internet
@@ -323,7 +350,7 @@ a{color:var(--ouro)}
          aparece no menu do programa, em <b>Configurações → Celular</b>. Da segunda vez
          em diante, o navegador já lembra o caminho.</p>
     </div>
-    <img class="foto-celular" src="img/celular.webp" width="420" height="840"
+    <img class="foto-celular" src="img/celular.webp" width="470" height="1000"
          alt="O controle no celular do músico">
   </div>
 </section>

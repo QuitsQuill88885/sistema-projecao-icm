@@ -59,7 +59,7 @@ máquina e não depende de nada estar presente no Windows.
 |---|---|
 | `dados/louvores.js` | Letras das coletâneas da Igreja Cristã Maranata |
 | `cifras/` | Coletâneas cifradas oficiais |
-| `animacoes/` | Animações dos CIAS |
+| `animacoes/` | Animações das CIAS |
 | `fundos/` | Artes de fundo da igreja |
 
 Material da Igreja Cristã Maranata, usado pela congregação local. Não deve ser

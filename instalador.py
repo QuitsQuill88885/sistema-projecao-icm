@@ -142,7 +142,7 @@ def copiar_conteudo_extra(progresso=None):
 
     É o que separa a versão completa da enxuta sem existirem dois programas:
     o mesmo instalador, com ou sem a pasta do lado. Dentro dela vão as
-    animações dos CIAS e as cifras, que são pesadas demais para viajar dentro
+    animações das CIAS e as cifras, que são pesadas demais para viajar dentro
     do .exe (juntas passam de 200 MB).
 
         Instalar o Sistema.exe

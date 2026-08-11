@@ -640,7 +640,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         from urllib.parse import unquote
         limpo = unquote(path.split("?", 1)[0].split("#", 1)[0])
         # tudo o que o operador importou mora fora da pasta do app (o .exe é
-        # somente leitura): slides convertidos, animações dos CIAS e as cifras
+        # somente leitura): slides convertidos, animações das CIAS e as cifras
         for prefixo, base in (("/slides_importados/", SAIDA),
                               ("/animacoes/", pasta_usuario("animacoes")),
                               ("/cifras/", pasta_usuario("cifras"))):

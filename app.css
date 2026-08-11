@@ -89,7 +89,7 @@ main{display:grid;grid-template-columns:1fr 348px;overflow:hidden;min-height:0}
 .item.sel{background:var(--azul2);color:#fff;font-weight:600}
 .item.na-lista{box-shadow:inset 3px 0 0 var(--ouro)}
 /* Cabeçalho de coletânea. O mesmo número existe em coletâneas diferentes com
-   letras diferentes (o 60 da 2018 e o 60 dos CIAS). Buscando "60" o operador vê
+   letras diferentes (o 60 da 2018 e o 60 das CIAS). Buscando "60" o operador vê
    os dois, cada um debaixo do seu nome — não precisa decorar sigla nenhuma. */
 .grupo-col{position:sticky;top:0;z-index:2;padding:4px 12px;font-size:10.5px;font-weight:700;
            letter-spacing:.8px;color:var(--ouro);background:#101d33;border-top:1px solid var(--borda)}
