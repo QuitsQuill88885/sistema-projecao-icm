@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=23">
+<link rel="stylesheet" href="app.css?v=24">
 </head><body>
 <div id="app">
   <header>
@@ -42,8 +42,12 @@
       <!-- BÍBLIA -->
       <div class="view" data-aba="biblia">
         <div class="col col-livros">
-          <div class="busca"><input id="busca-livro" placeholder="Livro…" autocomplete="off"></div>
+          <div class="busca"><input id="busca-livro" placeholder="Livro, ou um trecho do versículo…" autocomplete="off"></div>
+          <!-- Quando o que se digita não é nome de livro nenhum, a caixa vira
+               busca por TRECHO: o pastor cita e o operador acha sem saber a
+               referência. Fica aqui, no lugar da lista, e não mistura com nada. -->
           <div class="lista" id="lista-livros"></div>
+          <div class="lista busca-trecho oculto" id="lista-trechos"></div>
         </div>
         <div class="col col-cv">
           <h3 id="tit-caps">Capítulos</h3>
@@ -68,7 +72,14 @@
             <button class="big-btn ouro" data-min="5">5 minutos</button>
             <button class="big-btn" data-min="3">3 min</button>
             <button class="big-btn" data-min="10">10 min</button>
-            <input type="number" id="timer-min" min="1" max="120" value="5" style="width:80px"> min
+            <!-- as setinhas do Windows são feias e miúdas; estas são do Sistema,
+                 grandes o bastante para o dedo e para o mouse com pressa -->
+            <div class="passo-num">
+              <button class="pn-b" id="min-menos" title="Menos tempo">−</button>
+              <input type="number" id="timer-min" min="1" max="600" value="5">
+              <button class="pn-b" id="min-mais" title="Mais tempo">+</button>
+              <span class="pn-rot" id="min-rot">5 min</span>
+            </div>
             <input type="text" id="timer-rotulo" placeholder="Rótulo" value="Oração" style="flex:1;min-width:120px">
           </div>
           <div class="timer-display" id="timer-view">05:00</div>
@@ -133,7 +144,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=23"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=24"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -294,7 +305,7 @@
             <button class="big-btn verde" id="btn-completar">Completar</button></div>
           <div class="reset-row"><div><b>Buscar atualizações</b><small id="atu-status">Procura a versão mais nova na internet. Suas coisas nunca são apagadas, e o conteúdo pesado não baixa de novo.</small></div>
             <button class="big-btn" id="btn-atualizar">Buscar</button></div>
-          <div class="reset-row"><div><b>Procurar sozinho ao abrir</b><small>Se houver internet, o Sistema avisa quando existir versão nova. Nada se instala sem você mandar.</small></div>
+          <div class="reset-row"><div><b>Procurar atualização sozinho ao abrir</b><small>Se houver internet, o Sistema avisa quando existir versão nova. Nada se instala sem você mandar.</small></div>
             <button class="big-btn" id="btn-atu-auto">Ligado</button></div>
           <h3 class="menu-h3">Levar para outro computador</h3>
           <div class="reset-row"><div><b>Exportar para um pendrive</b><small id="usb-status">Grava o instalador, as animações, cifras, melodias e as suas configurações — pronto para instalar lá.</small></div>
@@ -311,8 +322,11 @@
             <button class="big-btn" data-reset="louvores">Restaurar</button></div>
           <div class="reset-row"><div><b>Apresentações</b><small>Apaga os PowerPoints e PDFs já importados.</small></div>
             <button class="big-btn" data-reset="slides">Restaurar</button></div>
-          <div class="reset-row perigo"><div><b>Tudo</b><small>Devolve o sistema ao estado de fábrica.</small></div>
+          <div class="reset-row perigo"><div><b>Tudo</b><small>Devolve o Sistema ao estado de fábrica: apaga as suas configurações, o histórico, os louvores e fundos que você adicionou. O programa fecha e abre sozinho.</small></div>
             <button class="big-btn vermelho" data-reset="tudo">Restaurar tudo</button></div>
+          <h3 class="menu-h3">Tirar do computador</h3>
+          <div class="reset-row perigo"><div><b>Desinstalar o Sistema</b><small id="desinst-status">Remove o programa e os atalhos. Você escolhe se as suas coisas — louvores, fundos, animações, cifras — ficam ou vão junto.</small></div>
+            <button class="big-btn vermelho" id="btn-desinstalar">Desinstalar</button></div>
         
           <h3 class="menu-h3">Sobre o Sistema</h3>
           <div class="cred-bloco">
@@ -352,11 +366,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=23"></script>
+<script src="dados/louvores.js?v=24"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=23"></script>
+<script src="dados/galeria.js?v=24"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=23"></script>
-<script src="app.js?v=23"></script>
+<script src="icones.js?v=24"></script>
+<script src="app.js?v=24"></script>
 </body></html>

@@ -50,7 +50,11 @@
 #lou-txt .bloco,#bib-txt .fitw,#livre .fitw,#bib-multi .fitw{
   transform:scaleY(1.06);transform-origin:center}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;background:#000;overflow:hidden}
+/* NADA aqui se seleciona. Um arrasto sem querer no telão pinta a letra de azul
+   na frente da congregação — e na prévia dá para copiar o texto, que também
+   não faz sentido nenhum. */
+html,body{height:100%;background:#000;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* PALCO 16:9 fixo e centralizado (letterbox) -> texto e fundo sempre alinhados */
 #tela{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
       width:min(100vw,177.78vh);height:min(100vh,56.25vw);
@@ -74,7 +78,7 @@ html,body{height:100%;background:#000;overflow:hidden}
      15.2%    -> borda esquerda do bloco a 19% da tela  */
 #lou-txt{font-family:'Sistema A3',sans-serif;color:#fff;font-size:5.75cqh;flex-direction:column;text-transform:uppercase;align-items:flex-start}
 #lou-txt .bloco{text-align:left;display:inline-block;width:76%;margin-left:15.2%}
-#lou-txt .bloco .linha{display:block;line-height:1.815;margin:0}
+#lou-txt .bloco .linha{display:block;line-height:var(--lh,1.815);margin:0}
 #lou-txt .label-coro{display:block;color:#ffff00;font-style:italic;font-size:.72em;letter-spacing:1px;margin-bottom:.12em}
 #lou-txt .mk{color:#ffff00}
 /* wrapper de medição p/ auto-ajuste (shrink-to-fit) */
@@ -84,7 +88,14 @@ html,body{height:100%;background:#000;overflow:hidden}
          opacity:.72;font-size:3.4cqh;letter-spacing:.5px;display:none;text-shadow:0 2px 6px #000b}
 #grande{inset:0;font-family:'Bebas',sans-serif;color:#fff;font-size:24cqh;
         font-variant-numeric:tabular-nums;letter-spacing:2px;text-shadow:0 4px 24px #000c;flex-direction:column}
-#grande small{font-size:5cqh;color:#f5d76e;letter-spacing:3px;text-transform:uppercase;margin-bottom:2cqh}
+/* O RÓTULO DO CRONÔMETRO — "Momento de oração", "Vigília".
+   Herdava a Bebas do número: condensada, maciça, um letreiro. Para o momento
+   de oração isso grita. O número continua Bebas (ele TEM que ser lido lá do
+   fundo); o rótulo passa para a Outfit em peso médio, menor e bem espaçado —
+   é a mesma família do louvor, só que falando baixo. */
+#grande small{font-family:'Sistema A5','Sistema A1',sans-serif;font-weight:500;
+  font-size:3.6cqh;color:#f5d76e;letter-spacing:.42em;text-indent:.42em;
+  text-transform:uppercase;margin-bottom:2.6cqh;opacity:.93}
 #livre{top:12%;height:76%;font-family:'Sistema A3',sans-serif;color:#fff;font-size:6cqh;flex-direction:column;text-shadow:0 2px 10px #000c}
 #livre .fitw{gap:.22em;align-items:center;text-align:center}
 #livre .mk{font-weight:900;font-size:1.25em;letter-spacing:1px;margin-bottom:.15em;display:block}
@@ -94,12 +105,17 @@ html,body{height:100%;background:#000;overflow:hidden}
 .e-limpo #bib-ref{top:2.2%;height:14.5%}
 .e-limpo #bib-txt{top:22%;height:74%}
 .e-limpo #lou-tit{top:2.2%;height:14.5%;left:14.5%;right:1.5%}
-.e-limpo #lou-txt{top:20%;height:70%}   /* centro a 55%: bloco oficial vai de 19,6% a 90,3% */
+.e-limpo #lou-txt{top:18%;height:76%}   /* idem: a sobra se reparte em cima e embaixo */
 /* ---- ESTILO MAPA (mundo): faixa Bíblia 16.5%, Louvor 3% ---- */
 .e-mapa #bib-ref{top:16.5%;height:10%}
 .e-mapa #bib-txt{top:27.5%;height:70%}
 .e-mapa #lou-tit{top:3%;height:9%;left:13.5%;right:1.5%}
-.e-mapa #lou-txt{top:18%;height:74%}   /* centro a 55%: bloco oficial vai de 19,6% a 90,3% */
+/* O bloco é CENTRADO nesta caixa (align-items:center do .txt). Depois da
+   quebra dos slides longos, quase todo louvor tem 4 ou 5 linhas — e o texto
+   passou a sobrar espaço embaixo e nada em cima. A caixa agora começa mais
+   baixo e termina antes: o que sobra fica repartido dos dois lados, que é a
+   margem que o Samuel pediu. */
+.e-mapa #lou-txt{top:16%;height:78%}
 /* ---- MULTI-VERSÍCULO: vários juntos, referência dourada + texto branco itálico ---- */
 #bib-multi{font-family:'Sistema A3',sans-serif;flex-direction:column;align-items:center;
            justify-content:center;text-align:left;padding:0 6% 0 8%}
@@ -159,14 +175,31 @@ function fundo(url){ tela.style.background = url?`#000 url('${url}') center/100%
 // auto-ajuste: reduz a fonte até o conteúdo caber na caixa (nenhum louvor/versículo quebra)
 /* Ajusta a fonte para o texto SEMPRE caber inteiro na caixa.
    A escala do A-/A+ entra ANTES do ajuste: aumentar aumenta, mas nunca deixa cortar. */
+/* O AVANÇO DE LINHA CEDE ESPAÇO PARA A LETRA CRESCER.
+   1.815 é a medida da transmissão oficial e é o padrão — a igreja vê assim.
+   Mas num slide de 8 ou 9 linhas o texto já enche a tela, e aumentar a letra
+   não tinha de onde tirar espaço: o A+ não mudava um pixel.
+   Quando o operador pede MAIOR, o respiro entre as linhas encolhe um pouco
+   (nunca abaixo de 1.5, que é onde a leitura à distância começa a sofrer) e
+   a letra usa esse espaço. Pedindo MENOR, o respiro volta ao normal. */
+function avancoLinha(escala){
+  const e = escala || 1;
+  return e <= 1 ? 1.815 : Math.max(1.5, 1.815 / Math.pow(e, 0.55));
+}
 function fit(box, cqh, escala, crescer, linhasRef){
   const w = box.firstElementChild; if(!w) return;
   let base = Math.max(6, cqh/100*tela.clientHeight * (escala || 1));
   // linhasRef = maior slide do louvor: todos os slides ficam no MESMO tamanho (não "pula")
   if(linhasRef > 0){
     // 1.815 = o avanço de linha do louvor (line-height do .bloco .linha);
-    // tem que andar JUNTO com o CSS, senão o teto mente
-    const teto = box.clientHeight / (linhasRef * 1.815);
+    // tem que andar JUNTO com o CSS, senão o teto mente.
+    //
+    // O A+ ENTRA AQUI TAMBÉM, e é por isso que ele antes não funcionava: em
+    // louvor de muitas linhas (o "TENHO UMA CANDEIA" é um) o teto vencia
+    // sempre, e aumentar a letra não mudava um pixel. Agora o teto sobe junto
+    // — e quem impede o texto de vazar continua sendo o encolhe-até-caber
+    // logo abaixo, que nunca deixa cortar.
+    const teto = box.clientHeight / (linhasRef * avancoLinha(escala)) * (escala || 1);
     if(teto < base) base = Math.max(6, teto);
   }
   let px = base;
@@ -237,6 +270,7 @@ function aplicar(e){
       el.lou.innerHTML=''; const bloco=document.createElement('div'); bloco.className='bloco';
       if(e.label){const lb=document.createElement('span');lb.className='label-coro';lb.textContent=e.label;bloco.appendChild(lb);}
       (e.linhas||[]).forEach(l=>bloco.appendChild(montarLinha(l)));
+      bloco.style.setProperty('--lh', avancoLinha(e.escala));
       el.lou.appendChild(bloco); fit(el.lou, e.tam||6.4, e.escala, false, e.linhasRef);
       if(e.fim && (e.linhas||[]).length) el.fim.style.display='block';   // "fim" no último slide
     }

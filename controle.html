@@ -10,7 +10,7 @@
   --txt:#eaf0fb; --suave:#9db3d6; --ouro:#f5d76e; --verde:#2e8b57; --vermelho:#a31a1a; --azul:#14487a;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--fundo);color:var(--txt);
+html,body{height:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;background:var(--fundo);color:var(--txt);
   font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overscroll-behavior:none}
 body{display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
 button{font-family:inherit;color:inherit;border:none;cursor:pointer}
@@ -55,6 +55,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .busca input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid var(--borda);
   background:#0c1830;color:#fff;font-size:16px}
 .lista{display:flex;flex-direction:column;gap:5px}
+/* a busca por trecho: o pastor cita, o operador acha sem saber a referência */
+.trecho-cab{padding:6px 4px 8px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--ouro)}
+.item-trecho b{display:block;color:var(--ouro);font-size:12.5px;margin-bottom:3px}
+.item-trecho small{display:block;color:#a9bcd8;font-size:12.5px;line-height:1.35}
 .item{padding:11px 13px;border-radius:9px;background:var(--painel);font-size:13.5px;line-height:1.3;
   display:flex;align-items:center;gap:9px}
 /* trilha: onde estou e como voltar */
@@ -519,7 +523,10 @@ function listarCifras(f) {
 }
 
 function escapar(t) {
-  return (t || '').split('&').join('&amp;').split('<').join('&lt;');
+  // O marcador invisível (\x01) é o do amarelo do TELÃO. Na folha de cifra ele não é
+  // interpretado e aparecia como caractere quebrado (2.040 vezes no acervo).
+  return (t || '').replace(/\u0001/g, '')
+    .split('&').join('&amp;').split('<').join('&lt;');
 }
 
 /* Desenha a linha de acordes ACIMA da letra, cada um na coluna que veio do PDF.
@@ -863,7 +870,7 @@ function mostrarSlides(i) {
   s.slides.forEach((sl, k) => {
     const d = document.createElement('div'); d.className = 'slide';
     d.innerHTML = (sl.label ? '<b>' + sl.label + '</b>' : '') +
-      sl.linhas.slice(0, 2).map(x => x.replace(//g, '')).join('<br>') + (sl.linhas.length > 2 ? '…' : '');
+      sl.linhas.slice(0, 2).map(x => x.replace(/\u0001/g, '')).join('<br>') + (sl.linhas.length > 2 ? '…' : '');
     d.onclick = () => enviar('slide', {idx: i, slide: k});
     c.appendChild(d);
   });
@@ -872,9 +879,60 @@ $('#q').oninput = e => listarLouvores(e.target.value);
 listarLouvores('');
 
 /* ---------- bíblia ---------- */
+// ---- achar o versículo pelo que ele DIZ ----
+// O pastor cita e o operador não sabe a referência. Enquanto o que ele digita
+// for nome de livro, a caixa filtra livros como sempre; quando não for livro
+// nenhum, ela vira busca por trecho — sem botão novo, sem aba nova.
+let versIdx = null;
+function indiceVersos() {
+  if (versIdx) return versIdx;
+  versIdx = [];
+  (BIBLIA.ordem || []).forEach((livro, li) => {
+    (BIBLIA.livros[livro] || []).forEach((cap, ci) => {
+      for (const v in cap) versIdx.push([livro, ci + 1, +v, semAcento(cap[v])]);
+    });
+  });
+  return versIdx;
+}
+function buscarPorTrecho(txt) {
+  const c = $('#livros');
+  const q = semAcento(txt).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const termos = q.split(' ').filter(p => p.length > 2);
+  const achados = [];
+  for (const [livro, cap, v, texto] of indiceVersos()) {
+    const inteiro = texto.includes(q);
+    if (!inteiro) {
+      let n = 0;
+      for (const t of termos) if (texto.includes(t)) n++;
+      if (n < termos.length) continue;
+    }
+    achados.push([livro, cap, v, inteiro ? 2 : 1]);
+    if (achados.length > 300) break;
+  }
+  achados.sort((a, b) => b[3] - a[3]);
+  c.innerHTML = '';
+  if (!achados.length) {
+    c.innerHTML = '<div class="vazio">Nenhum livro e nenhum versículo com esse trecho.</div>';
+    return;
+  }
+  const cab = document.createElement('div');
+  cab.className = 'trecho-cab';
+  cab.textContent = achados.length + (achados.length === 1 ? ' versículo encontrado' : ' versículos encontrados');
+  c.appendChild(cab);
+  achados.slice(0, 40).forEach(([livro, cap, v]) => {
+    const t = (BIBLIA.livros[livro][cap - 1] || {})[v] || '';
+    const d = document.createElement('div');
+    d.className = 'item item-trecho';
+    d.innerHTML = '<b>' + livro + ' ' + cap + ':' + v + '</b><small>' +
+                  t.slice(0, 110) + (t.length > 110 ? '…' : '') + '</small>';
+    d.onclick = () => { livroSel = livro; capSel = cap; passoBiblia(); enviar('verso', { livro, cap, v }); };
+    c.appendChild(d);
+  });
+}
 function listarLivros(f) {
   const c = $('#livros'); c.innerHTML = '';
   const q = semAcento(f).trim().replace(/\s+/g, '');
+  let achou = 0;
   (BIBLIA.ordem || []).forEach(nome => {
     if (q) {
       // aceita como o dedo digita no celular: "1jo" acha 1 João, "sl" acha Salmos,
@@ -889,6 +947,7 @@ function listarLivros(f) {
       }
       if (!bate) return;
     }
+    achou++;
     const d = document.createElement('div');
     d.className = 'item' + (nome === livroSel ? ' sel' : '');
     d.textContent = nome;
@@ -900,6 +959,8 @@ function listarLivros(f) {
     };
     c.appendChild(d);
   });
+  // não é livro nenhum: então é trecho de versículo
+  if (!achou && semAcento(f).replace(/[^a-z0-9]/g, '').length >= 4) buscarPorTrecho(f);
 }
 /* um passo por vez: livro -> capítulo -> versículo (sem rolar atrás das coisas) */
 // Ao VOLTAR, devolve a rolagem onde ela estava: sem isto, sair dos versículos de

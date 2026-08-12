@@ -1,2957 +1,3061 @@
 {
-  "figuras": [
-    {
-      "termo": "marido",
-      "variantes": [
-        "maridos",
-        "primeiro marido",
-        "esposo",
-        "esposos",
-        "noivo",
-        "noivos",
-        "cabeca do lar",
-        "o teu criador e o teu marido",
-        "redentor",
-        "o teu redentor",
-        "santo de israel",
-        "desposar",
-        "desposou"
-      ],
-      "significado": "Jesus Cristo como Esposo da Igreja: ama, sustenta e entrega-se por ela; Paulo declara que o misterio do casamento fala 'a respeito de Cristo e da igreja', e Isaias diz que o proprio Criador se faz marido daquela que estava so.",
-      "temas": [
-        "esposo",
-        "noivo",
-        "marido",
-        "amado",
-        "bodas",
-        "casamento",
-        "alianca",
-        "entrega",
-        "amor de Cristo",
-        "igreja",
-        "redentor",
-        "volta de Cristo",
-        "primeiro amor"
-      ],
-      "base": "Efesios 5:23-32 (v.32); Isaias 54:5; Jeremias 3:14; 2 Corintios 11:2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "esposa",
-      "variantes": [
-        "esposas",
-        "mulher",
-        "mulheres",
-        "noiva",
-        "noivas",
-        "igreja gloriosa",
-        "sem macula nem ruga",
-        "sem mancha",
-        "imaculada",
-        "minha imaculada",
-        "toda formosa",
-        "sulamita",
-        "irma minha",
-        "amiga minha",
-        "formosa minha",
-        "a unica",
-        "uma e a minha pomba",
-        "desposada"
-      ],
-      "significado": "A Igreja como esposa de Cristo: santificada e purificada 'com a lavagem da agua, pela palavra', comprada por sangue, adornada e preparada como uma so, sem macula nem ruga, para o dia das bodas do Cordeiro.",
-      "temas": [
-        "esposa",
-        "noiva",
-        "igreja",
-        "santificacao",
-        "purificada",
-        "gloriosa",
-        "sem macula",
-        "vestes",
-        "bodas",
-        "preparo",
-        "adornada",
-        "unica",
-        "escolhida",
-        "pureza",
-        "arrebatamento"
-      ],
-      "base": "Efesios 5:24-32; 2 Corintios 11:2; Cantares 4:7-12; 6:9; Isaias 61:10; 62:5; Apocalipse 19:7-8; 21:9",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "virgem",
-      "variantes": [
-        "virgens",
-        "virgem pura",
-        "virgem casta",
-        "desposada a um so marido"
-      ],
-      "significado": "A Igreja preparada em pureza para ser apresentada a um so marido, 'a saber, a Cristo'; zelo de Deus contra a corrupcao do pensamento.",
-      "temas": [
-        "virgem",
-        "pureza",
-        "desposada",
-        "preparo",
-        "zelo",
-        "apresentar ao Senhor",
-        "noiva",
-        "vigiar"
-      ],
-      "base": "2 Corintios 11:2; Mateus 25:1-13",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "repudiada",
-      "variantes": [
-        "repudiadas",
-        "repudiar",
-        "repudiou",
-        "repudio",
-        "despedir",
-        "despediu",
-        "despedida",
-        "carta de divorcio",
-        "libelo de divorcio",
-        "divorcio",
-        "tornar a tomar",
-        "tornar a toma-la",
-        "mulher da mocidade",
-        "deixar o senhor",
-        "quis te deixar"
-      ],
-      "significado": "A lei do repudio e usada pelos profetas como figura de Israel/da Igreja que deixou o seu primeiro marido: 'se um homem despedir sua mulher... porventura nao se poluira de todo aquela terra?' — e ainda assim o Senhor chama: 'torna-te para mim'. Onde a lei diz que o primeiro marido nao pode tornar a toma-la, o Senhor responde pela graca: 'nao houve carta de divorcio da minha parte' e 'eu vos desposei'. Ninguem impede o Esposo de receber de volta a sua.",
-      "temas": [
-        "repudio",
-        "divorcio",
-        "abandono",
-        "infidelidade",
-        "voltar",
-        "torna-te para mim",
-        "misericordia",
-        "reconciliacao",
-        "primeiro marido",
-        "chamado de volta",
-        "primeiro amor",
-        "quis deixar",
-        "o Senhor nao desiste",
-        "graca maior que a lei",
-        "quem podera impedir",
-        "nada nos separa"
-      ],
-      "base": "Jeremias 3:1-14 (cita a lei de Deuteronomio 24:1-4); Isaias 50:1; Isaias 54:6-8; Oseias 2:14-20; Romanos 8:35-39; Apocalipse 2:4-5",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "adulterio",
-      "variantes": [
-        "adultera",
-        "adulteras",
-        "adulteros",
-        "prostituicao",
-        "fornicacao",
-        "amizade do mundo",
-        "infiel",
-        "infidelidade",
-        "contaminada",
-        "foi contaminada",
-        "poluida",
-        "poluir-se"
-      ],
-      "significado": "A infidelidade espiritual do povo que troca o seu Esposo por outros amores: 'nao sabeis vos que a amizade do mundo e inimizade contra Deus?'; Ezequiel e Oseias descrevem a mesma figura em detalhe.",
-      "temas": [
-        "adulterio",
-        "infidelidade",
-        "idolatria",
-        "mundanismo",
-        "separacao do mundo",
-        "santidade",
-        "voltar",
-        "arrependimento"
-      ],
-      "base": "Tiago 4:4; Ezequiel 16:8-32; Oseias 2:2-13; Jeremias 3:6-9",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "primeiro amor",
-      "variantes": [
-        "o teu primeiro amor",
-        "amor da tua mocidade",
-        "deixaste o teu primeiro amor",
-        "lembra-te de onde caiste",
-        "volta ao primeiro amor"
-      ],
-      "significado": "O amor do principio, que o Senhor lembra com carinho e cobra com firmeza: 'lembra-te de onde caiste, e arrepende-te, e pratica as primeiras obras'.",
-      "temas": [
-        "primeiro amor",
-        "voltar",
-        "arrependimento",
-        "lembranca",
-        "zelo",
-        "noivado",
-        "fervor",
-        "restauracao",
-        "primeiras obras"
-      ],
-      "base": "Apocalipse 2:4-5; Jeremias 2:2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "heranca",
-      "variantes": [
-        "herancas",
-        "herdade",
-        "herdeiro",
-        "herdeiros",
-        "possessao",
-        "posse",
-        "por heranca",
-        "herdar",
-        "terra que te da por heranca",
-        "galardao"
-      ],
-      "significado": "A posse que Deus da ao seu povo: a terra prometida como figura da heranca incorruptivel guardada nos ceus, selada pelo Espirito Santo ate a redencao da possessao adquirida.",
-      "temas": [
-        "heranca",
-        "possuir",
-        "terra prometida",
-        "promessa",
-        "herdeiros",
-        "filhos de Deus",
-        "galardao",
-        "posse",
-        "selo do Espirito",
-        "canaa"
-      ],
-      "base": "Efesios 1:13-14; 1 Pedro 1:4; Hebreus 9:15; Galatas 3:29; Josue 1:3-6; Deuteronomio 4:21",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "terra",
-      "variantes": [
-        "a terra",
-        "terra prometida",
-        "canaa",
-        "boa terra",
-        "terra que mana leite e mel",
-        "poluir a terra",
-        "contaminar a terra",
-        "fazer pecar a terra"
-      ],
-      "significado": "A terra dada por Deus como o lugar da promessa que se possui e se guarda santo: contamina-la e perde-la. Figura do que o povo recebeu das maos do Senhor e nao pode profanar.",
-      "temas": [
-        "terra",
-        "canaa",
-        "possuir",
-        "promessa",
-        "santidade",
-        "nao profanar",
-        "contaminacao",
-        "heranca",
-        "entrar",
-        "conquistar"
-      ],
-      "base": "Numeros 35:33-34; Levitico 18:24-28; Deuteronomio 24:4; Hebreus 4:1-11",
-      "confianca": "forte"
-    },
-    {
-      "termo": "abominacao",
-      "variantes": [
-        "abominacoes",
-        "abominavel",
-        "profanar",
-        "poluir",
-        "contaminar",
-        "imundicia"
-      ],
-      "significado": "O que Deus rejeita e que corrompe o povo e o lugar onde ele habita; a Igreja e chamada a lancar fora o que contamina.",
-      "temas": [
-        "abominacao",
-        "profanar",
-        "contaminar",
-        "santidade",
-        "purificacao",
-        "juizo",
-        "lancar fora",
-        "temor de Deus"
-      ],
-      "base": "Deuteronomio 24:4; Levitico 18:24-30; 2 Corintios 6:16-18",
-      "confianca": "forte"
-    },
-    {
-      "termo": "corpo",
-      "variantes": [
-        "corpos",
-        "membro",
-        "membros",
-        "um so corpo",
-        "muitos membros",
-        "juntas",
-        "ligamentos"
-      ],
-      "significado": "A Igreja e o corpo de Cristo, com muitos membros interdependentes, ajustada e ligada por juntas e ligamentos ao Cabeca.",
-      "temas": [
-        "corpo",
-        "membros",
-        "unidade",
-        "um so corpo",
-        "comunhao",
-        "dons",
-        "edificacao",
-        "juntas"
-      ],
-      "base": "1 Corintios 12:12-27; Efesios 1:22-23; 4:15-16; Colossenses 1:24",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "cabeca",
-      "variantes": [
-        "cabecas",
-        "principal",
-        "cabeca do corpo",
-        "cabeca da igreja"
-      ],
-      "significado": "Cristo como cabeca da Igreja e Salvador do corpo; toda autoridade e direcao procedem dele.",
-      "temas": [
-        "cabeca",
-        "senhorio",
-        "autoridade",
-        "governo de Cristo",
-        "direcao",
-        "sujeicao"
-      ],
-      "base": "Efesios 5:23; Colossenses 1:18; 1 Corintios 11:3",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "agar",
-      "variantes": [
-        "a escrava",
-        "escrava",
-        "escravas",
-        "a serva",
-        "serva",
-        "monte sinai",
-        "jerusalem de agora"
-      ],
-      "significado": "Alegoria da alianca do monte Sinai — a lei, que gera filhos para a servidao; corresponde a Jerusalem terrena.",
-      "temas": [
-        "escravidao",
-        "lei",
-        "servidao",
-        "cativeiro",
-        "jugo",
-        "libertacao"
-      ],
-      "base": "Galatas 4:22-25 ('o que se entende por alegoria; porque estas sao as duas aliancas')",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "livre",
-      "variantes": [
-        "a mulher livre",
-        "sara",
-        "filhos da promessa",
-        "isaque",
-        "filhos da livre"
-      ],
-      "significado": "Alegoria da alianca da promessa e da graca: os que nascem segundo o Espirito sao filhos da livre, herdeiros — 'nao somos filhos da escrava, mas da livre'.",
-      "temas": [
-        "liberdade",
-        "promessa",
-        "graca",
-        "filhos de Deus",
-        "heranca",
-        "nascer do Espirito"
-      ],
-      "base": "Galatas 4:22-31 (v.31)",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "jerusalem",
-      "variantes": [
-        "jerusalem de cima",
-        "jerusalem celestial",
-        "nova jerusalem",
-        "cidade santa",
-        "cidade de deus",
-        "cidade do deus vivo",
-        "mae de todos nos"
-      ],
-      "significado": "A cidade de Deus: a Jerusalem celestial, livre, mae dos filhos da promessa e patria da Igreja; e a Jerusalem consolada de Isaias, que de cativa e assentada no po passa a vestida de forca e coroada.",
-      "temas": [
-        "Jerusalem",
-        "cidade santa",
-        "ceu",
-        "patria celestial",
-        "mae",
-        "Siao",
-        "heranca",
-        "consolacao",
-        "liberdade",
-        "levantar do po",
-        "alegria"
-      ],
-      "base": "Galatas 4:26; Hebreus 12:22; Isaias 40:1-2; 52:1-2; 62:1-7; 65:18-19",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "siao",
-      "variantes": [
-        "sion",
-        "monte siao",
-        "monte sion",
-        "filha de siao",
-        "tristes de siao",
-        "monte santo"
-      ],
-      "significado": "A Igreja de Cristo, o povo remido reunido em alianca — alvo final da restauracao e lugar onde Deus assenta a sua gloria; destino da Igreja, contraposto ao monte Sinai do temor: festa, milhares de anjos e o Mediador da nova alianca.",
-      "temas": [
-        "Siao",
-        "povo de Deus",
-        "igreja",
-        "cidade santa",
-        "restauracao",
-        "gloria",
-        "voltar",
-        "monte santo",
-        "anjos",
-        "festa",
-        "primogenitos",
-        "chegada"
-      ],
-      "base": "Isaias 2:3; 51:11; 60:14; 61:3; 62:1; Hebreus 12:18-24",
-      "confianca": "forte"
-    },
-    {
-      "termo": "lavoura",
-      "variantes": [
-        "lavouras",
-        "lavoura de deus",
-        "plantacao",
-        "seara",
-        "campo"
-      ],
-      "significado": "A Igreja como campo cultivado por Deus: um planta, outro rega, mas Deus da o crescimento.",
-      "temas": [
-        "lavoura",
-        "semear",
-        "regar",
-        "crescimento",
-        "seara",
-        "fruto",
-        "obreiros"
-      ],
-      "base": "1 Corintios 3:6-9",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "edificio",
-      "variantes": [
-        "edificios",
-        "edificacao",
-        "casa espiritual",
-        "construcao",
-        "pedras vivas"
-      ],
-      "significado": "A Igreja como construcao de Deus, edificada sobre os apostolos e profetas, crescendo para templo santo e habitacao de Deus em Espirito.",
-      "temas": [
-        "edificio",
-        "edificar",
-        "construir",
-        "casa de Deus",
-        "pedras vivas",
-        "habitacao",
-        "templo"
-      ],
-      "base": "1 Corintios 3:9; Efesios 2:20-22",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "fundamento",
-      "variantes": [
-        "fundamentos",
-        "alicerce",
-        "alicerces",
-        "pedra fundamental"
-      ],
-      "significado": "'Ninguem pode por outro fundamento alem do que ja esta posto, o qual e Jesus Cristo' — a base unica da obra.",
-      "temas": [
-        "fundamento",
-        "alicerce",
-        "firmeza",
-        "rocha",
-        "obra",
-        "seguranca",
-        "edificar"
-      ],
-      "base": "1 Corintios 3:10-11",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "pedra angular",
-      "variantes": [
-        "pedra de esquina",
-        "principal pedra da esquina",
-        "pedra ja provada",
-        "pedra preciosa de esquina",
-        "fundamento estavel",
-        "pedra posta em siao"
-      ],
-      "significado": "O proprio Jesus Cristo, posto por Deus em Siao como fundamento seguro, que sustenta e ajusta todo o edificio, unindo judeus e gentios num so templo santo — quem nele cre nao foge nem se apressa.",
-      "temas": [
-        "pedra angular",
-        "esquina",
-        "alicerce",
-        "uniao",
-        "templo",
-        "firmeza",
-        "confianca",
-        "nao vacilar"
-      ],
-      "base": "Efesios 2:20-22; Isaias 28:16",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "templo",
-      "variantes": [
-        "templos",
-        "santuario",
-        "templo do deus vivo",
-        "templo do espirito santo",
-        "morada de deus"
-      ],
-      "significado": "O crente e a Igreja sao morada de Deus: 'vos sois o templo de Deus, e o Espirito de Deus habita em vos'.",
-      "temas": [
-        "templo",
-        "santuario",
-        "morada",
-        "habitar",
-        "Espirito Santo",
-        "santidade",
-        "presenca de Deus"
-      ],
-      "base": "1 Corintios 3:16-17; 6:19; 2 Corintios 6:16",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "oliveira",
-      "variantes": [
-        "oliveiras",
-        "oliveira natural",
-        "oliveira brava",
-        "olival",
-        "raiz santa"
-      ],
-      "significado": "Israel como oliveira natural cuja raiz e santa; os gentios sao o ramo bravo enxertado, sustentado pela raiz e nao o contrario.",
-      "temas": [
-        "oliveira",
-        "raiz",
-        "enxerto",
-        "seiva",
-        "Israel",
-        "gentios",
-        "misericordia"
-      ],
-      "base": "Romanos 11:16-24",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "ramo",
-      "variantes": [
-        "ramos",
-        "enxertado",
-        "enxertados",
-        "quebrado",
-        "quebrados",
-        "cortado"
-      ],
-      "significado": "Os que permanecem pela fe e os que sao cortados pela incredulidade — advertencia da bondade e da severidade de Deus.",
-      "temas": [
-        "ramos",
-        "permanecer",
-        "fe",
-        "incredulidade",
-        "cortado",
-        "enxertado",
-        "temor",
-        "firmeza"
-      ],
-      "base": "Romanos 11:17-22",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "primicia",
-      "variantes": [
-        "primicias",
-        "primeiros frutos",
-        "primeiro fruto",
-        "massa"
-      ],
-      "significado": "O primeiro fruto que santifica todo o restante: Cristo e primicia dos que dormem, garantia da ressurreicao; e ha as primicias do Espirito na Igreja.",
-      "temas": [
-        "primicias",
-        "ressurreicao",
-        "primeiro fruto",
-        "garantia",
-        "colheita",
-        "esperanca"
-      ],
-      "base": "Romanos 11:16; 1 Corintios 15:20-23; Romanos 8:23",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "nuvem",
-      "variantes": [
-        "nuvens",
-        "debaixo da nuvem",
-        "coluna de nuvem"
-      ],
-      "significado": "Figura do batismo: 'todos foram batizados em Moises, na nuvem e no mar' — cobertura e guia de Deus sobre o povo; escrito 'para aviso nosso'.",
-      "temas": [
-        "nuvem",
-        "guia",
-        "batismo",
-        "cobertura",
-        "caminhada",
-        "deserto",
-        "protecao"
-      ],
-      "base": "1 Corintios 10:1-2, 6, 11",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "mar",
-      "variantes": [
-        "mares",
-        "mar vermelho",
-        "passaram pelo mar",
-        "travessia"
-      ],
-      "significado": "Figura do batismo e da libertacao: a passagem que separa o povo do Egito e da servidao.",
-      "temas": [
-        "mar",
-        "passagem",
-        "libertacao",
-        "batismo",
-        "Egito",
-        "travessia",
-        "milagre"
-      ],
-      "base": "1 Corintios 10:1-2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "rocha",
-      "variantes": [
-        "rochas",
-        "pedra",
-        "pedras",
-        "penha",
-        "penhas",
-        "pedra espiritual",
-        "rocha eterna",
-        "sombra de grande rocha",
-        "fenda da rocha",
-        "fendas das penhas"
-      ],
-      "significado": "'E a pedra era Cristo' — a rocha ferida que os seguia no deserto, fonte da bebida espiritual; e a imutabilidade de Deus como chao firme, sombra de grande rocha em terra sedenta.",
-      "temas": [
-        "rocha",
-        "pedra",
-        "agua viva",
-        "fonte",
-        "sede",
-        "Cristo rocha",
-        "deserto",
-        "refugio",
-        "firmeza",
-        "confianca",
-        "paz",
-        "abrigo"
-      ],
-      "base": "1 Corintios 10:4; Isaias 26:3-4; 32:2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "mana",
-      "variantes": [
-        "comida espiritual",
-        "pao do ceu",
-        "mesma comida"
-      ],
-      "significado": "O sustento vindo do ceu, chamado por Paulo de 'comida espiritual' — Cristo alimentando o povo na caminhada; guardado na arca como memorial.",
-      "temas": [
-        "mana",
-        "pao do ceu",
-        "alimento",
-        "sustento",
-        "fome",
-        "provisao",
-        "deserto"
-      ],
-      "base": "1 Corintios 10:3; Hebreus 9:4",
-      "confianca": "forte"
-    },
-    {
-      "termo": "pascoa",
-      "variantes": [
-        "cordeiro pascal",
-        "sacrificio da pascoa",
-        "nossa pascoa"
-      ],
-      "significado": "'Cristo, nossa pascoa, foi sacrificado por nos' — o cordeiro imolado que livra do juizo.",
-      "temas": [
-        "cordeiro",
-        "pascoa",
-        "sacrificio",
-        "sangue",
-        "imolado",
-        "redencao",
-        "cruz"
-      ],
-      "base": "1 Corintios 5:7",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "fermento",
-      "variantes": [
-        "fermentos",
-        "levedura",
-        "um pouco de fermento",
-        "massa levedada",
-        "asmos"
-      ],
-      "significado": "O pecado que corrompe todo o meio: 'fermento da malicia e da maldade'; a Igreja e exortada a lanca-lo fora e festejar com os asmos da sinceridade e da verdade.",
-      "temas": [
-        "fermento",
-        "pecado",
-        "corrupcao",
-        "purificacao",
-        "santidade",
-        "sinceridade",
-        "verdade",
-        "massa"
-      ],
-      "base": "1 Corintios 5:6-8; Galatas 5:9",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "repouso",
-      "variantes": [
-        "descanso",
-        "sabado",
-        "canaa",
-        "entrar no repouso"
-      ],
-      "significado": "O descanso que Josue nao deu ao povo: 'resta ainda um repouso para o povo de Deus'; entrar nele e cessar das proprias obras.",
-      "temas": [
-        "repouso",
-        "descanso",
-        "canaa",
-        "promessa",
-        "entrar",
-        "fe",
-        "peregrinacao",
-        "lar celestial",
-        "heranca"
-      ],
-      "base": "Hebreus 4:1-11",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "carreira",
-      "variantes": [
-        "corrida",
-        "correr",
-        "premio",
-        "coroa incorruptivel",
-        "combate",
-        "estadio"
-      ],
-      "significado": "A vida crista como corrida no estadio: deixar todo o peso e o pecado, correr com paciencia olhando para Jesus, para alcancar a coroa incorruptivel.",
-      "temas": [
-        "carreira",
-        "correr",
-        "premio",
-        "coroa",
-        "perseveranca",
-        "meta",
-        "combate",
-        "vencer"
-      ],
-      "base": "1 Corintios 9:24-27; Hebreus 12:1-2; 2 Timoteo 4:7-8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "armadura",
-      "variantes": [
-        "armaduras",
-        "toda a armadura de deus",
-        "armas",
-        "armas da luz",
-        "armadura de deus"
-      ],
-      "significado": "O revestimento espiritual do crente para resistir as astutas ciladas do diabo — a luta nao e contra carne e sangue.",
-      "temas": [
-        "armadura",
-        "batalha",
-        "luta",
-        "vitoria",
-        "firmeza",
-        "resistir",
-        "guerra espiritual",
-        "soldado"
-      ],
-      "base": "Efesios 6:11-13; Romanos 13:12",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "couraca",
-      "variantes": [
-        "couracas",
-        "couraca da justica",
-        "couraca da fe e do amor"
-      ],
-      "significado": "Protecao do coracao: a justica de Cristo (Efesios) e a fe com o amor (1 Tessalonicenses).",
-      "temas": [
-        "couraca",
-        "justica",
-        "coracao",
-        "fe",
-        "amor",
-        "protecao",
-        "defesa"
-      ],
-      "base": "Efesios 6:14; 1 Tessalonicenses 5:8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "escudo",
-      "variantes": [
-        "escudos",
-        "escudo da fe",
-        "broquel",
-        "dardos inflamados"
-      ],
-      "significado": "A fe com que se apagam todos os dardos inflamados do maligno.",
-      "temas": [
-        "escudo",
-        "fe",
-        "dardos",
-        "maligno",
-        "defesa",
-        "protecao",
-        "vitoria"
-      ],
-      "base": "Efesios 6:16",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "capacete",
-      "variantes": [
-        "capacetes",
-        "capacete da salvacao",
-        "esperanca da salvacao"
-      ],
-      "significado": "A salvacao (e a esperanca dela) guardando o pensamento e a mente do crente.",
-      "temas": [
-        "capacete",
-        "salvacao",
-        "esperanca",
-        "mente",
-        "pensamento",
-        "protecao"
-      ],
-      "base": "Efesios 6:17; 1 Tessalonicenses 5:8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "espada",
-      "variantes": [
-        "espadas",
-        "espada do espirito",
-        "espada de dois gumes"
-      ],
-      "significado": "'A espada do Espirito, que e a palavra de Deus' — viva e eficaz, que penetra e discerne os pensamentos do coracao.",
-      "temas": [
-        "espada",
-        "palavra de Deus",
-        "poder",
-        "discernimento",
-        "verdade",
-        "luta",
-        "coracao"
-      ],
-      "base": "Efesios 6:17; Hebreus 4:12",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "veu",
-      "variantes": [
-        "veus",
-        "cortina",
-        "cortinas",
-        "veu do santuario",
-        "veu sobre o coracao"
-      ],
-      "significado": "O veu do santuario e a carne de Cristo, aberta para o novo e vivo caminho; e o veu sobre o coracao e tirado quando alguem se converte ao Senhor.",
-      "temas": [
-        "veu",
-        "caminho novo",
-        "acesso",
-        "entrar no santuario",
-        "rasgado",
-        "revelacao",
-        "conversao"
-      ],
-      "base": "Hebreus 10:19-20 ('pelo veu, isto e, pela sua carne'); 2 Corintios 3:13-16",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "tabernaculo",
-      "variantes": [
-        "tabernaculos",
-        "santuario",
-        "santo dos santos",
-        "tenda da congregacao",
-        "exemplar"
-      ],
-      "significado": "O tabernaculo terreno e 'exemplar e sombra' do santuario celestial; suas coisas eram figuras das verdadeiras, onde Cristo entrou por nos.",
-      "temas": [
-        "tabernaculo",
-        "santuario",
-        "santo dos santos",
-        "ceu",
-        "presenca",
-        "entrar",
-        "sacerdocio"
-      ],
-      "base": "Hebreus 8:5; 9:1-11, 23-24",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "sombra",
-      "variantes": [
-        "sombras",
-        "figura",
-        "figuras",
-        "exemplar",
-        "sombra dos bens futuros",
-        "esconderijo contra o vento",
-        "refugio contra o temporal"
-      ],
-      "significado": "Duas leituras firmes: (1) em Paulo, as ordenancas, festas, comidas e sabados eram sombra das coisas futuras — 'mas o corpo e de Cristo'; (2) em Isaias, Cristo como sombra e abrigo pessoal em terra cansada, cobertura sobre toda a gloria.",
-      "temas": [
-        "sombra",
-        "figura",
-        "cumprimento",
-        "realidade",
-        "lei",
-        "Cristo",
-        "antigo e novo",
-        "abrigo",
-        "refugio",
-        "tempestade",
-        "descanso",
-        "protecao",
-        "esconderijo"
-      ],
-      "base": "Colossenses 2:16-17; Hebreus 8:5; 10:1; Isaias 32:2; 4:5-6; 25:4",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "sangue",
-      "variantes": [
-        "sangue de jesus",
-        "sangue da aspersao",
-        "aspersao",
-        "derramamento de sangue"
-      ],
-      "significado": "O sangue que purifica a consciencia das obras mortas e da ousadia de entrar no santuario; 'sem derramamento de sangue nao ha remissao' e fala melhor do que o de Abel.",
-      "temas": [
-        "sangue",
-        "remissao",
-        "purificacao",
-        "perdao",
-        "aspersao",
-        "nova alianca",
-        "cruz",
-        "ousadia"
-      ],
-      "base": "Hebreus 9:12-14, 22; 10:19; 12:24",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "sumo sacerdote",
-      "variantes": [
-        "sumo sacerdotes",
-        "grande sacerdote",
-        "sacerdote",
-        "sacerdotes",
-        "ministro do santuario"
-      ],
-      "significado": "Jesus como sumo sacerdote que penetrou nos ceus, compadece-se das nossas fraquezas e intercede — ministro do verdadeiro tabernaculo.",
-      "temas": [
-        "sacerdote",
-        "intercessao",
-        "trono da graca",
-        "socorro",
-        "misericordia",
-        "compaixao",
-        "mediador"
-      ],
-      "base": "Hebreus 4:14-16; 8:1-2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "melquisedeque",
-      "variantes": [
-        "rei de salem",
-        "rei de justica",
-        "rei de paz"
-      ],
-      "significado": "'Feito semelhante ao Filho de Deus', sem principio de dias nem fim de vida — figura do sacerdocio eterno e real de Cristo.",
-      "temas": [
-        "rei de justica",
-        "rei de paz",
-        "sacerdote eterno",
-        "principe da paz",
-        "reinado",
-        "eternidade"
-      ],
-      "base": "Hebreus 7:1-3",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "ancora",
-      "variantes": [
-        "ancoras",
-        "ancora da alma",
-        "esperanca segura"
-      ],
-      "significado": "A esperanca em Cristo, ancora segura e firme, que penetra ate o interior do veu, onde ele entrou como precursor.",
-      "temas": [
-        "ancora",
-        "esperanca",
-        "firmeza",
-        "seguranca",
-        "tempestade",
-        "refugio",
-        "precursor"
-      ],
-      "base": "Hebreus 6:18-20",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "fora do arraial",
-      "variantes": [
-        "fora da porta",
-        "fora do acampamento",
-        "vituperio",
-        "opprobrio",
-        "levar o seu vituperio"
-      ],
-      "significado": "Os corpos dos sacrificios eram queimados fora do arraial; assim Jesus padeceu fora da porta — chamada a sair a ele, levando o seu vituperio, buscando a cidade permanente.",
-      "temas": [
-        "fora do arraial",
-        "sair",
-        "vituperio",
-        "separacao",
-        "oprobrio",
-        "seguir a Jesus",
-        "cruz",
-        "cidade permanente"
-      ],
-      "base": "Hebreus 13:11-14",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "adao",
-      "variantes": [
-        "primeiro homem",
-        "ultimo adao",
-        "segundo homem",
-        "homem terreno",
-        "homem celestial"
-      ],
-      "significado": "'Adao, o qual e a figura daquele que havia de vir': o primeiro Adao, alma vivente e terreno; o ultimo Adao, espirito vivificante, o Senhor do ceu.",
-      "temas": [
-        "Adao",
-        "novo homem",
-        "queda",
-        "vida",
-        "ressurreicao",
-        "imagem do celestial",
-        "transformacao"
-      ],
-      "base": "Romanos 5:14; 1 Corintios 15:45-49",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "aio",
-      "variantes": [
-        "aios",
-        "tutor",
-        "tutores",
-        "pedagogo",
-        "debaixo de aio"
-      ],
-      "significado": "A lei serviu de aio para conduzir a Cristo, ate que viesse a fe; depois dela ja nao estamos debaixo de aio, pois somos filhos de Deus pela fe.",
-      "temas": [
-        "lei",
-        "conduzir a Cristo",
-        "fe",
-        "filhos de Deus",
-        "liberdade",
-        "graca",
-        "justificacao"
-      ],
-      "base": "Galatas 3:23-26",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "descendencia",
-      "variantes": [
-        "semente",
-        "sementes",
-        "semente de abraao",
-        "descendentes",
-        "herdeiros segundo a promessa"
-      ],
-      "significado": "'E a tua descendencia, que e Cristo' — a promessa feita a Abraao se cumpre numa so semente, e em Cristo os crentes sao herdeiros da promessa.",
-      "temas": [
-        "semente",
-        "promessa",
-        "Abraao",
-        "heranca",
-        "herdeiros",
-        "alianca",
-        "cumprimento"
-      ],
-      "base": "Galatas 3:16, 29",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "testamento",
-      "variantes": [
-        "testamentos",
-        "concerto",
-        "alianca",
-        "aliancas",
-        "testador"
-      ],
-      "significado": "Onde ha testamento, e necessaria a morte do testador — por isso a nova alianca so vigora pela morte de Cristo.",
-      "temas": [
-        "testamento",
-        "alianca",
-        "heranca",
-        "morte de Cristo",
-        "herdeiros",
-        "promessa"
-      ],
-      "base": "Hebreus 9:15-17",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "batismo",
-      "variantes": [
-        "batismos",
-        "batizado",
-        "batizados",
-        "sepultados com ele",
-        "plantados juntamente",
-        "circuncisao de cristo"
-      ],
-      "significado": "Sepultamento e ressurreicao com Cristo: o velho homem e crucificado e se anda em novidade de vida.",
-      "temas": [
-        "batismo",
-        "sepultado",
-        "ressuscitado",
-        "novidade de vida",
-        "morte para o pecado",
-        "nova criatura",
-        "aguas"
-      ],
-      "base": "Romanos 6:3-6; Colossenses 2:11-12",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "penhor",
-      "variantes": [
-        "penhores",
-        "arras",
-        "sinal",
-        "selo do espirito",
-        "garantia da heranca"
-      ],
-      "significado": "O Espirito Santo dado como penhor (garantia) da heranca, ate a redencao da possessao adquirida.",
-      "temas": [
-        "penhor",
-        "garantia",
-        "Espirito Santo",
-        "heranca",
-        "selo",
-        "promessa",
-        "redencao"
-      ],
-      "base": "2 Corintios 1:22; 5:5; Efesios 1:13-14",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "velho homem",
-      "variantes": [
-        "novo homem",
-        "despir",
-        "revestir",
-        "corpo do pecado",
-        "homem velho"
-      ],
-      "significado": "O velho homem foi crucificado com Cristo; despe-se o velho com os seus atos e reveste-se o novo, renovado segundo a imagem daquele que o criou.",
-      "temas": [
-        "velho homem",
-        "novo homem",
-        "despir",
-        "revestir",
-        "crucificado",
-        "renovacao",
-        "transformacao",
-        "imagem de Cristo"
-      ],
-      "base": "Romanos 6:6; Efesios 4:22-24; Colossenses 3:9-10",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "trombeta",
-      "variantes": [
-        "trombetas",
-        "ultima trombeta",
-        "trombeta de deus"
-      ],
-      "significado": "O sinal do arrebatamento e da ressurreicao: 'num momento, num abrir e fechar de olhos, ante a ultima trombeta... os mortos ressuscitarao incorruptiveis'.",
-      "temas": [
-        "trombeta",
-        "arrebatamento",
-        "ressurreicao",
-        "volta de Jesus",
-        "transformacao",
-        "encontro nos ares",
-        "vinda"
-      ],
-      "base": "1 Corintios 15:51-52; 1 Tessalonicenses 4:16-17",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "vinha",
-      "variantes": [
-        "vinhas",
-        "vinha do senhor",
-        "vinha do meu amado",
-        "vides",
-        "videira",
-        "vinha de vinho tinto",
-        "guarda de vinhas"
-      ],
-      "significado": "A casa de Israel — e por figura a Igreja — plantada, cercada, limpa de pedras e cuidada por Deus, de quem Ele espera fruto de justica. Cantares acrescenta a advertencia: da para ser posto por guarda da vinha dos outros e perder a sua.",
-      "temas": [
-        "vinha",
-        "fruto",
-        "amado",
-        "cantico",
-        "cuidado de Deus",
-        "lavrador",
-        "justica",
-        "guardar",
-        "obra",
-        "flor",
-        "zelo",
-        "descuidar"
-      ],
-      "base": "Isaias 5:1-7; 27:2-3; Cantares 1:6; 2:13,15; 8:11-12; Joao 15:1-5",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "remanescente",
-      "variantes": [
-        "remanescentes",
-        "resto",
-        "o resto de israel",
-        "os que escaparam",
-        "os que restarem",
-        "semente santa"
-      ],
-      "significado": "O grupo fiel que sobrevive ao juizo e se firma verdadeiramente no Senhor — a Igreja fiel guardada ate o fim, que lanca raizes para baixo e da fruto para cima.",
-      "temas": [
-        "remanescente",
-        "fieis",
-        "perseverar",
-        "guardados",
-        "raizes",
-        "frutificar",
-        "ate o fim"
-      ],
-      "base": "Isaias 1:9; 10:20-22; 37:31-32",
-      "confianca": "forte"
-    },
-    {
-      "termo": "muro",
-      "variantes": [
-        "muros",
-        "muralha",
-        "muralhas",
-        "antemuro",
-        "eu sou um muro",
-        "os teus muros"
-      ],
-      "significado": "A propria salvacao de Deus posta como defesa do seu povo — nao e obra do homem, e Ele mesmo ao redor da Igreja. A ICM le ainda Ct 8:9-10: 'se ela for um muro edificaremos nela um palacio de prata', o povo amadurecido como base firme onde se edifica a obra de redencao, cheia de paz.",
-      "temas": [
-        "salvacao",
-        "muros",
-        "protecao",
-        "seguranca",
-        "refugio",
-        "defesa",
-        "cidade forte",
-        "fundamento",
-        "edificar",
-        "redencao",
-        "paz",
-        "firmeza"
-      ],
-      "base": "Isaias 26:1; 49:16; 60:18; Salmo 122:7; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense, Ct 8:9-10",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "muros de jerusalem",
-      "variantes": [
-        "construcao dos muros",
-        "reedificacao dos muros",
-        "dedicacao dos muros",
-        "reedificar",
-        "neemias"
-      ],
-      "significado": "A construcao da obra do Senhor pela igreja fiel em meio a grandes oposicoes. O curso oficial do Instituto Biblico da ICM sobre Neemias mostra 'as grandes oposicoes vividas pela igreja fiel ao longo de sua jornada... as oposicoes enfrentadas para a construcao dos muros de Jerusalem'; a Festa da Dedicacao (Ne 12:27) e ligada a entrega pessoal, obediencia, comunhao, consagracao e fidelidade.",
-      "temas": [
-        "edificar",
-        "restaurar",
-        "oposicao",
-        "perseveranca",
-        "obra do Senhor",
-        "dedicacao",
-        "consagracao",
-        "fidelidade",
-        "reconstruir"
-      ],
-      "base": "Neemias 12:27; Instituto Biblico ICM, curso 'O Livro de Neemias' (institutoicm.org.br); Boletim ICM/EBD 25 out. 2020",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "porta",
-      "variantes": [
-        "portas",
-        "as tuas portas",
-        "abri as portas",
-        "fresta da porta",
-        "abre-me",
-        "abre-nos",
-        "aldravas da fechadura",
-        "esta batendo"
-      ],
-      "significado": "O acesso franqueado ao povo santo — portas que se chamam Louvor e nao se fecham nem de dia nem de noite. Em Cantares e o Senhor do lado de fora batendo, molhado do sereno da noite, esperando a Igreja abrir; a ICM le nisso a ultima visitacao: 'eu abri, mas o meu amado se tinha retirado e ido' — paralelo com 'abre-nos... nao vos conheco'.",
-      "temas": [
-        "portas",
-        "entrar",
-        "louvor",
-        "acesso",
-        "presenca",
-        "adoracao",
-        "abrir caminho",
-        "bater",
-        "chamado",
-        "ultima chance",
-        "tarde demais",
-        "vigiar",
-        "arrebatamento"
-      ],
-      "base": "Isaias 26:2; 60:11,18; 62:10; Cantares 5:2-6; Apocalipse 3:20; Mateus 25:11-12; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "atalaia",
-      "variantes": [
-        "atalaias",
-        "sentinela",
-        "sentinelas",
-        "vigias",
-        "atalaias sobre os teus muros"
-      ],
-      "significado": "O ministerio que vigia e intercede sem calar, dia e noite, ate que a restauracao de Siao se cumpra.",
-      "temas": [
-        "vigiar",
-        "atalaia",
-        "oracao",
-        "intercessao",
-        "nao calar",
-        "despertar",
-        "sentinela"
-      ],
-      "base": "Isaias 52:8; 62:6-7; 21:11-12",
-      "confianca": "forte"
-    },
-    {
-      "termo": "deserto",
-      "variantes": [
-        "desertos",
-        "ermo",
-        "lugar solitario",
-        "terra seca",
-        "quem e esta que sobe do deserto",
-        "encostada ao seu amado"
-      ],
-      "significado": "A vida esteril transformada pela visitacao de Deus — o seco que vira jardim e exulta quando a gloria do Senhor aparece. Em Cantares, o deserto e a peregrinacao que termina: a Igreja SOBE encostada, apoiada so nEle — lido como figura direta do arrebatamento.",
-      "temas": [
-        "deserto",
-        "florescer",
-        "transformacao",
-        "alegria",
-        "renovo",
-        "gloria",
-        "seca",
-        "reverdecer",
-        "subir",
-        "encostada",
-        "apoiar",
-        "arrebatamento",
-        "jornada",
-        "peregrinacao"
-      ],
-      "base": "Isaias 35:1-2; 41:18-19; 51:3; Cantares 3:6; 8:5; 1 Tessalonicenses 4:16-17",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "agua",
-      "variantes": [
-        "aguas",
-        "ribeiros",
-        "correntes",
-        "tanques",
-        "aguas no deserto",
-        "agua viva",
-        "rios de agua viva"
-      ],
-      "significado": "O Espirito Santo derramado e a salvacao que sacia — Deus abre rios onde havia sede e transforma a terra seca em mananciais.",
-      "temas": [
-        "agua",
-        "sede",
-        "Espirito Santo",
-        "derramar",
-        "saciar",
-        "rio",
-        "manancial",
-        "beber"
-      ],
-      "base": "Isaias 12:3; 35:6-7; 41:17-18; 44:3; 55:1",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "fonte",
-      "variantes": [
-        "fontes",
-        "fontes da salvacao",
-        "poco",
-        "pocos",
-        "manancial",
-        "tirareis aguas com alegria"
-      ],
-      "significado": "O manancial aberto em Cristo de onde o povo tira com alegria — do poco da salvacao brota o cantico e a gratidao.",
-      "temas": [
-        "fonte",
-        "salvacao",
-        "alegria",
-        "tirar aguas",
-        "cantico",
-        "gratidao",
-        "louvor"
-      ],
-      "base": "Isaias 12:3",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "chuva",
-      "variantes": [
-        "chuvas",
-        "neve",
-        "orvalho",
-        "a chuva e a neve descem dos ceus"
-      ],
-      "significado": "A Palavra que desce do ceu e nao volta vazia: rega, faz germinar e sempre cumpre aquilo para que foi enviada.",
-      "temas": [
-        "palavra",
-        "chuva",
-        "semente",
-        "frutificar",
-        "promessa",
-        "fidelidade",
-        "cumprir"
-      ],
-      "base": "Isaias 55:10-11",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "monte",
-      "variantes": [
-        "montes",
-        "outeiro",
-        "outeiros",
-        "monte da casa do senhor",
-        "cume dos montes",
-        "meu santo monte",
-        "monte grande",
-        "saltando sobre os montes"
-      ],
-      "significado": "A Igreja firmada acima de todo outro fundamento, para onde as nacoes sobem a fim de aprender os caminhos de Deus. A ICM le tambem os montes como as dificuldades sobre as quais o Senhor vem saltando: 'saltando, pulando, falam de pressa; montes, outeiro de dificuldade... quem es tu, monte grande? diante do poder de Deus, seras uma campina!'",
-      "temas": [
-        "monte",
-        "casa do Senhor",
-        "subir",
-        "nacoes",
-        "caminhos",
-        "ensino",
-        "firmeza",
-        "adoracao",
-        "dificuldade",
-        "vitoria",
-        "poder de Deus",
-        "campina",
-        "Ele vem",
-        "depressa",
-        "obstaculo removido"
-      ],
-      "base": "Isaias 2:2-3; 11:9; 56:7; Zacarias 4:7; Cantares 2:8; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "servo",
-      "variantes": [
-        "servos",
-        "meu servo",
-        "o servo do senhor",
-        "varao de dores",
-        "o justo meu servo"
-      ],
-      "significado": "Jesus Cristo, que levou as nossas enfermidades, foi ferido pelas nossas transgressoes e justifica a muitos.",
-      "temas": [
-        "Cristo",
-        "cruz",
-        "calvario",
-        "sacrificio",
-        "redencao",
-        "sangue",
-        "levou as nossas dores"
-      ],
-      "base": "Isaias 52:13 a 53:12",
-      "confianca": "forte"
-    },
-    {
-      "termo": "cordeiro",
-      "variantes": [
-        "cordeiros",
-        "cordeiro ao matadouro",
-        "ovelha muda diante dos tosquiadores",
-        "cordeiro de deus"
-      ],
-      "significado": "Cristo, o sacrificio silencioso que nao abre a boca e se entrega em lugar do pecador.",
-      "temas": [
-        "cordeiro",
-        "sacrificio",
-        "cruz",
-        "silencio",
-        "entrega",
-        "redencao",
-        "imolado"
-      ],
-      "base": "Isaias 53:7",
-      "confianca": "forte"
-    },
-    {
-      "termo": "dores",
-      "variantes": [
-        "dor",
-        "homem de dores",
-        "experimentado nos trabalhos",
-        "desprezado",
-        "o mais rejeitado entre os homens"
-      ],
-      "significado": "Cristo desprezado e rejeitado dos homens — o que conhece por dentro a dor de quem hoje canta a Ele.",
-      "temas": [
-        "dores",
-        "desprezado",
-        "rejeitado",
-        "consolo",
-        "Cristo sofredor",
-        "compaixao"
-      ],
-      "base": "Isaias 53:3",
-      "confianca": "forte"
-    },
-    {
-      "termo": "pisadura",
-      "variantes": [
-        "pisaduras",
-        "chaga",
-        "chagas",
-        "ferida",
-        "feridas",
-        "acoites",
-        "castigo da nossa paz"
-      ],
-      "significado": "As feridas de Cristo como origem da cura e da paz do crente: o castigo caiu sobre Ele, o beneficio caiu sobre nos.",
-      "temas": [
-        "cura",
-        "chagas",
-        "paz",
-        "perdao",
-        "sarados",
-        "sangue",
-        "cruz"
-      ],
-      "base": "Isaias 53:5",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "ovelha",
-      "variantes": [
-        "ovelhas",
-        "ovelhas desgarradas",
-        "desgarrado",
-        "desgarrados",
-        "andamos desgarrados"
-      ],
-      "significado": "A humanidade perdida em seu proprio caminho, cuja iniquidade o Senhor fez cair sobre o Servo.",
-      "temas": [
-        "ovelha",
-        "perdido",
-        "desviado",
-        "voltar",
-        "pastor",
-        "graca",
-        "achado"
-      ],
-      "base": "Isaias 53:6",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "pastor",
-      "variantes": [
-        "pastores",
-        "rebanho",
-        "rebanhos",
-        "cordeirinhos nos bracos",
-        "apascentara o seu rebanho",
-        "guiara mansamente"
-      ],
-      "significado": "Cristo que apascenta, ajunta os cordeirinhos no braco, leva-os no seio e conduz mansamente as que amamentam.",
-      "temas": [
-        "pastor",
-        "rebanho",
-        "bracos",
-        "cuidado",
-        "conduzir",
-        "mansidao",
-        "seguranca"
-      ],
-      "base": "Isaias 40:11",
-      "confianca": "forte"
-    },
-    {
-      "termo": "renovo",
-      "variantes": [
-        "renovos",
-        "rebento",
-        "vara do tronco de jesse",
-        "raiz de jesse",
-        "raiz de uma terra seca",
-        "pendao dos povos"
-      ],
-      "significado": "Cristo brotando de uma linhagem aparentemente morta — vida saindo de um toco seco, e por Ele as nacoes sao atraidas.",
-      "temas": [
-        "renovo",
-        "raiz",
-        "brotar",
-        "Jesse",
-        "Davi",
-        "Messias",
-        "vida nova",
-        "estandarte"
-      ],
-      "base": "Isaias 11:1,10; 53:2; 4:2",
-      "confianca": "forte"
-    },
-    {
-      "termo": "esteril",
-      "variantes": [
-        "estereis",
-        "a que nao deu a luz",
-        "a que nao teve dores de parto",
-        "canta alegremente o esteril"
-      ],
-      "significado": "A que se julgava sem fruto recebendo ordem de cantar antes de ver o filho — fe que louva pela promessa, nao pela vista.",
-      "temas": [
-        "esteril",
-        "cantar",
-        "promessa",
-        "fe",
-        "fecundidade",
-        "alegria",
-        "exclamar"
-      ],
-      "base": "Isaias 54:1",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "tenda",
-      "variantes": [
-        "tendas",
-        "estaca",
-        "estacas",
-        "cordas",
-        "alarga o lugar da tua tenda",
-        "nao sejas escassa"
-      ],
-      "significado": "A Igreja mandada alargar-se e firmar estacas antes de a multidao chegar: expansao pela fe, preparo antes do avivamento.",
-      "temas": [
-        "tenda",
-        "alargar",
-        "estacas",
-        "crescer",
-        "expansao",
-        "fe",
-        "preparo"
-      ],
-      "base": "Isaias 54:2-3",
-      "confianca": "forte"
-    },
-    {
-      "termo": "desamparada",
-      "variantes": [
-        "desamparadas",
-        "desamparo",
-        "triste de espirito",
-        "por um breve momento te deixei",
-        "abandonada"
-      ],
-      "significado": "A Igreja (ou a alma) que se sentiu abandonada, chamada de volta com grandes misericordias e benignidade eterna.",
-      "temas": [
-        "desamparo",
-        "chamado",
-        "volta",
-        "misericordia",
-        "reconciliacao",
-        "consolo",
-        "perdao",
-        "abandono"
-      ],
-      "base": "Isaias 54:6-8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "hefziba",
-      "variantes": [
-        "beula",
-        "desposada",
-        "o meu prazer esta nela",
-        "novo nome",
-        "nunca mais desamparada",
-        "nunca mais desolada"
-      ],
-      "significado": "A troca de nome da rejeitada: de Desamparada a Desposada, de Desolada a Prazer de Deus — nova identidade dada pela boca do Senhor.",
-      "temas": [
-        "novo nome",
-        "desposada",
-        "prazer de Deus",
-        "restauracao",
-        "identidade",
-        "nova criatura",
-        "volta"
-      ],
-      "base": "Isaias 62:2-4; 65:15",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "coroa",
-      "variantes": [
-        "coroas",
-        "coroa de gloria",
-        "diadema real",
-        "na mao do teu deus"
-      ],
-      "significado": "O povo restaurado como joia segurada na mao do Senhor — o trofeu visivel da obra que Ele fez.",
-      "temas": [
-        "coroa",
-        "gloria",
-        "joia",
-        "valor",
-        "vitoria",
-        "galardao",
-        "nas maos de Deus"
-      ],
-      "base": "Isaias 62:3",
-      "confianca": "forte"
-    },
-    {
-      "termo": "veste",
-      "variantes": [
-        "vestes",
-        "vestidura",
-        "vestiduras",
-        "vestes de salvacao",
-        "manto",
-        "mantos",
-        "manto de justica"
-      ],
-      "significado": "A justica de Cristo posta sobre o crente como roupa que ele nao teceu — motivo de o coracao se regozijar no Senhor.",
-      "temas": [
-        "vestes",
-        "manto",
-        "justica",
-        "salvacao",
-        "regozijo",
-        "cobertura",
-        "vestido",
-        "alma se alegra"
-      ],
-      "base": "Isaias 61:10",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "oleo",
-      "variantes": [
-        "oleos",
-        "oleo de gozo",
-        "ornamento por cinza",
-        "veste de louvor por espirito angustiado"
-      ],
-      "significado": "A troca que Deus faz com o triste: cinza por beleza, tristeza por alegria, angustia por louvor.",
-      "temas": [
-        "oleo",
-        "gozo",
-        "troca",
-        "cinza",
-        "louvor",
-        "consolo",
-        "uncao",
-        "alegria"
-      ],
-      "base": "Isaias 61:3",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "arvore",
-      "variantes": [
-        "arvores",
-        "arvores de justica",
-        "plantacao do senhor",
-        "carvalhos de justica",
-        "plantados"
-      ],
-      "significado": "Os consolados de Siao firmados como arvores plantadas pelo proprio Senhor, para que Ele seja glorificado neles.",
-      "temas": [
-        "arvore",
-        "plantacao",
-        "firmeza",
-        "glorificar",
-        "frutificar",
-        "plantados"
-      ],
-      "base": "Isaias 61:3",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "luz",
-      "variantes": [
-        "luzes",
-        "levanta-te resplandece",
-        "a tua luz e chegada",
-        "a gloria do senhor nasceu sobre ti",
-        "trevas cobrirao a terra"
-      ],
-      "significado": "A vinda da gloria de Cristo sobre a Igreja justamente quando as trevas cobrem a terra e a escuridao os povos.",
-      "temas": [
-        "luz",
-        "levantar",
-        "resplandecer",
-        "gloria",
-        "despertar",
-        "vinda",
-        "amanhecer",
-        "trevas"
-      ],
-      "base": "Isaias 60:1-3; 9:2",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "luz dos gentios",
-      "variantes": [
-        "luz para as nacoes",
-        "salvacao ate a extremidade da terra",
-        "por alianca do povo"
-      ],
-      "significado": "Cristo — e o seu povo nele — enviado como luz que alcanca todas as nacoes ate os confins da terra.",
-      "temas": [
-        "luz",
-        "nacoes",
-        "missao",
-        "evangelho",
-        "salvacao",
-        "confins da terra",
-        "anunciar"
-      ],
-      "base": "Isaias 49:6; 42:6-7",
-      "confianca": "forte"
-    },
-    {
-      "termo": "aguia",
-      "variantes": [
-        "aguias",
-        "asas como aguias",
-        "os que esperam no senhor",
-        "renovarao as suas forcas",
-        "correrao e nao se cansarao"
-      ],
-      "significado": "A forca renovada de quem espera no Senhor: subir como aguia, correr sem cansar, caminhar sem desfalecer.",
-      "temas": [
-        "esperar",
-        "renovar as forcas",
-        "aguia",
-        "nao desmaiar",
-        "perseveranca",
-        "fe",
-        "cansaco"
-      ],
-      "base": "Isaias 40:31",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "barro",
-      "variantes": [
-        "barros",
-        "oleiro",
-        "oleiros",
-        "obra das tuas maos",
-        "nos o barro e tu o nosso oleiro"
-      ],
-      "significado": "A entrega do povo as maos que o formam — Deus como Pai e Oleiro, o crente como barro maleavel e obra das suas maos.",
-      "temas": [
-        "barro",
-        "oleiro",
-        "moldar",
-        "entrega",
-        "rendicao",
-        "obra das tuas maos",
-        "Pai",
-        "transformar"
-      ],
-      "base": "Isaias 64:8; 45:9; 29:16",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "caminho santo",
-      "variantes": [
-        "alto caminho",
-        "calcada",
-        "o caminho santo",
-        "voltarao os remidos"
-      ],
-      "significado": "A estrada de santidade aberta para os remidos voltarem a Siao com jubilo e alegria eterna sobre as suas cabecas.",
-      "temas": [
-        "caminho",
-        "santidade",
-        "remidos",
-        "voltar",
-        "cantico",
-        "alegria eterna",
-        "fugira a tristeza"
-      ],
-      "base": "Isaias 35:8-10",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "voz do que clama",
-      "variantes": [
-        "voz do que clama no deserto",
-        "preparai o caminho do senhor",
-        "endireitai as veredas"
-      ],
-      "significado": "O ministerio que prepara os coracoes para a vinda do Senhor, cumprido em Joao Batista e repetido em cada anuncio da volta de Cristo.",
-      "temas": [
-        "preparar",
-        "caminho",
-        "vinda do Senhor",
-        "clamor",
-        "arrependimento",
-        "anunciar",
-        "aplainar"
-      ],
-      "base": "Isaias 40:3-5",
-      "confianca": "forte"
-    },
-    {
-      "termo": "banquete",
-      "variantes": [
-        "banquetes",
-        "festa de coisas gordas",
-        "vinhos puros",
-        "ceia",
-        "casa do banquete",
-        "sala do banquete",
-        "mesa"
-      ],
-      "significado": "A ceia final que Deus prepara a todos os povos no seu monte — a comunhao consumada com o Senhor.",
-      "temas": [
-        "banquete",
-        "ceia",
-        "festa",
-        "mesa",
-        "comunhao",
-        "alegria eterna",
-        "convite"
-      ],
-      "base": "Isaias 25:6",
-      "confianca": "forte"
-    },
-    {
-      "termo": "lagrima",
-      "variantes": [
-        "lagrimas",
-        "enxugara as lagrimas de todos os rostos",
-        "tragada a morte",
-        "choro"
-      ],
-      "significado": "A vitoria final sobre a morte e o fim do choro — o veu do luto rasgado e o consolo consumado.",
-      "temas": [
-        "lagrimas",
-        "morte vencida",
-        "consolo",
-        "eternidade",
-        "esperanca",
-        "ceu",
-        "veu"
-      ],
-      "base": "Isaias 25:7-8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "brasa",
-      "variantes": [
-        "brasas",
-        "brasa viva",
-        "carvao em brasa do altar",
-        "tocou a minha boca",
-        "labios purificados"
-      ],
-      "significado": "A purificacao que vem do altar antes do envio — Deus limpa os labios de quem vai falar por Ele.",
-      "temas": [
-        "altar",
-        "fogo",
-        "brasa",
-        "purificacao",
-        "labios",
-        "santidade",
-        "avivamento",
-        "limpeza"
-      ],
-      "base": "Isaias 6:6-7",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "eis-me aqui",
-      "variantes": [
-        "eis me aqui",
-        "a quem enviarei",
-        "quem ha de ir por nos",
-        "envia-me a mim"
-      ],
-      "significado": "A resposta do servo purificado a comissao divina: disponibilidade total antes de saber o custo.",
-      "temas": [
-        "envia-me",
-        "chamado",
-        "disponibilidade",
-        "missao",
-        "obediencia",
-        "servir",
-        "consagracao"
-      ],
-      "base": "Isaias 6:8",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "palma das maos",
-      "variantes": [
-        "palmas das maos",
-        "nas palmas das minhas maos te tenho gravado",
-        "maos gravadas"
-      ],
-      "significado": "A memoria indelevel de Deus a respeito dos seus — figura que a Igreja le apontando para as maos feridas de Cristo.",
-      "temas": [
-        "maos",
-        "gravado",
-        "nao esquece",
-        "lembranca",
-        "amor",
-        "cuidado",
-        "cravos",
-        "nome escrito"
-      ],
-      "base": "Isaias 49:15-16",
-      "confianca": "forte"
-    },
-    {
-      "termo": "emanuel",
-      "variantes": [
-        "a virgem concebera",
-        "deus conosco",
-        "maravilhoso conselheiro",
-        "principe da paz",
-        "menino nascido"
-      ],
-      "significado": "A encarnacao anunciada: Deus habitando com o seu povo no Menino nascido, cujo governo e paz nao terao fim.",
-      "temas": [
-        "Emanuel",
-        "Deus conosco",
-        "nascimento",
-        "Principe da Paz",
-        "Maravilhoso",
-        "encarnacao",
-        "governo"
-      ],
-      "base": "Isaias 7:14; 9:6-7",
-      "confianca": "forte"
-    },
-    {
-      "termo": "escarlata",
-      "variantes": [
-        "escarlate",
-        "carmesim",
-        "brancos como a neve",
-        "como a branca la"
-      ],
-      "significado": "O perdao que muda a cor do pecado: a mancha vermelha tornada alvura pela obra de Deus, mediante convite ao arrazoado.",
-      "temas": [
-        "perdao",
-        "limpeza",
-        "neve",
-        "branco",
-        "sangue",
-        "purificacao",
-        "arrependimento",
-        "convite"
-      ],
-      "base": "Isaias 1:18",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "amado",
-      "variantes": [
-        "amados",
-        "meu amado",
-        "o meu amado",
-        "amado meu",
-        "o amado"
-      ],
-      "significado": "Jesus Cristo, o Esposo/Noivo da Igreja. Todo o livro tem Ele como o Amado que ama, protege, sustenta e volta para buscar a Sua esposa.",
-      "temas": [
-        "amado",
-        "noivo",
-        "esposo",
-        "Jesus",
-        "amor",
-        "Cordeiro",
-        "Rei"
-      ],
-      "base": "Cantares 2:16; 5:10-16; Joao 3:29; Mateus 9:15; Efesios 5:25; Apocalipse 19:7",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "jardim fechado",
-      "variantes": [
-        "horto fechado",
-        "jardim cerrado",
-        "meu jardim",
-        "jardins",
-        "habitas nos jardins"
-      ],
-      "significado": "A Igreja separada do mundo, cercada e exclusiva de Cristo. Fechado = ninguem entra senao o Dono; figura da santificacao e da guarda de Deus sobre um povo especial.",
-      "temas": [
-        "jardim",
-        "separacao",
-        "santidade",
-        "guardar",
-        "cerca",
-        "exclusivo",
-        "dentro"
-      ],
-      "base": "Cantares 4:12,16; 5:1; 6:2; 8:13",
-      "confianca": "forte"
-    },
-    {
-      "termo": "fonte selada",
-      "variantes": [
-        "manancial fechado",
-        "fonte dos jardins",
-        "poco de aguas vivas"
-      ],
-      "significado": "A vida do Espirito dentro da Igreja, selada e reservada so para o Senhor — ninguem mais bebe dela. Fonte que nao seca e nao se mistura.",
-      "temas": [
-        "fonte",
-        "agua viva",
-        "manancial",
-        "selo",
-        "Espirito Santo",
-        "beber",
-        "poco"
-      ],
-      "base": "Cantares 4:12,15; Joao 4:14; 7:37-39; Efesios 1:13",
-      "confianca": "forte"
-    },
-    {
-      "termo": "bandeira",
-      "variantes": [
-        "bandeiras",
-        "estandarte",
-        "estandartes",
-        "o seu estandarte sobre mim era o amor"
-      ],
-      "significado": "O amor de Cristo levantado sobre a Igreja como bandeira: cobre, identifica e declara de quem ela e. Na casa do banquete a Igreja come com Ele debaixo desse amor.",
-      "temas": [
-        "bandeira",
-        "estandarte",
-        "amor",
-        "banquete",
-        "mesa",
-        "cobertura",
-        "comunhao"
-      ],
-      "base": "Cantares 2:4; Romanos 8:35-39",
-      "confianca": "forte"
-    },
-    {
-      "termo": "passas",
-      "variantes": [
-        "passa",
-        "bolos de passas",
-        "sustentai-me com passas"
-      ],
-      "significado": "Alimento concentrado e de reserva — o sustento espiritual duradouro que segura a Igreja no caminho ate o arrebatamento. O Instituto ICM documenta so isso; leituras mais detalhadas de passas x macas nao foram achadas documentadas e nao devem ser tratadas como gabarito.",
-      "temas": [
-        "sustento",
-        "alimento",
-        "forca",
-        "reserva",
-        "caminho",
-        "desfalecer",
-        "fortalecer"
-      ],
-      "base": "Cantares 2:5",
-      "confianca": "forte"
-    },
-    {
-      "termo": "macieira",
-      "variantes": [
-        "maca",
-        "macas",
-        "confortai-me com macas",
-        "sombra da macieira",
-        "seu fruto e doce"
-      ],
-      "significado": "Jesus entre os filhos dos homens: da sombra (descanso e protecao) e fruto doce (alimento e deleite). Debaixo dela a Igreja se assenta e ali Ele a desperta.",
-      "temas": [
-        "sombra",
-        "fruto",
-        "doce",
-        "descanso",
-        "assentar",
-        "arvore",
-        "despertar"
-      ],
-      "base": "Cantares 2:3,5; 8:5",
-      "confianca": "forte"
-    },
-    {
-      "termo": "desfaleco de amor",
-      "variantes": [
-        "enferma de amor",
-        "doente de amor",
-        "desfalecer de amor"
-      ],
-      "significado": "A saudade que consome a Igreja pelo Noivo ausente — anseio pela volta dEle, nao um estado de fraqueza espiritual.",
-      "temas": [
-        "saudade",
-        "anseio",
-        "suspiro",
-        "amor",
-        "desfalecer",
-        "esperar",
-        "volta"
-      ],
-      "base": "Cantares 2:5; 5:8",
-      "confianca": "forte"
-    },
-    {
-      "termo": "voz",
-      "variantes": [
-        "vozes",
-        "a voz do meu amado",
-        "esta e a voz",
-        "faze-me ouvir a tua voz",
-        "a voz da rola"
-      ],
-      "significado": "O chamado pessoal de Cristo que a Igreja reconhece. A ICM tem hino proprio sobre isso ('Esta e a Voz, a Voz do Meu Amado').",
-      "temas": [
-        "voz",
-        "ouvir",
-        "chamado",
-        "reconhecer",
-        "falar",
-        "despertar"
-      ],
-      "base": "Cantares 2:8,14; 5:2; 8:13; Joao 10:4,27",
-      "confianca": "forte"
-    },
-    {
-      "termo": "dormir",
-      "variantes": [
-        "dormia",
-        "adormecida",
-        "adormecidos",
-        "eu dormia mas o meu coracao velava",
-        "sono"
-      ],
-      "significado": "A Igreja sonolenta no tempo do fim: o coracao ainda ama, mas o corpo nao se levanta. Perigo de perder a hora da visitacao.",
-      "temas": [
-        "dormir",
-        "vigiar",
-        "despertar",
-        "hora",
-        "virgens",
-        "prontidao",
-        "velar"
-      ],
-      "base": "Cantares 5:2; Mateus 25:5-6; Romanos 13:11",
-      "confianca": "forte"
-    },
-    {
-      "termo": "tunica",
-      "variantes": [
-        "tunicas",
-        "ja despi a minha tunica",
-        "como a tornarei a vestir",
-        "ja lavei os meus pes"
-      ],
-      "significado": "O comodismo que faz a Igreja demorar a abrir — desculpas religiosas ('ja fiz a minha parte') na hora exata do chamado. Leitura provavel, apoiada no paralelo das desculpas de Lucas 14.",
-      "temas": [
-        "comodismo",
-        "demora",
-        "desculpa",
-        "acomodar",
-        "vestir",
-        "levantar"
-      ],
-      "base": "Cantares 5:3; Lucas 14:18-20",
-      "confianca": "provavel"
-    },
-    {
-      "termo": "raposinha",
-      "variantes": [
-        "raposinhas",
-        "raposa",
-        "raposas",
-        "apanhai-nos as raposas"
-      ],
-      "significado": "As coisas pequenas — pecados miudos, contendas, descuidos — que o adversario usa para comer a FLOR antes que vire fruto. Atacam exatamente quando a vinha esta florescendo.",
-      "temas": [
-        "raposinhas",
-        "vinha",
-        "flor",
-        "fruto",
-        "guardar",
-        "santificacao",
-        "pequenos pecados",
-        "zelo"
-      ],
-      "base": "Cantares 2:15; Ezequiel 13:4",
-      "confianca": "forte"
-    },
-    {
-      "termo": "lirio",
-      "variantes": [
-        "lirios",
-        "lirio entre os espinhos",
-        "lirio dos vales",
-        "apascenta entre os lirios"
-      ],
-      "significado": "A Igreja fiel guardando pureza e beleza cercada de espinhos — no meio do mundo e da religiosidade falsa. E entre os lirios que o Amado apascenta.",
-      "temas": [
-        "lirio",
-        "espinhos",
-        "pureza",
-        "meio do mundo",
-        "separada",
-        "apascentar",
-        "branco"
-      ],
-      "base": "Cantares 2:1-2,16; 6:2-3",
-      "confianca": "forte"
-    },
-    {
-      "termo": "rosa de sarom",
-      "variantes": [
-        "rosa de saron",
-        "rosa",
-        "eu sou a rosa de sarom",
-        "lirio dos vales"
-      ],
-      "significado": "Beleza que floresce no campo aberto. Ha duas leituras dentro da propria ICM: o Instituto ICM aplica a IGREJA que floresce no tempo final, mas a hinologia da ICM aplica a JESUS ('Ele e a Rosa de Sarom', 'Jesus, o Lirio dos Vales'). Para buscar louvor, os dois lados valem.",
-      "temas": [
-        "rosa de Sarom",
-        "lirio dos vales",
-        "florescer",
-        "primavera",
-        "beleza",
-        "campo"
-      ],
-      "base": "Cantares 2:1",
-      "confianca": "forte"
-    },
-    {
-      "termo": "unguento",
-      "variantes": [
-        "unguentos",
-        "unguento derramado",
-        "perfume",
-        "perfumes",
-        "nardo",
-        "aromas",
-        "balsamo",
-        "cheiro"
-      ],
-      "significado": "O Nome e a uncao de Cristo — perfume derramado que atrai. Na Igreja, o bom cheiro do Espirito que se exala e faz as virgens correrem atras dEle.",
-      "temas": [
-        "perfume",
-        "uncao",
-        "aroma",
-        "nardo",
-        "oleo",
-        "nome",
-        "derramado",
-        "cheiro"
-      ],
-      "base": "Cantares 1:3,12; 4:10-11,16; 2 Corintios 2:14-15; 1 Joao 2:20",
-      "confianca": "forte"
-    },
-    {
-      "termo": "mirra",
-      "variantes": [
-        "ramalhete de mirra",
-        "morara entre os meus seios",
-        "monte da mirra",
-        "cacho de chipre"
-      ],
-      "significado": "Cristo crucificado guardado junto ao coracao — a mirra e a especiaria da morte e do sepultamento. A Igreja nao larga a cruz do peito.",
-      "temas": [
-        "mirra",
-        "cruz",
-        "coracao",
-        "guardar",
-        "morte",
-        "ramalhete",
-        "sacrificio"
-      ],
-      "base": "Cantares 1:13-14; 4:6; 5:5; Marcos 15:23; Joao 19:39",
-      "confianca": "forte"
-    },
-    {
-      "termo": "selo",
-      "variantes": [
-        "selos",
-        "selado",
-        "selada",
-        "poe-me como selo sobre o teu coracao",
-        "selo sobre o teu braco",
-        "muitas aguas"
-      ],
-      "significado": "A marca do Espirito Santo: posse, pertenca e garantia. Amor forte como a morte, que as muitas aguas nao apagam nem os rios afogam — selo no coracao (afeto) e no braco (forca/obra).",
-      "temas": [
-        "selo",
-        "coracao",
-        "braco",
-        "fogo",
-        "chama",
-        "muitas aguas",
-        "amor forte",
-        "pertencer",
-        "garantia"
-      ],
-      "base": "Cantares 8:6-7; Efesios 1:13; 4:30; 2 Corintios 1:22; Romanos 8:35-39",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "sou do meu amado",
-      "variantes": [
-        "eu sou do meu amado",
-        "o meu amado e meu e eu sou dele",
-        "o meu amado e meu",
-        "ele me tem afeicao"
-      ],
-      "significado": "A certeza da pertenca mutua e exclusiva entre Cristo e a Igreja. A ICM tem hino direto sobre este verso ('Eu Sou do Meu Amado e Ele Me Tem Afeicao').",
-      "temas": [
-        "sou do meu amado",
-        "pertenco",
-        "meu amado e meu",
-        "afeicao",
-        "alianca",
-        "exclusivo",
-        "seguranca"
-      ],
-      "base": "Cantares 2:16; 6:3; 7:10; 1 Corintios 6:19-20",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "pomba",
-      "variantes": [
-        "pombas",
-        "pomba minha",
-        "a minha pomba",
-        "olhos de pomba",
-        "o oculto das ladeiras"
-      ],
-      "significado": "A Igreja escondida na Rocha que e Cristo — mansa, simples, de vista unica. Ele pede que ela mostre a face e faca ouvir a voz de dentro do esconderijo.",
-      "temas": [
-        "pomba",
-        "rocha",
-        "fenda",
-        "esconderijo",
-        "refugio",
-        "mansidao",
-        "face",
-        "voz",
-        "abrigo"
-      ],
-      "base": "Cantares 1:15; 2:14; 5:2; 6:9; Exodo 33:22; 1 Corintios 10:4",
-      "confianca": "forte"
-    },
-    {
-      "termo": "inverno",
-      "variantes": [
-        "passou o inverno",
-        "a chuva cessou",
-        "aparecem as flores",
-        "tempo de cantar",
-        "primavera"
-      ],
-      "significado": "A virada do tempo: acabou o periodo de sofrimento e escondimento, chegou o tempo de florescer e de cantar — o tempo da visitacao e do arrebatamento.",
-      "temas": [
-        "inverno",
-        "primavera",
-        "flores",
-        "cantar",
-        "tempo",
-        "chuva",
-        "passou",
-        "novo tempo"
-      ],
-      "base": "Cantares 2:11-13",
-      "confianca": "forte"
-    },
-    {
-      "termo": "rola",
-      "variantes": [
-        "rolas",
-        "a voz da rola ouve-se na nossa terra",
-        "zamir",
-        "passaro que canta"
-      ],
-      "significado": "O canto que so se ouve no tempo certo, anunciando o encontro. O Instituto ICM le a rola como a Igreja/pomba do Espirito arrulhando, e o cantor da primavera (zamir) como a palavra revelada de Jesus que desperta a Igreja.",
-      "temas": [
-        "rola",
-        "canto",
-        "cantar",
-        "voz",
-        "anuncio",
-        "tempo",
-        "despertar"
-      ],
-      "base": "Cantares 2:12",
-      "confianca": "forte"
-    },
-    {
-      "termo": "levanta-te",
-      "variantes": [
-        "levanta te",
-        "levanta-te amiga minha",
-        "formosa minha e vem",
-        "vem comigo do libano",
-        "levantai-vos"
-      ],
-      "significado": "O convite do Noivo para a Igreja se levantar e SAIR com Ele — deixar os covis dos leoes e os montes dos leopardos e subir.",
-      "temas": [
-        "levanta-te",
-        "vem",
-        "sair",
-        "subir",
-        "chamado",
-        "convite",
-        "partir"
-      ],
-      "base": "Cantares 2:10,13; 4:8; Apocalipse 22:17",
-      "confianca": "forte"
-    },
-    {
-      "termo": "gamo",
-      "variantes": [
-        "gamos",
-        "filho dos veados",
-        "corco",
-        "saltando sobre os montes",
-        "montes de beter"
-      ],
-      "significado": "A vinda rapida do Senhor, saltando por cima de todo obstaculo. Fecha o livro como pedido: 'Vem depressa, amado meu.'",
-      "temas": [
-        "gamo",
-        "montes",
-        "saltar",
-        "depressa",
-        "vinda",
-        "volta",
-        "correr"
-      ],
-      "base": "Cantares 2:8-9,17; 8:14",
-      "confianca": "forte"
-    },
-    {
-      "termo": "guarda",
-      "variantes": [
-        "guardas",
-        "guardas que rondavam pela cidade",
-        "guardas dos muros",
-        "espancaram-me",
-        "tiraram-me o manto"
-      ],
-      "significado": "Os que deviam cuidar da esposa e em vez disso a ferem e a expoem — lideres e religiosos que machucam quem esta buscando o Amado. Ainda assim ela nao desiste da busca. Leitura provavel, apoiada em Ezequiel 34.",
-      "temas": [
-        "guardas",
-        "muros",
-        "ferir",
-        "manto",
-        "cidade",
-        "buscar",
-        "perseguicao"
-      ],
-      "base": "Cantares 3:3; 5:7; Ezequiel 34:1-6",
-      "confianca": "provavel"
-    },
-    {
-      "termo": "de noite busquei",
-      "variantes": [
-        "em meu leito busquei",
-        "busquei-o e nao o achei",
-        "rodearei a cidade",
-        "achei-o e nao o larguei"
-      ],
-      "significado": "A Igreja quando perde a consciencia da presenca: levanta, procura, pergunta, e quando acha nao larga mais. Busca que nao aceita ficar sem Ele.",
-      "temas": [
-        "buscar",
-        "achar",
-        "noite",
-        "nao largar",
-        "presenca",
-        "procurar",
-        "saudade"
-      ],
-      "base": "Cantares 3:1-4; 5:6",
-      "confianca": "forte"
-    },
-    {
-      "termo": "filhas de jerusalem",
-      "variantes": [
-        "filhas de siao",
-        "virgens sem numero",
-        "rainhas e concubinas"
-      ],
-      "significado": "A multidao religiosa em volta que observa, pergunta e admira, mas nao tem a mesma intimidade. Contraste com a 'unica' pomba. Leitura provavel.",
-      "temas": [
-        "filhas de Jerusalem",
-        "contraste",
-        "testemunho",
-        "multidao",
-        "unica",
-        "intimidade"
-      ],
-      "base": "Cantares 1:5; 5:8-9,16; 6:8-9",
-      "confianca": "provavel"
-    },
-    {
-      "termo": "exercito com bandeiras",
-      "variantes": [
-        "formidavel como um exercito",
-        "terrivel como um exercito",
-        "alva do dia",
-        "formosa como a lua",
-        "brilhante como o sol"
-      ],
-      "significado": "A Igreja manifestada em gloria e em ordem: bela para o Amado e temivel para o inimigo. Sobe como a alva, brilha como o sol.",
-      "temas": [
-        "exercito",
-        "bandeiras",
-        "gloria",
-        "sol",
-        "lua",
-        "alva",
-        "manifestacao",
-        "vitoria"
-      ],
-      "base": "Cantares 6:4,10",
-      "confianca": "forte"
-    },
-    {
-      "termo": "morena",
-      "variantes": [
-        "eu sou morena porem amavel",
-        "o sol me queimou",
-        "tendas de quedar",
-        "cortinas de salomao"
-      ],
-      "significado": "A Igreja marcada pelo sol da aflicao e do trabalho — por fora queimada, mas amavel e formosa aos olhos do Amado. Ele nao olha a marca, olha o coracao. Leitura provavel.",
-      "temas": [
-        "morena",
-        "formosa",
-        "amavel",
-        "aflicao",
-        "aceita",
-        "marcas",
-        "trabalho"
-      ],
-      "base": "Cantares 1:5-6",
-      "confianca": "provavel"
-    },
-    {
-      "termo": "vento",
-      "variantes": [
-        "ventos",
-        "vento norte",
-        "vento sul",
-        "assopra no meu jardim",
-        "destilem os seus aromas"
-      ],
-      "significado": "O Espirito soprando sobre o jardim — o vento norte (frio, prova) e o vento sul (calor, bencao) — para que o perfume da Igreja saia e chegue ao Amado. O aroma so sai quando o vento bate.",
-      "temas": [
-        "vento",
-        "Espirito",
-        "soprar",
-        "jardim",
-        "aromas",
-        "prova",
-        "exalar",
-        "avivamento"
-      ],
-      "base": "Cantares 4:16; Joao 3:8; Tiago 1:2-4",
-      "confianca": "forte"
-    },
-    {
-      "termo": "vem depressa",
-      "variantes": [
-        "apressa-te amado meu",
-        "montes dos aromas",
-        "vem amado meu",
-        "maranata",
-        "ora vem"
-      ],
-      "significado": "O ultimo verso do livro e o clamor da esposa pela volta do Esposo — o proprio 'Maranata' de Apocalipse. A Igreja fecha o cantico pedindo que Ele venha.",
-      "temas": [
-        "vem",
-        "depressa",
-        "maranata",
-        "volta",
-        "clamor",
-        "ora vem",
-        "arrebatamento"
-      ],
-      "base": "Cantares 8:14; Apocalipse 22:17,20",
-      "confianca": "forte"
-    },
-    {
-      "termo": "parede",
-      "variantes": [
-        "paredes",
-        "muro que separa",
-        "separacao",
-        "esta detras da nossa parede"
-      ],
-      "significado": "As dificuldades e os obstaculos que impedem a igreja de ver o Senhor, embora Ele esteja perto. A ICM le Ct 2:9 junto com Isaias: 'as vossas iniquidades fazem separacao entre vos e o vosso Deus' — mas o Senhor 'esta nos ouvindo, aceitando as nossas suplicas, os nossos jejuns; Ele esta perto dos que O invocam em verdade'.",
-      "temas": [
-        "dificuldade",
-        "obstaculo",
-        "separacao",
-        "perto",
-        "clamor",
-        "jejum",
-        "suplica",
-        "Ele esta aqui"
-      ],
-      "base": "Cantares 2:9; Isaias 59:2; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "grade",
-      "variantes": [
-        "grades",
-        "reluzindo pelas grades"
-      ],
-      "significado": "As barreiras — e a ICM ensina que muitas vezes e o proprio servo que as coloca. Sobre Ct 2:9: 'grades falam de prisao, mas Ele e a luz do mundo, e para os que seguem ha luz'; e 'o Senhor quer dar a bencao, mas as vezes o servo poe as grades'.",
-      "temas": [
-        "barreira",
-        "prisao",
-        "cativeiro",
-        "libertacao",
-        "luz",
-        "revelacao",
-        "abre",
-        "bencao retida"
-      ],
-      "base": "Cantares 2:9; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "janela",
-      "variantes": [
-        "janelas",
-        "janelas do coracao",
-        "olhando pelas janelas"
-      ],
-      "significado": "Os olhos e o coracao do servo, por onde o Senhor olha para ver se O estao procurando: 'Ele esta olhando para o nosso coracao, para os nossos olhos, a ver se O estao procurando'; e vendo 'as nossas necessidades, como curas, batismo com o Espirito Santo'.",
-      "temas": [
-        "coracao",
-        "olhar",
-        "buscar",
-        "necessidade",
-        "cura",
-        "batismo no Espirito",
-        "revelacao",
-        "Ele me ve"
-      ],
-      "base": "Cantares 2:9; Apocalipse 1:14; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "azeite",
-      "variantes": [
-        "azeites",
-        "oleo da candeia",
-        "provimento de azeite",
-        "orvalho de hermom",
-        "reserva de azeite"
-      ],
-      "significado": "A provisao do Espirito Santo para a hora da noite — o que separa a igreja fiel da infiel. 'As dez eram iguais ate certo ponto: estavam esperando o esposo, tinham candeias e vestes. A diferenca unica e que cinco proveram-se do azeite!' A igreja infiel sabe que precisa de oleo, mas 'nao vao a venda, ao lugar onde se encontra o azeite'.",
-      "temas": [
-        "azeite",
-        "oleo",
-        "Espirito Santo",
-        "preparo",
-        "reserva",
-        "virgens prudentes",
-        "uncao",
-        "enchei-vos"
-      ],
-      "base": "Cantares 5:2; Mateus 25:1-13; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "candeia",
-      "variantes": [
-        "candeias",
-        "lampada",
-        "lampadas",
-        "luzes acesas",
-        "fogo"
-      ],
-      "significado": "Simbolo do Espirito Santo, que nao pode ficar sujeito ao comodismo: 'a candeia e simbolo do Espirito Santo, e nao o podemos colocar sujeito ao nosso comodismo. Ele e feito para ser posto no alto'. Na hora da noite, 'a igreja fiel tem candeia, azeite e fogo, para que esteja acesa nesta hora... luz para a caminhada, que se faz urgente'.",
-      "temas": [
-        "candeia",
-        "lampada",
-        "luz acesa",
-        "fogo",
-        "Espirito Santo",
-        "vigilancia",
-        "brilhar",
-        "caminhada"
-      ],
-      "base": "Cantares 3:1; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "cama",
-      "variantes": [
-        "camas",
-        "leito",
-        "leitos",
-        "de noite busquei em minha cama"
-      ],
-      "significado": "Simbolo do comodismo espiritual: 'cama e simbolo de comodismo. Nao se coloca uma candeia debaixo da cama, disse Jesus.' Ligado a igreja 'deitada, preguicosa, sem disposicao para levantar-se para trabalhar'.",
-      "temas": [
-        "comodismo",
-        "preguica",
-        "despertar",
-        "levanta-te",
-        "sono",
-        "acorda igreja"
-      ],
-      "base": "Cantares 3:1; 5:2; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "noite",
-      "variantes": [
-        "noites",
-        "de noite",
-        "cair das sombras",
-        "trevas",
-        "ultima hora"
-      ],
-      "significado": "O periodo de escuridao espiritual do fim do tempo, em que 'so a igreja fiel, a igreja no Espirito, discerne esta hora e anda as claras... porque caminha com Jesus'. E a hora de que Joao diz: 'filhinhos, e ja a ultima hora'. Trata do preparo da igreja para o arrebatamento.",
-      "temas": [
-        "noite",
-        "trevas",
-        "ultima hora",
-        "discernir o tempo",
-        "vigiar",
-        "luz",
-        "fim dos tempos"
-      ],
-      "base": "Cantares 3:1; 1 Joao 2:18; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    },
-    {
-      "termo": "meia-noite",
-      "variantes": [
-        "meia noite",
-        "hora da meia-noite",
-        "ai vem o esposo",
-        "sai-lhe ao encontro",
-        "antes que refresque o dia"
-      ],
-      "significado": "A hora exata do arrebatamento no relogio profetico da ICM: 'neste capitulo a caracteristica e da hora do arrebatamento, a Meia-Noite. A igreja e vista pelo Senhor preparada para ouvir a sua voz, os ultimos adornos foram colocados... a igreja da ultima hora, a igreja da Meia-Noite', casada com Mt 25:6.",
-      "temas": [
-        "meia-noite",
-        "clamor",
-        "ai vem o esposo",
-        "arrebatamento",
-        "encontro",
-        "hora chegada",
-        "prontos"
-      ],
-      "base": "Cantares 4:6; Mateus 25:6; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
-      "confianca": "explicita"
-    }
-  ],
-  "gerado_em": "2026-08-11",
-  "aviso": "Este dicionario e uma FERRAMENTA DE BUSCA. Ele serve para, a partir das palavras de um texto biblico, sugerir temas e figuras que ajudem a achar louvores e hinos no acervo. Onde existe doutrina publicada da Igreja Cristã Maranata (comentarios do Instituto ICM, cursos do Instituto Biblico, boletins e a himnologia), o dicionario segue essa doutrina e cita a fonte no campo 'base'. Onde nao havia fonte, a figura foi marcada com confianca 'provavel' ou nao foi incluida. Este arquivo NAO substitui e NAO imita revelacao: quem revela a Palavra e o Senhor, pelo Espirito Santo, ao ministerio e a igreja. Use como indice de busca, nunca como palavra de Deus."
+ "figuras": [
+  {
+   "termo": "marido",
+   "variantes": [
+    "maridos",
+    "primeiro marido",
+    "esposo",
+    "esposos",
+    "noivo",
+    "noivos",
+    "cabeca do lar",
+    "o teu criador e o teu marido",
+    "redentor",
+    "o teu redentor",
+    "santo de israel",
+    "desposar",
+    "desposou"
+   ],
+   "significado": "Jesus Cristo como Esposo da Igreja: ama, sustenta e entrega-se por ela; Paulo declara que o misterio do casamento fala 'a respeito de Cristo e da igreja', e Isaias diz que o proprio Criador se faz marido daquela que estava so.",
+   "temas": [
+    "esposo",
+    "noivo",
+    "marido",
+    "amado",
+    "bodas",
+    "casamento",
+    "alianca",
+    "entrega",
+    "amor de Cristo",
+    "igreja",
+    "redentor",
+    "volta de Cristo",
+    "primeiro amor"
+   ],
+   "base": "Efesios 5:23-32 (v.32); Isaias 54:5; Jeremias 3:14; 2 Corintios 11:2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "esposa",
+   "variantes": [
+    "esposas",
+    "mulher",
+    "mulheres",
+    "noiva",
+    "noivas",
+    "igreja gloriosa",
+    "sem macula nem ruga",
+    "sem mancha",
+    "imaculada",
+    "minha imaculada",
+    "toda formosa",
+    "sulamita",
+    "irma minha",
+    "amiga minha",
+    "formosa minha",
+    "a unica",
+    "uma e a minha pomba",
+    "desposada"
+   ],
+   "significado": "A Igreja como esposa de Cristo: santificada e purificada 'com a lavagem da agua, pela palavra', comprada por sangue, adornada e preparada como uma so, sem macula nem ruga, para o dia das bodas do Cordeiro.",
+   "temas": [
+    "esposa",
+    "noiva",
+    "igreja",
+    "santificacao",
+    "purificada",
+    "gloriosa",
+    "sem macula",
+    "vestes",
+    "bodas",
+    "preparo",
+    "adornada",
+    "unica",
+    "escolhida",
+    "pureza",
+    "arrebatamento"
+   ],
+   "base": "Efesios 5:24-32; 2 Corintios 11:2; Cantares 4:7-12; 6:9; Isaias 61:10; 62:5; Apocalipse 19:7-8; 21:9",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "virgem",
+   "variantes": [
+    "virgens",
+    "virgem pura",
+    "virgem casta",
+    "desposada a um so marido"
+   ],
+   "significado": "A Igreja preparada em pureza para ser apresentada a um so marido, 'a saber, a Cristo'; zelo de Deus contra a corrupcao do pensamento.",
+   "temas": [
+    "virgem",
+    "pureza",
+    "desposada",
+    "preparo",
+    "zelo",
+    "apresentar ao Senhor",
+    "noiva",
+    "vigiar"
+   ],
+   "base": "2 Corintios 11:2; Mateus 25:1-13",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "repudiada",
+   "variantes": [
+    "repudiadas",
+    "repudiar",
+    "repudiou",
+    "repudio",
+    "despedir",
+    "despediu",
+    "despedida",
+    "carta de divorcio",
+    "libelo de divorcio",
+    "divorcio",
+    "tornar a tomar",
+    "tornar a toma-la",
+    "mulher da mocidade",
+    "deixar o senhor",
+    "quis te deixar"
+   ],
+   "significado": "A lei do repudio e usada pelos profetas como figura de Israel/da Igreja que deixou o seu primeiro marido: 'se um homem despedir sua mulher... porventura nao se poluira de todo aquela terra?' — e ainda assim o Senhor chama: 'torna-te para mim'. Onde a lei diz que o primeiro marido nao pode tornar a toma-la, o Senhor responde pela graca: 'nao houve carta de divorcio da minha parte' e 'eu vos desposei'. Ninguem impede o Esposo de receber de volta a sua.",
+   "temas": [
+    "repudio",
+    "divorcio",
+    "abandono",
+    "infidelidade",
+    "voltar",
+    "torna-te para mim",
+    "misericordia",
+    "reconciliacao",
+    "primeiro marido",
+    "chamado de volta",
+    "primeiro amor",
+    "quis deixar",
+    "o Senhor nao desiste",
+    "graca maior que a lei",
+    "quem podera impedir",
+    "nada nos separa"
+   ],
+   "base": "Jeremias 3:1-14 (cita a lei de Deuteronomio 24:1-4); Isaias 50:1; Isaias 54:6-8; Oseias 2:14-20; Romanos 8:35-39; Apocalipse 2:4-5",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "adulterio",
+   "variantes": [
+    "adultera",
+    "adulteras",
+    "adulteros",
+    "prostituicao",
+    "fornicacao",
+    "amizade do mundo",
+    "infiel",
+    "infidelidade",
+    "contaminada",
+    "foi contaminada",
+    "poluida",
+    "poluir-se"
+   ],
+   "significado": "A infidelidade espiritual do povo que troca o seu Esposo por outros amores: 'nao sabeis vos que a amizade do mundo e inimizade contra Deus?'; Ezequiel e Oseias descrevem a mesma figura em detalhe.",
+   "temas": [
+    "adulterio",
+    "infidelidade",
+    "idolatria",
+    "mundanismo",
+    "separacao do mundo",
+    "santidade",
+    "voltar",
+    "arrependimento"
+   ],
+   "base": "Tiago 4:4; Ezequiel 16:8-32; Oseias 2:2-13; Jeremias 3:6-9",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "primeiro amor",
+   "variantes": [
+    "o teu primeiro amor",
+    "amor da tua mocidade",
+    "deixaste o teu primeiro amor",
+    "lembra-te de onde caiste",
+    "volta ao primeiro amor"
+   ],
+   "significado": "O amor do principio, que o Senhor lembra com carinho e cobra com firmeza: 'lembra-te de onde caiste, e arrepende-te, e pratica as primeiras obras'.",
+   "temas": [
+    "primeiro amor",
+    "voltar",
+    "arrependimento",
+    "lembranca",
+    "zelo",
+    "noivado",
+    "fervor",
+    "restauracao",
+    "primeiras obras"
+   ],
+   "base": "Apocalipse 2:4-5; Jeremias 2:2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "heranca",
+   "variantes": [
+    "herancas",
+    "herdade",
+    "herdeiro",
+    "herdeiros",
+    "possessao",
+    "posse",
+    "por heranca",
+    "herdar",
+    "terra que te da por heranca",
+    "galardao"
+   ],
+   "significado": "A posse que Deus da ao seu povo: a terra prometida como figura da heranca incorruptivel guardada nos ceus, selada pelo Espirito Santo ate a redencao da possessao adquirida.",
+   "temas": [
+    "heranca",
+    "possuir",
+    "terra prometida",
+    "promessa",
+    "herdeiros",
+    "filhos de Deus",
+    "galardao",
+    "posse",
+    "selo do Espirito",
+    "canaa"
+   ],
+   "base": "Efesios 1:13-14; 1 Pedro 1:4; Hebreus 9:15; Galatas 3:29; Josue 1:3-6; Deuteronomio 4:21",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "terra",
+   "variantes": [
+    "a terra",
+    "terra prometida",
+    "canaa",
+    "boa terra",
+    "terra que mana leite e mel",
+    "poluir a terra",
+    "contaminar a terra",
+    "fazer pecar a terra"
+   ],
+   "significado": "A terra dada por Deus como o lugar da promessa que se possui e se guarda santo: contamina-la e perde-la. Figura do que o povo recebeu das maos do Senhor e nao pode profanar.",
+   "temas": [
+    "terra",
+    "canaa",
+    "possuir",
+    "promessa",
+    "santidade",
+    "nao profanar",
+    "contaminacao",
+    "heranca",
+    "entrar",
+    "conquistar"
+   ],
+   "base": "Numeros 35:33-34; Levitico 18:24-28; Deuteronomio 24:4; Hebreus 4:1-11",
+   "confianca": "forte"
+  },
+  {
+   "termo": "abominacao",
+   "variantes": [
+    "abominacoes",
+    "abominavel",
+    "profanar",
+    "poluir",
+    "contaminar",
+    "imundicia"
+   ],
+   "significado": "O que Deus rejeita e que corrompe o povo e o lugar onde ele habita; a Igreja e chamada a lancar fora o que contamina.",
+   "temas": [
+    "abominacao",
+    "profanar",
+    "contaminar",
+    "santidade",
+    "purificacao",
+    "juizo",
+    "lancar fora",
+    "temor de Deus"
+   ],
+   "base": "Deuteronomio 24:4; Levitico 18:24-30; 2 Corintios 6:16-18",
+   "confianca": "forte"
+  },
+  {
+   "termo": "corpo",
+   "variantes": [
+    "corpos",
+    "membro",
+    "membros",
+    "um so corpo",
+    "muitos membros",
+    "juntas",
+    "ligamentos"
+   ],
+   "significado": "A Igreja e o corpo de Cristo, com muitos membros interdependentes, ajustada e ligada por juntas e ligamentos ao Cabeca.",
+   "temas": [
+    "corpo",
+    "membros",
+    "unidade",
+    "um so corpo",
+    "comunhao",
+    "dons",
+    "edificacao",
+    "juntas"
+   ],
+   "base": "1 Corintios 12:12-27; Efesios 1:22-23; 4:15-16; Colossenses 1:24",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "cabeca",
+   "variantes": [
+    "cabecas",
+    "principal",
+    "cabeca do corpo",
+    "cabeca da igreja"
+   ],
+   "significado": "Cristo como cabeca da Igreja e Salvador do corpo; toda autoridade e direcao procedem dele.",
+   "temas": [
+    "cabeca",
+    "senhorio",
+    "autoridade",
+    "governo de Cristo",
+    "direcao",
+    "sujeicao"
+   ],
+   "base": "Efesios 5:23; Colossenses 1:18; 1 Corintios 11:3",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "agar",
+   "variantes": [
+    "a escrava",
+    "escrava",
+    "escravas",
+    "a serva",
+    "serva",
+    "monte sinai",
+    "jerusalem de agora"
+   ],
+   "significado": "Alegoria da alianca do monte Sinai — a lei, que gera filhos para a servidao; corresponde a Jerusalem terrena.",
+   "temas": [
+    "escravidao",
+    "lei",
+    "servidao",
+    "cativeiro",
+    "jugo",
+    "libertacao"
+   ],
+   "base": "Galatas 4:22-25 ('o que se entende por alegoria; porque estas sao as duas aliancas')",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "livre",
+   "variantes": [
+    "a mulher livre",
+    "sara",
+    "filhos da promessa",
+    "isaque",
+    "filhos da livre"
+   ],
+   "significado": "Alegoria da alianca da promessa e da graca: os que nascem segundo o Espirito sao filhos da livre, herdeiros — 'nao somos filhos da escrava, mas da livre'.",
+   "temas": [
+    "liberdade",
+    "promessa",
+    "graca",
+    "filhos de Deus",
+    "heranca",
+    "nascer do Espirito"
+   ],
+   "base": "Galatas 4:22-31 (v.31)",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "jerusalem",
+   "variantes": [
+    "jerusalem de cima",
+    "jerusalem celestial",
+    "nova jerusalem",
+    "cidade santa",
+    "cidade de deus",
+    "cidade do deus vivo",
+    "mae de todos nos"
+   ],
+   "significado": "A cidade de Deus: a Jerusalem celestial, livre, mae dos filhos da promessa e patria da Igreja; e a Jerusalem consolada de Isaias, que de cativa e assentada no po passa a vestida de forca e coroada.",
+   "temas": [
+    "Jerusalem",
+    "cidade santa",
+    "ceu",
+    "patria celestial",
+    "mae",
+    "Siao",
+    "heranca",
+    "consolacao",
+    "liberdade",
+    "levantar do po",
+    "alegria"
+   ],
+   "base": "Galatas 4:26; Hebreus 12:22; Isaias 40:1-2; 52:1-2; 62:1-7; 65:18-19",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "siao",
+   "variantes": [
+    "sion",
+    "monte siao",
+    "monte sion",
+    "filha de siao",
+    "tristes de siao",
+    "monte santo"
+   ],
+   "significado": "A Igreja de Cristo, o povo remido reunido em alianca — alvo final da restauracao e lugar onde Deus assenta a sua gloria; destino da Igreja, contraposto ao monte Sinai do temor: festa, milhares de anjos e o Mediador da nova alianca.",
+   "temas": [
+    "Siao",
+    "povo de Deus",
+    "igreja",
+    "cidade santa",
+    "restauracao",
+    "gloria",
+    "voltar",
+    "monte santo",
+    "anjos",
+    "festa",
+    "primogenitos",
+    "chegada"
+   ],
+   "base": "Isaias 2:3; 51:11; 60:14; 61:3; 62:1; Hebreus 12:18-24",
+   "confianca": "forte"
+  },
+  {
+   "termo": "lavoura",
+   "variantes": [
+    "lavouras",
+    "lavoura de deus",
+    "plantacao",
+    "seara",
+    "campo"
+   ],
+   "significado": "A Igreja como campo cultivado por Deus: um planta, outro rega, mas Deus da o crescimento.",
+   "temas": [
+    "lavoura",
+    "semear",
+    "regar",
+    "crescimento",
+    "seara",
+    "fruto",
+    "obreiros"
+   ],
+   "base": "1 Corintios 3:6-9",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "edificio",
+   "variantes": [
+    "edificios",
+    "edificacao",
+    "casa espiritual",
+    "construcao",
+    "pedras vivas"
+   ],
+   "significado": "A Igreja como construcao de Deus, edificada sobre os apostolos e profetas, crescendo para templo santo e habitacao de Deus em Espirito.",
+   "temas": [
+    "edificio",
+    "edificar",
+    "construir",
+    "casa de Deus",
+    "pedras vivas",
+    "habitacao",
+    "templo"
+   ],
+   "base": "1 Corintios 3:9; Efesios 2:20-22",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "fundamento",
+   "variantes": [
+    "fundamentos",
+    "alicerce",
+    "alicerces",
+    "pedra fundamental"
+   ],
+   "significado": "'Ninguem pode por outro fundamento alem do que ja esta posto, o qual e Jesus Cristo' — a base unica da obra.",
+   "temas": [
+    "fundamento",
+    "alicerce",
+    "firmeza",
+    "rocha",
+    "obra",
+    "seguranca",
+    "edificar"
+   ],
+   "base": "1 Corintios 3:10-11",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "pedra angular",
+   "variantes": [
+    "pedra de esquina",
+    "principal pedra da esquina",
+    "pedra ja provada",
+    "pedra preciosa de esquina",
+    "fundamento estavel",
+    "pedra posta em siao"
+   ],
+   "significado": "O proprio Jesus Cristo, posto por Deus em Siao como fundamento seguro, que sustenta e ajusta todo o edificio, unindo judeus e gentios num so templo santo — quem nele cre nao foge nem se apressa.",
+   "temas": [
+    "pedra angular",
+    "esquina",
+    "alicerce",
+    "uniao",
+    "templo",
+    "firmeza",
+    "confianca",
+    "nao vacilar"
+   ],
+   "base": "Efesios 2:20-22; Isaias 28:16",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "templo",
+   "variantes": [
+    "templos",
+    "santuario",
+    "templo do deus vivo",
+    "templo do espirito santo",
+    "morada de deus"
+   ],
+   "significado": "O crente e a Igreja sao morada de Deus: 'vos sois o templo de Deus, e o Espirito de Deus habita em vos'.",
+   "temas": [
+    "templo",
+    "santuario",
+    "morada",
+    "habitar",
+    "Espirito Santo",
+    "santidade",
+    "presenca de Deus"
+   ],
+   "base": "1 Corintios 3:16-17; 6:19; 2 Corintios 6:16",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "oliveira",
+   "variantes": [
+    "oliveiras",
+    "oliveira natural",
+    "oliveira brava",
+    "olival",
+    "raiz santa"
+   ],
+   "significado": "Israel como oliveira natural cuja raiz e santa; os gentios sao o ramo bravo enxertado, sustentado pela raiz e nao o contrario.",
+   "temas": [
+    "oliveira",
+    "raiz",
+    "enxerto",
+    "seiva",
+    "Israel",
+    "gentios",
+    "misericordia"
+   ],
+   "base": "Romanos 11:16-24",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "ramo",
+   "variantes": [
+    "ramos",
+    "enxertado",
+    "enxertados",
+    "quebrado",
+    "quebrados",
+    "cortado"
+   ],
+   "significado": "Os que permanecem pela fe e os que sao cortados pela incredulidade — advertencia da bondade e da severidade de Deus.",
+   "temas": [
+    "ramos",
+    "permanecer",
+    "fe",
+    "incredulidade",
+    "cortado",
+    "enxertado",
+    "temor",
+    "firmeza"
+   ],
+   "base": "Romanos 11:17-22",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "primicia",
+   "variantes": [
+    "primicias",
+    "primeiros frutos",
+    "primeiro fruto",
+    "massa"
+   ],
+   "significado": "O primeiro fruto que santifica todo o restante: Cristo e primicia dos que dormem, garantia da ressurreicao; e ha as primicias do Espirito na Igreja.",
+   "temas": [
+    "primicias",
+    "ressurreicao",
+    "primeiro fruto",
+    "garantia",
+    "colheita",
+    "esperanca"
+   ],
+   "base": "Romanos 11:16; 1 Corintios 15:20-23; Romanos 8:23",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "nuvem",
+   "variantes": [
+    "nuvens",
+    "debaixo da nuvem",
+    "coluna de nuvem"
+   ],
+   "significado": "Figura do batismo: 'todos foram batizados em Moises, na nuvem e no mar' — cobertura e guia de Deus sobre o povo; escrito 'para aviso nosso'.",
+   "temas": [
+    "nuvem",
+    "guia",
+    "batismo",
+    "cobertura",
+    "caminhada",
+    "deserto",
+    "protecao"
+   ],
+   "base": "1 Corintios 10:1-2, 6, 11",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "mar",
+   "variantes": [
+    "mares",
+    "mar vermelho",
+    "passaram pelo mar",
+    "travessia"
+   ],
+   "significado": "Figura do batismo e da libertacao: a passagem que separa o povo do Egito e da servidao.",
+   "temas": [
+    "mar",
+    "passagem",
+    "libertacao",
+    "batismo",
+    "Egito",
+    "travessia",
+    "milagre"
+   ],
+   "base": "1 Corintios 10:1-2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "rocha",
+   "variantes": [
+    "rochas",
+    "pedra",
+    "pedras",
+    "penha",
+    "penhas",
+    "pedra espiritual",
+    "rocha eterna",
+    "sombra de grande rocha",
+    "fenda da rocha",
+    "fendas das penhas"
+   ],
+   "significado": "'E a pedra era Cristo' — a rocha ferida que os seguia no deserto, fonte da bebida espiritual; e a imutabilidade de Deus como chao firme, sombra de grande rocha em terra sedenta.",
+   "temas": [
+    "rocha",
+    "pedra",
+    "agua viva",
+    "fonte",
+    "sede",
+    "Cristo rocha",
+    "deserto",
+    "refugio",
+    "firmeza",
+    "confianca",
+    "paz",
+    "abrigo"
+   ],
+   "base": "1 Corintios 10:4; Isaias 26:3-4; 32:2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "mana",
+   "variantes": [
+    "comida espiritual",
+    "pao do ceu",
+    "mesma comida"
+   ],
+   "significado": "O sustento vindo do ceu, chamado por Paulo de 'comida espiritual' — Cristo alimentando o povo na caminhada; guardado na arca como memorial.",
+   "temas": [
+    "mana",
+    "pao do ceu",
+    "alimento",
+    "sustento",
+    "fome",
+    "provisao",
+    "deserto"
+   ],
+   "base": "1 Corintios 10:3; Hebreus 9:4",
+   "confianca": "forte"
+  },
+  {
+   "termo": "pascoa",
+   "variantes": [
+    "cordeiro",
+    "cordeiro pascal",
+    "nossa pascoa",
+    "pascoa",
+    "sacrificio da pascoa",
+    "sangue do cordeiro",
+    "umbrais",
+    "umbral"
+   ],
+   "significado": "'Cristo, nossa pascoa, foi sacrificado por nos' — o cordeiro imolado que livra do juizo.",
+   "temas": [
+    "ceia",
+    "cordeiro",
+    "cruz",
+    "imolado",
+    "juizo que passa",
+    "livramento",
+    "memorial",
+    "morte de Jesus",
+    "pascoa",
+    "redencao",
+    "remissao",
+    "sacrificio",
+    "sangue"
+   ],
+   "base": "1 Corintios 5:7 | Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "fermento",
+   "variantes": [
+    "fermentos",
+    "levedura",
+    "um pouco de fermento",
+    "massa levedada",
+    "asmos"
+   ],
+   "significado": "O pecado que corrompe todo o meio: 'fermento da malicia e da maldade'; a Igreja e exortada a lanca-lo fora e festejar com os asmos da sinceridade e da verdade.",
+   "temas": [
+    "fermento",
+    "pecado",
+    "corrupcao",
+    "purificacao",
+    "santidade",
+    "sinceridade",
+    "verdade",
+    "massa"
+   ],
+   "base": "1 Corintios 5:6-8; Galatas 5:9",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "repouso",
+   "variantes": [
+    "descanso",
+    "sabado",
+    "canaa",
+    "entrar no repouso"
+   ],
+   "significado": "O descanso que Josue nao deu ao povo: 'resta ainda um repouso para o povo de Deus'; entrar nele e cessar das proprias obras.",
+   "temas": [
+    "repouso",
+    "descanso",
+    "canaa",
+    "promessa",
+    "entrar",
+    "fe",
+    "peregrinacao",
+    "lar celestial",
+    "heranca"
+   ],
+   "base": "Hebreus 4:1-11",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "carreira",
+   "variantes": [
+    "corrida",
+    "correr",
+    "premio",
+    "coroa incorruptivel",
+    "combate",
+    "estadio"
+   ],
+   "significado": "A vida crista como corrida no estadio: deixar todo o peso e o pecado, correr com paciencia olhando para Jesus, para alcancar a coroa incorruptivel.",
+   "temas": [
+    "carreira",
+    "correr",
+    "premio",
+    "coroa",
+    "perseveranca",
+    "meta",
+    "combate",
+    "vencer"
+   ],
+   "base": "1 Corintios 9:24-27; Hebreus 12:1-2; 2 Timoteo 4:7-8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "armadura",
+   "variantes": [
+    "armaduras",
+    "toda a armadura de deus",
+    "armas",
+    "armas da luz",
+    "armadura de deus"
+   ],
+   "significado": "O revestimento espiritual do crente para resistir as astutas ciladas do diabo — a luta nao e contra carne e sangue.",
+   "temas": [
+    "armadura",
+    "batalha",
+    "luta",
+    "vitoria",
+    "firmeza",
+    "resistir",
+    "guerra espiritual",
+    "soldado"
+   ],
+   "base": "Efesios 6:11-13; Romanos 13:12",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "couraca",
+   "variantes": [
+    "couracas",
+    "couraca da justica",
+    "couraca da fe e do amor"
+   ],
+   "significado": "Protecao do coracao: a justica de Cristo (Efesios) e a fe com o amor (1 Tessalonicenses).",
+   "temas": [
+    "couraca",
+    "justica",
+    "coracao",
+    "fe",
+    "amor",
+    "protecao",
+    "defesa"
+   ],
+   "base": "Efesios 6:14; 1 Tessalonicenses 5:8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "escudo",
+   "variantes": [
+    "escudos",
+    "escudo da fe",
+    "broquel",
+    "dardos inflamados"
+   ],
+   "significado": "A fe com que se apagam todos os dardos inflamados do maligno.",
+   "temas": [
+    "escudo",
+    "fe",
+    "dardos",
+    "maligno",
+    "defesa",
+    "protecao",
+    "vitoria"
+   ],
+   "base": "Efesios 6:16",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "capacete",
+   "variantes": [
+    "capacetes",
+    "capacete da salvacao",
+    "esperanca da salvacao"
+   ],
+   "significado": "A salvacao (e a esperanca dela) guardando o pensamento e a mente do crente.",
+   "temas": [
+    "capacete",
+    "salvacao",
+    "esperanca",
+    "mente",
+    "pensamento",
+    "protecao"
+   ],
+   "base": "Efesios 6:17; 1 Tessalonicenses 5:8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "espada",
+   "variantes": [
+    "espadas",
+    "espada do espirito",
+    "espada de dois gumes"
+   ],
+   "significado": "'A espada do Espirito, que e a palavra de Deus' — viva e eficaz, que penetra e discerne os pensamentos do coracao.",
+   "temas": [
+    "espada",
+    "palavra de Deus",
+    "poder",
+    "discernimento",
+    "verdade",
+    "luta",
+    "coracao"
+   ],
+   "base": "Efesios 6:17; Hebreus 4:12",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "veu",
+   "variantes": [
+    "veus",
+    "cortina",
+    "cortinas",
+    "veu do santuario",
+    "veu sobre o coracao"
+   ],
+   "significado": "O veu do santuario e a carne de Cristo, aberta para o novo e vivo caminho; e o veu sobre o coracao e tirado quando alguem se converte ao Senhor.",
+   "temas": [
+    "veu",
+    "caminho novo",
+    "acesso",
+    "entrar no santuario",
+    "rasgado",
+    "revelacao",
+    "conversao"
+   ],
+   "base": "Hebreus 10:19-20 ('pelo veu, isto e, pela sua carne'); 2 Corintios 3:13-16",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "tabernaculo",
+   "variantes": [
+    "tabernaculos",
+    "santuario",
+    "santo dos santos",
+    "tenda da congregacao",
+    "exemplar"
+   ],
+   "significado": "O tabernaculo terreno e 'exemplar e sombra' do santuario celestial; suas coisas eram figuras das verdadeiras, onde Cristo entrou por nos.",
+   "temas": [
+    "tabernaculo",
+    "santuario",
+    "santo dos santos",
+    "ceu",
+    "presenca",
+    "entrar",
+    "sacerdocio"
+   ],
+   "base": "Hebreus 8:5; 9:1-11, 23-24",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "sombra",
+   "variantes": [
+    "sombras",
+    "figura",
+    "figuras",
+    "exemplar",
+    "sombra dos bens futuros",
+    "esconderijo contra o vento",
+    "refugio contra o temporal"
+   ],
+   "significado": "Duas leituras firmes: (1) em Paulo, as ordenancas, festas, comidas e sabados eram sombra das coisas futuras — 'mas o corpo e de Cristo'; (2) em Isaias, Cristo como sombra e abrigo pessoal em terra cansada, cobertura sobre toda a gloria.",
+   "temas": [
+    "sombra",
+    "figura",
+    "cumprimento",
+    "realidade",
+    "lei",
+    "Cristo",
+    "antigo e novo",
+    "abrigo",
+    "refugio",
+    "tempestade",
+    "descanso",
+    "protecao",
+    "esconderijo"
+   ],
+   "base": "Colossenses 2:16-17; Hebreus 8:5; 10:1; Isaias 32:2; 4:5-6; 25:4",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "sangue",
+   "variantes": [
+    "sangue de jesus",
+    "sangue da aspersao",
+    "aspersao",
+    "derramamento de sangue"
+   ],
+   "significado": "O sangue que purifica a consciencia das obras mortas e da ousadia de entrar no santuario; 'sem derramamento de sangue nao ha remissao' e fala melhor do que o de Abel.",
+   "temas": [
+    "sangue",
+    "remissao",
+    "purificacao",
+    "perdao",
+    "aspersao",
+    "nova alianca",
+    "cruz",
+    "ousadia"
+   ],
+   "base": "Hebreus 9:12-14, 22; 10:19; 12:24",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "sumo sacerdote",
+   "variantes": [
+    "sumo sacerdotes",
+    "grande sacerdote",
+    "sacerdote",
+    "sacerdotes",
+    "ministro do santuario"
+   ],
+   "significado": "Jesus como sumo sacerdote que penetrou nos ceus, compadece-se das nossas fraquezas e intercede — ministro do verdadeiro tabernaculo.",
+   "temas": [
+    "sacerdote",
+    "intercessao",
+    "trono da graca",
+    "socorro",
+    "misericordia",
+    "compaixao",
+    "mediador"
+   ],
+   "base": "Hebreus 4:14-16; 8:1-2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "melquisedeque",
+   "variantes": [
+    "rei de salem",
+    "rei de justica",
+    "rei de paz"
+   ],
+   "significado": "'Feito semelhante ao Filho de Deus', sem principio de dias nem fim de vida — figura do sacerdocio eterno e real de Cristo.",
+   "temas": [
+    "rei de justica",
+    "rei de paz",
+    "sacerdote eterno",
+    "principe da paz",
+    "reinado",
+    "eternidade"
+   ],
+   "base": "Hebreus 7:1-3",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "ancora",
+   "variantes": [
+    "ancoras",
+    "ancora da alma",
+    "esperanca segura"
+   ],
+   "significado": "A esperanca em Cristo, ancora segura e firme, que penetra ate o interior do veu, onde ele entrou como precursor.",
+   "temas": [
+    "ancora",
+    "esperanca",
+    "firmeza",
+    "seguranca",
+    "tempestade",
+    "refugio",
+    "precursor"
+   ],
+   "base": "Hebreus 6:18-20",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "fora do arraial",
+   "variantes": [
+    "fora da porta",
+    "fora do acampamento",
+    "vituperio",
+    "opprobrio",
+    "levar o seu vituperio"
+   ],
+   "significado": "Os corpos dos sacrificios eram queimados fora do arraial; assim Jesus padeceu fora da porta — chamada a sair a ele, levando o seu vituperio, buscando a cidade permanente.",
+   "temas": [
+    "fora do arraial",
+    "sair",
+    "vituperio",
+    "separacao",
+    "oprobrio",
+    "seguir a Jesus",
+    "cruz",
+    "cidade permanente"
+   ],
+   "base": "Hebreus 13:11-14",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "adao",
+   "variantes": [
+    "primeiro homem",
+    "ultimo adao",
+    "segundo homem",
+    "homem terreno",
+    "homem celestial"
+   ],
+   "significado": "'Adao, o qual e a figura daquele que havia de vir': o primeiro Adao, alma vivente e terreno; o ultimo Adao, espirito vivificante, o Senhor do ceu.",
+   "temas": [
+    "Adao",
+    "novo homem",
+    "queda",
+    "vida",
+    "ressurreicao",
+    "imagem do celestial",
+    "transformacao"
+   ],
+   "base": "Romanos 5:14; 1 Corintios 15:45-49",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "aio",
+   "variantes": [
+    "aios",
+    "tutor",
+    "tutores",
+    "pedagogo",
+    "debaixo de aio"
+   ],
+   "significado": "A lei serviu de aio para conduzir a Cristo, ate que viesse a fe; depois dela ja nao estamos debaixo de aio, pois somos filhos de Deus pela fe.",
+   "temas": [
+    "lei",
+    "conduzir a Cristo",
+    "fe",
+    "filhos de Deus",
+    "liberdade",
+    "graca",
+    "justificacao"
+   ],
+   "base": "Galatas 3:23-26",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "descendencia",
+   "variantes": [
+    "semente",
+    "sementes",
+    "semente de abraao",
+    "descendentes",
+    "herdeiros segundo a promessa"
+   ],
+   "significado": "'E a tua descendencia, que e Cristo' — a promessa feita a Abraao se cumpre numa so semente, e em Cristo os crentes sao herdeiros da promessa.",
+   "temas": [
+    "semente",
+    "promessa",
+    "Abraao",
+    "heranca",
+    "herdeiros",
+    "alianca",
+    "cumprimento"
+   ],
+   "base": "Galatas 3:16, 29",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "testamento",
+   "variantes": [
+    "testamentos",
+    "concerto",
+    "alianca",
+    "aliancas",
+    "testador"
+   ],
+   "significado": "Onde ha testamento, e necessaria a morte do testador — por isso a nova alianca so vigora pela morte de Cristo.",
+   "temas": [
+    "testamento",
+    "alianca",
+    "heranca",
+    "morte de Cristo",
+    "herdeiros",
+    "promessa"
+   ],
+   "base": "Hebreus 9:15-17",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "batismo",
+   "variantes": [
+    "batismos",
+    "batizado",
+    "batizados",
+    "sepultados com ele",
+    "plantados juntamente",
+    "circuncisao de cristo"
+   ],
+   "significado": "Sepultamento e ressurreicao com Cristo: o velho homem e crucificado e se anda em novidade de vida.",
+   "temas": [
+    "batismo",
+    "sepultado",
+    "ressuscitado",
+    "novidade de vida",
+    "morte para o pecado",
+    "nova criatura",
+    "aguas"
+   ],
+   "base": "Romanos 6:3-6; Colossenses 2:11-12",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "penhor",
+   "variantes": [
+    "penhores",
+    "arras",
+    "sinal",
+    "selo do espirito",
+    "garantia da heranca"
+   ],
+   "significado": "O Espirito Santo dado como penhor (garantia) da heranca, ate a redencao da possessao adquirida.",
+   "temas": [
+    "penhor",
+    "garantia",
+    "Espirito Santo",
+    "heranca",
+    "selo",
+    "promessa",
+    "redencao"
+   ],
+   "base": "2 Corintios 1:22; 5:5; Efesios 1:13-14",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "velho homem",
+   "variantes": [
+    "novo homem",
+    "despir",
+    "revestir",
+    "corpo do pecado",
+    "homem velho"
+   ],
+   "significado": "O velho homem foi crucificado com Cristo; despe-se o velho com os seus atos e reveste-se o novo, renovado segundo a imagem daquele que o criou.",
+   "temas": [
+    "velho homem",
+    "novo homem",
+    "despir",
+    "revestir",
+    "crucificado",
+    "renovacao",
+    "transformacao",
+    "imagem de Cristo"
+   ],
+   "base": "Romanos 6:6; Efesios 4:22-24; Colossenses 3:9-10",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "trombeta",
+   "variantes": [
+    "alarido",
+    "retinir",
+    "tocar tinindo",
+    "toque",
+    "trombeta",
+    "trombeta de deus",
+    "trombetas",
+    "ultima trombeta"
+   ],
+   "significado": "O sinal do arrebatamento e da ressurreicao: 'num momento, num abrir e fechar de olhos, ante a ultima trombeta... os mortos ressuscitarao incorruptiveis'.",
+   "temas": [
+    "arrebatamento",
+    "convocacao",
+    "despertar",
+    "encontro nos ares",
+    "maranata",
+    "partida",
+    "preparo",
+    "prontos",
+    "redencao",
+    "ressurreicao",
+    "sinais",
+    "transformacao",
+    "trombeta",
+    "vigiar",
+    "vinda",
+    "volta de Cristo",
+    "volta de Jesus"
+   ],
+   "base": "1 Corintios 15:51-52; 1 Tessalonicenses 4:16-17 | Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "vinha",
+   "variantes": [
+    "vinhas",
+    "vinha do senhor",
+    "vinha do meu amado",
+    "vides",
+    "videira",
+    "vinha de vinho tinto",
+    "guarda de vinhas"
+   ],
+   "significado": "A casa de Israel — e por figura a Igreja — plantada, cercada, limpa de pedras e cuidada por Deus, de quem Ele espera fruto de justica. Cantares acrescenta a advertencia: da para ser posto por guarda da vinha dos outros e perder a sua.",
+   "temas": [
+    "vinha",
+    "fruto",
+    "amado",
+    "cantico",
+    "cuidado de Deus",
+    "lavrador",
+    "justica",
+    "guardar",
+    "obra",
+    "flor",
+    "zelo",
+    "descuidar"
+   ],
+   "base": "Isaias 5:1-7; 27:2-3; Cantares 1:6; 2:13,15; 8:11-12; Joao 15:1-5",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "remanescente",
+   "variantes": [
+    "remanescentes",
+    "resto",
+    "o resto de israel",
+    "os que escaparam",
+    "os que restarem",
+    "semente santa"
+   ],
+   "significado": "O grupo fiel que sobrevive ao juizo e se firma verdadeiramente no Senhor — a Igreja fiel guardada ate o fim, que lanca raizes para baixo e da fruto para cima.",
+   "temas": [
+    "remanescente",
+    "fieis",
+    "perseverar",
+    "guardados",
+    "raizes",
+    "frutificar",
+    "ate o fim"
+   ],
+   "base": "Isaias 1:9; 10:20-22; 37:31-32",
+   "confianca": "forte"
+  },
+  {
+   "termo": "muro",
+   "variantes": [
+    "muros",
+    "muralha",
+    "muralhas",
+    "antemuro",
+    "eu sou um muro",
+    "os teus muros"
+   ],
+   "significado": "A propria salvacao de Deus posta como defesa do seu povo — nao e obra do homem, e Ele mesmo ao redor da Igreja. A ICM le ainda Ct 8:9-10: 'se ela for um muro edificaremos nela um palacio de prata', o povo amadurecido como base firme onde se edifica a obra de redencao, cheia de paz.",
+   "temas": [
+    "salvacao",
+    "muros",
+    "protecao",
+    "seguranca",
+    "refugio",
+    "defesa",
+    "cidade forte",
+    "fundamento",
+    "edificar",
+    "redencao",
+    "paz",
+    "firmeza"
+   ],
+   "base": "Isaias 26:1; 49:16; 60:18; Salmo 122:7; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense, Ct 8:9-10",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "muros de jerusalem",
+   "variantes": [
+    "construcao dos muros",
+    "reedificacao dos muros",
+    "dedicacao dos muros",
+    "reedificar",
+    "neemias"
+   ],
+   "significado": "A construcao da obra do Senhor pela igreja fiel em meio a grandes oposicoes. O curso oficial do Instituto Biblico da ICM sobre Neemias mostra 'as grandes oposicoes vividas pela igreja fiel ao longo de sua jornada... as oposicoes enfrentadas para a construcao dos muros de Jerusalem'; a Festa da Dedicacao (Ne 12:27) e ligada a entrega pessoal, obediencia, comunhao, consagracao e fidelidade.",
+   "temas": [
+    "edificar",
+    "restaurar",
+    "oposicao",
+    "perseveranca",
+    "obra do Senhor",
+    "dedicacao",
+    "consagracao",
+    "fidelidade",
+    "reconstruir"
+   ],
+   "base": "Neemias 12:27; Instituto Biblico ICM, curso 'O Livro de Neemias' (institutoicm.org.br); Boletim ICM/EBD 25 out. 2020",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "porta",
+   "variantes": [
+    "portas",
+    "as tuas portas",
+    "abri as portas",
+    "fresta da porta",
+    "abre-me",
+    "abre-nos",
+    "aldravas da fechadura",
+    "esta batendo"
+   ],
+   "significado": "O acesso franqueado ao povo santo — portas que se chamam Louvor e nao se fecham nem de dia nem de noite. Em Cantares e o Senhor do lado de fora batendo, molhado do sereno da noite, esperando a Igreja abrir; a ICM le nisso a ultima visitacao: 'eu abri, mas o meu amado se tinha retirado e ido' — paralelo com 'abre-nos... nao vos conheco'.",
+   "temas": [
+    "portas",
+    "entrar",
+    "louvor",
+    "acesso",
+    "presenca",
+    "adoracao",
+    "abrir caminho",
+    "bater",
+    "chamado",
+    "ultima chance",
+    "tarde demais",
+    "vigiar",
+    "arrebatamento"
+   ],
+   "base": "Isaias 26:2; 60:11,18; 62:10; Cantares 5:2-6; Apocalipse 3:20; Mateus 25:11-12; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "atalaia",
+   "variantes": [
+    "atalaias",
+    "sentinela",
+    "sentinelas",
+    "vigias",
+    "atalaias sobre os teus muros"
+   ],
+   "significado": "O ministerio que vigia e intercede sem calar, dia e noite, ate que a restauracao de Siao se cumpra.",
+   "temas": [
+    "vigiar",
+    "atalaia",
+    "oracao",
+    "intercessao",
+    "nao calar",
+    "despertar",
+    "sentinela"
+   ],
+   "base": "Isaias 52:8; 62:6-7; 21:11-12",
+   "confianca": "forte"
+  },
+  {
+   "termo": "deserto",
+   "variantes": [
+    "arraiais",
+    "arraial",
+    "caminhada",
+    "deserto",
+    "desertos",
+    "encostada ao seu amado",
+    "ermo",
+    "horebe",
+    "lugar solitario",
+    "quem e esta que sobe do deserto",
+    "sinai",
+    "terra seca"
+   ],
+   "significado": "A vida esteril transformada pela visitacao de Deus — o seco que vira jardim e exulta quando a gloria do Senhor aparece. Em Cantares, o deserto e a peregrinacao que termina: a Igreja SOBE encostada, apoiada so nEle — lido como figura direta do arrebatamento.",
+   "temas": [
+    "alegria",
+    "alegria no caminho",
+    "apoiar",
+    "arrebatamento",
+    "caminhada",
+    "deserto",
+    "encostada",
+    "florescer",
+    "gloria",
+    "hostil",
+    "jornada",
+    "mundo",
+    "peregrinacao",
+    "presenca de Deus",
+    "renovo",
+    "reverdecer",
+    "seca",
+    "seguir",
+    "subir",
+    "transformacao"
+   ],
+   "base": "Isaias 35:1-2; 41:18-19; 51:3; Cantares 3:6; 8:5; 1 Tessalonicenses 4:16-17 | Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "agua",
+   "variantes": [
+    "aguas",
+    "ribeiros",
+    "correntes",
+    "tanques",
+    "aguas no deserto",
+    "agua viva",
+    "rios de agua viva"
+   ],
+   "significado": "O Espirito Santo derramado e a salvacao que sacia — Deus abre rios onde havia sede e transforma a terra seca em mananciais.",
+   "temas": [
+    "agua",
+    "sede",
+    "Espirito Santo",
+    "derramar",
+    "saciar",
+    "rio",
+    "manancial",
+    "beber"
+   ],
+   "base": "Isaias 12:3; 35:6-7; 41:17-18; 44:3; 55:1",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "fonte",
+   "variantes": [
+    "fontes",
+    "fontes da salvacao",
+    "poco",
+    "pocos",
+    "manancial",
+    "tirareis aguas com alegria"
+   ],
+   "significado": "O manancial aberto em Cristo de onde o povo tira com alegria — do poco da salvacao brota o cantico e a gratidao.",
+   "temas": [
+    "fonte",
+    "salvacao",
+    "alegria",
+    "tirar aguas",
+    "cantico",
+    "gratidao",
+    "louvor"
+   ],
+   "base": "Isaias 12:3",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "chuva",
+   "variantes": [
+    "chuvas",
+    "neve",
+    "orvalho",
+    "a chuva e a neve descem dos ceus"
+   ],
+   "significado": "A Palavra que desce do ceu e nao volta vazia: rega, faz germinar e sempre cumpre aquilo para que foi enviada.",
+   "temas": [
+    "palavra",
+    "chuva",
+    "semente",
+    "frutificar",
+    "promessa",
+    "fidelidade",
+    "cumprir"
+   ],
+   "base": "Isaias 55:10-11",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "monte",
+   "variantes": [
+    "montes",
+    "outeiro",
+    "outeiros",
+    "monte da casa do senhor",
+    "cume dos montes",
+    "meu santo monte",
+    "monte grande",
+    "saltando sobre os montes"
+   ],
+   "significado": "A Igreja firmada acima de todo outro fundamento, para onde as nacoes sobem a fim de aprender os caminhos de Deus. A ICM le tambem os montes como as dificuldades sobre as quais o Senhor vem saltando: 'saltando, pulando, falam de pressa; montes, outeiro de dificuldade... quem es tu, monte grande? diante do poder de Deus, seras uma campina!'",
+   "temas": [
+    "monte",
+    "casa do Senhor",
+    "subir",
+    "nacoes",
+    "caminhos",
+    "ensino",
+    "firmeza",
+    "adoracao",
+    "dificuldade",
+    "vitoria",
+    "poder de Deus",
+    "campina",
+    "Ele vem",
+    "depressa",
+    "obstaculo removido"
+   ],
+   "base": "Isaias 2:2-3; 11:9; 56:7; Zacarias 4:7; Cantares 2:8; e Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "servo",
+   "variantes": [
+    "servos",
+    "meu servo",
+    "o servo do senhor",
+    "varao de dores",
+    "o justo meu servo"
+   ],
+   "significado": "Jesus Cristo, que levou as nossas enfermidades, foi ferido pelas nossas transgressoes e justifica a muitos.",
+   "temas": [
+    "Cristo",
+    "cruz",
+    "calvario",
+    "sacrificio",
+    "redencao",
+    "sangue",
+    "levou as nossas dores"
+   ],
+   "base": "Isaias 52:13 a 53:12",
+   "confianca": "forte"
+  },
+  {
+   "termo": "cordeiro",
+   "variantes": [
+    "cordeiros",
+    "cordeiro ao matadouro",
+    "ovelha muda diante dos tosquiadores",
+    "cordeiro de deus"
+   ],
+   "significado": "Cristo, o sacrificio silencioso que nao abre a boca e se entrega em lugar do pecador.",
+   "temas": [
+    "cordeiro",
+    "sacrificio",
+    "cruz",
+    "silencio",
+    "entrega",
+    "redencao",
+    "imolado"
+   ],
+   "base": "Isaias 53:7",
+   "confianca": "forte"
+  },
+  {
+   "termo": "dores",
+   "variantes": [
+    "dor",
+    "homem de dores",
+    "experimentado nos trabalhos",
+    "desprezado",
+    "o mais rejeitado entre os homens"
+   ],
+   "significado": "Cristo desprezado e rejeitado dos homens — o que conhece por dentro a dor de quem hoje canta a Ele.",
+   "temas": [
+    "dores",
+    "desprezado",
+    "rejeitado",
+    "consolo",
+    "Cristo sofredor",
+    "compaixao"
+   ],
+   "base": "Isaias 53:3",
+   "confianca": "forte"
+  },
+  {
+   "termo": "pisadura",
+   "variantes": [
+    "pisaduras",
+    "chaga",
+    "chagas",
+    "ferida",
+    "feridas",
+    "acoites",
+    "castigo da nossa paz"
+   ],
+   "significado": "As feridas de Cristo como origem da cura e da paz do crente: o castigo caiu sobre Ele, o beneficio caiu sobre nos.",
+   "temas": [
+    "cura",
+    "chagas",
+    "paz",
+    "perdao",
+    "sarados",
+    "sangue",
+    "cruz"
+   ],
+   "base": "Isaias 53:5",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "ovelha",
+   "variantes": [
+    "ovelhas",
+    "ovelhas desgarradas",
+    "desgarrado",
+    "desgarrados",
+    "andamos desgarrados"
+   ],
+   "significado": "A humanidade perdida em seu proprio caminho, cuja iniquidade o Senhor fez cair sobre o Servo.",
+   "temas": [
+    "ovelha",
+    "perdido",
+    "desviado",
+    "voltar",
+    "pastor",
+    "graca",
+    "achado"
+   ],
+   "base": "Isaias 53:6",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "pastor",
+   "variantes": [
+    "pastores",
+    "rebanho",
+    "rebanhos",
+    "cordeirinhos nos bracos",
+    "apascentara o seu rebanho",
+    "guiara mansamente"
+   ],
+   "significado": "Cristo que apascenta, ajunta os cordeirinhos no braco, leva-os no seio e conduz mansamente as que amamentam.",
+   "temas": [
+    "pastor",
+    "rebanho",
+    "bracos",
+    "cuidado",
+    "conduzir",
+    "mansidao",
+    "seguranca"
+   ],
+   "base": "Isaias 40:11",
+   "confianca": "forte"
+  },
+  {
+   "termo": "renovo",
+   "variantes": [
+    "renovos",
+    "rebento",
+    "vara do tronco de jesse",
+    "raiz de jesse",
+    "raiz de uma terra seca",
+    "pendao dos povos"
+   ],
+   "significado": "Cristo brotando de uma linhagem aparentemente morta — vida saindo de um toco seco, e por Ele as nacoes sao atraidas.",
+   "temas": [
+    "renovo",
+    "raiz",
+    "brotar",
+    "Jesse",
+    "Davi",
+    "Messias",
+    "vida nova",
+    "estandarte"
+   ],
+   "base": "Isaias 11:1,10; 53:2; 4:2",
+   "confianca": "forte"
+  },
+  {
+   "termo": "esteril",
+   "variantes": [
+    "estereis",
+    "a que nao deu a luz",
+    "a que nao teve dores de parto",
+    "canta alegremente o esteril"
+   ],
+   "significado": "A que se julgava sem fruto recebendo ordem de cantar antes de ver o filho — fe que louva pela promessa, nao pela vista.",
+   "temas": [
+    "esteril",
+    "cantar",
+    "promessa",
+    "fe",
+    "fecundidade",
+    "alegria",
+    "exclamar"
+   ],
+   "base": "Isaias 54:1",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "tenda",
+   "variantes": [
+    "tendas",
+    "estaca",
+    "estacas",
+    "cordas",
+    "alarga o lugar da tua tenda",
+    "nao sejas escassa"
+   ],
+   "significado": "A Igreja mandada alargar-se e firmar estacas antes de a multidao chegar: expansao pela fe, preparo antes do avivamento.",
+   "temas": [
+    "tenda",
+    "alargar",
+    "estacas",
+    "crescer",
+    "expansao",
+    "fe",
+    "preparo"
+   ],
+   "base": "Isaias 54:2-3",
+   "confianca": "forte"
+  },
+  {
+   "termo": "desamparada",
+   "variantes": [
+    "desamparadas",
+    "desamparo",
+    "triste de espirito",
+    "por um breve momento te deixei",
+    "abandonada"
+   ],
+   "significado": "A Igreja (ou a alma) que se sentiu abandonada, chamada de volta com grandes misericordias e benignidade eterna.",
+   "temas": [
+    "desamparo",
+    "chamado",
+    "volta",
+    "misericordia",
+    "reconciliacao",
+    "consolo",
+    "perdao",
+    "abandono"
+   ],
+   "base": "Isaias 54:6-8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "hefziba",
+   "variantes": [
+    "beula",
+    "desposada",
+    "o meu prazer esta nela",
+    "novo nome",
+    "nunca mais desamparada",
+    "nunca mais desolada"
+   ],
+   "significado": "A troca de nome da rejeitada: de Desamparada a Desposada, de Desolada a Prazer de Deus — nova identidade dada pela boca do Senhor.",
+   "temas": [
+    "novo nome",
+    "desposada",
+    "prazer de Deus",
+    "restauracao",
+    "identidade",
+    "nova criatura",
+    "volta"
+   ],
+   "base": "Isaias 62:2-4; 65:15",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "coroa",
+   "variantes": [
+    "coroas",
+    "coroa de gloria",
+    "diadema real",
+    "na mao do teu deus"
+   ],
+   "significado": "O povo restaurado como joia segurada na mao do Senhor — o trofeu visivel da obra que Ele fez.",
+   "temas": [
+    "coroa",
+    "gloria",
+    "joia",
+    "valor",
+    "vitoria",
+    "galardao",
+    "nas maos de Deus"
+   ],
+   "base": "Isaias 62:3",
+   "confianca": "forte"
+  },
+  {
+   "termo": "veste",
+   "variantes": [
+    "vestes",
+    "vestidura",
+    "vestiduras",
+    "vestes de salvacao",
+    "manto",
+    "mantos",
+    "manto de justica"
+   ],
+   "significado": "A justica de Cristo posta sobre o crente como roupa que ele nao teceu — motivo de o coracao se regozijar no Senhor.",
+   "temas": [
+    "vestes",
+    "manto",
+    "justica",
+    "salvacao",
+    "regozijo",
+    "cobertura",
+    "vestido",
+    "alma se alegra"
+   ],
+   "base": "Isaias 61:10",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "oleo",
+   "variantes": [
+    "oleos",
+    "oleo de gozo",
+    "ornamento por cinza",
+    "veste de louvor por espirito angustiado"
+   ],
+   "significado": "A troca que Deus faz com o triste: cinza por beleza, tristeza por alegria, angustia por louvor.",
+   "temas": [
+    "oleo",
+    "gozo",
+    "troca",
+    "cinza",
+    "louvor",
+    "consolo",
+    "uncao",
+    "alegria"
+   ],
+   "base": "Isaias 61:3",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "arvore",
+   "variantes": [
+    "arvores",
+    "arvores de justica",
+    "plantacao do senhor",
+    "carvalhos de justica",
+    "plantados"
+   ],
+   "significado": "Os consolados de Siao firmados como arvores plantadas pelo proprio Senhor, para que Ele seja glorificado neles.",
+   "temas": [
+    "arvore",
+    "plantacao",
+    "firmeza",
+    "glorificar",
+    "frutificar",
+    "plantados"
+   ],
+   "base": "Isaias 61:3",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "luz",
+   "variantes": [
+    "luzes",
+    "levanta-te resplandece",
+    "a tua luz e chegada",
+    "a gloria do senhor nasceu sobre ti",
+    "trevas cobrirao a terra"
+   ],
+   "significado": "A vinda da gloria de Cristo sobre a Igreja justamente quando as trevas cobrem a terra e a escuridao os povos.",
+   "temas": [
+    "luz",
+    "levantar",
+    "resplandecer",
+    "gloria",
+    "despertar",
+    "vinda",
+    "amanhecer",
+    "trevas"
+   ],
+   "base": "Isaias 60:1-3; 9:2",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "luz dos gentios",
+   "variantes": [
+    "luz para as nacoes",
+    "salvacao ate a extremidade da terra",
+    "por alianca do povo"
+   ],
+   "significado": "Cristo — e o seu povo nele — enviado como luz que alcanca todas as nacoes ate os confins da terra.",
+   "temas": [
+    "luz",
+    "nacoes",
+    "missao",
+    "evangelho",
+    "salvacao",
+    "confins da terra",
+    "anunciar"
+   ],
+   "base": "Isaias 49:6; 42:6-7",
+   "confianca": "forte"
+  },
+  {
+   "termo": "aguia",
+   "variantes": [
+    "aguias",
+    "asas como aguias",
+    "os que esperam no senhor",
+    "renovarao as suas forcas",
+    "correrao e nao se cansarao"
+   ],
+   "significado": "A forca renovada de quem espera no Senhor: subir como aguia, correr sem cansar, caminhar sem desfalecer.",
+   "temas": [
+    "esperar",
+    "renovar as forcas",
+    "aguia",
+    "nao desmaiar",
+    "perseveranca",
+    "fe",
+    "cansaco"
+   ],
+   "base": "Isaias 40:31",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "barro",
+   "variantes": [
+    "barros",
+    "oleiro",
+    "oleiros",
+    "obra das tuas maos",
+    "nos o barro e tu o nosso oleiro"
+   ],
+   "significado": "A entrega do povo as maos que o formam — Deus como Pai e Oleiro, o crente como barro maleavel e obra das suas maos.",
+   "temas": [
+    "barro",
+    "oleiro",
+    "moldar",
+    "entrega",
+    "rendicao",
+    "obra das tuas maos",
+    "Pai",
+    "transformar"
+   ],
+   "base": "Isaias 64:8; 45:9; 29:16",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "caminho santo",
+   "variantes": [
+    "alto caminho",
+    "calcada",
+    "o caminho santo",
+    "voltarao os remidos"
+   ],
+   "significado": "A estrada de santidade aberta para os remidos voltarem a Siao com jubilo e alegria eterna sobre as suas cabecas.",
+   "temas": [
+    "caminho",
+    "santidade",
+    "remidos",
+    "voltar",
+    "cantico",
+    "alegria eterna",
+    "fugira a tristeza"
+   ],
+   "base": "Isaias 35:8-10",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "voz do que clama",
+   "variantes": [
+    "voz do que clama no deserto",
+    "preparai o caminho do senhor",
+    "endireitai as veredas"
+   ],
+   "significado": "O ministerio que prepara os coracoes para a vinda do Senhor, cumprido em Joao Batista e repetido em cada anuncio da volta de Cristo.",
+   "temas": [
+    "preparar",
+    "caminho",
+    "vinda do Senhor",
+    "clamor",
+    "arrependimento",
+    "anunciar",
+    "aplainar"
+   ],
+   "base": "Isaias 40:3-5",
+   "confianca": "forte"
+  },
+  {
+   "termo": "banquete",
+   "variantes": [
+    "banquetes",
+    "festa de coisas gordas",
+    "vinhos puros",
+    "ceia",
+    "casa do banquete",
+    "sala do banquete",
+    "mesa"
+   ],
+   "significado": "A ceia final que Deus prepara a todos os povos no seu monte — a comunhao consumada com o Senhor.",
+   "temas": [
+    "banquete",
+    "ceia",
+    "festa",
+    "mesa",
+    "comunhao",
+    "alegria eterna",
+    "convite"
+   ],
+   "base": "Isaias 25:6",
+   "confianca": "forte"
+  },
+  {
+   "termo": "lagrima",
+   "variantes": [
+    "lagrimas",
+    "enxugara as lagrimas de todos os rostos",
+    "tragada a morte",
+    "choro"
+   ],
+   "significado": "A vitoria final sobre a morte e o fim do choro — o veu do luto rasgado e o consolo consumado.",
+   "temas": [
+    "lagrimas",
+    "morte vencida",
+    "consolo",
+    "eternidade",
+    "esperanca",
+    "ceu",
+    "veu"
+   ],
+   "base": "Isaias 25:7-8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "brasa",
+   "variantes": [
+    "brasas",
+    "brasa viva",
+    "carvao em brasa do altar",
+    "tocou a minha boca",
+    "labios purificados"
+   ],
+   "significado": "A purificacao que vem do altar antes do envio — Deus limpa os labios de quem vai falar por Ele.",
+   "temas": [
+    "altar",
+    "fogo",
+    "brasa",
+    "purificacao",
+    "labios",
+    "santidade",
+    "avivamento",
+    "limpeza"
+   ],
+   "base": "Isaias 6:6-7",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "eis-me aqui",
+   "variantes": [
+    "eis me aqui",
+    "a quem enviarei",
+    "quem ha de ir por nos",
+    "envia-me a mim"
+   ],
+   "significado": "A resposta do servo purificado a comissao divina: disponibilidade total antes de saber o custo.",
+   "temas": [
+    "envia-me",
+    "chamado",
+    "disponibilidade",
+    "missao",
+    "obediencia",
+    "servir",
+    "consagracao"
+   ],
+   "base": "Isaias 6:8",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "palma das maos",
+   "variantes": [
+    "palmas das maos",
+    "nas palmas das minhas maos te tenho gravado",
+    "maos gravadas"
+   ],
+   "significado": "A memoria indelevel de Deus a respeito dos seus — figura que a Igreja le apontando para as maos feridas de Cristo.",
+   "temas": [
+    "maos",
+    "gravado",
+    "nao esquece",
+    "lembranca",
+    "amor",
+    "cuidado",
+    "cravos",
+    "nome escrito"
+   ],
+   "base": "Isaias 49:15-16",
+   "confianca": "forte"
+  },
+  {
+   "termo": "emanuel",
+   "variantes": [
+    "a virgem concebera",
+    "deus conosco",
+    "maravilhoso conselheiro",
+    "principe da paz",
+    "menino nascido"
+   ],
+   "significado": "A encarnacao anunciada: Deus habitando com o seu povo no Menino nascido, cujo governo e paz nao terao fim.",
+   "temas": [
+    "Emanuel",
+    "Deus conosco",
+    "nascimento",
+    "Principe da Paz",
+    "Maravilhoso",
+    "encarnacao",
+    "governo"
+   ],
+   "base": "Isaias 7:14; 9:6-7",
+   "confianca": "forte"
+  },
+  {
+   "termo": "escarlata",
+   "variantes": [
+    "escarlate",
+    "carmesim",
+    "brancos como a neve",
+    "como a branca la"
+   ],
+   "significado": "O perdao que muda a cor do pecado: a mancha vermelha tornada alvura pela obra de Deus, mediante convite ao arrazoado.",
+   "temas": [
+    "perdao",
+    "limpeza",
+    "neve",
+    "branco",
+    "sangue",
+    "purificacao",
+    "arrependimento",
+    "convite"
+   ],
+   "base": "Isaias 1:18",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "amado",
+   "variantes": [
+    "amados",
+    "meu amado",
+    "o meu amado",
+    "amado meu",
+    "o amado"
+   ],
+   "significado": "Jesus Cristo, o Esposo/Noivo da Igreja. Todo o livro tem Ele como o Amado que ama, protege, sustenta e volta para buscar a Sua esposa.",
+   "temas": [
+    "amado",
+    "noivo",
+    "esposo",
+    "Jesus",
+    "amor",
+    "Cordeiro",
+    "Rei"
+   ],
+   "base": "Cantares 2:16; 5:10-16; Joao 3:29; Mateus 9:15; Efesios 5:25; Apocalipse 19:7",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "jardim fechado",
+   "variantes": [
+    "horto fechado",
+    "jardim cerrado",
+    "meu jardim",
+    "jardins",
+    "habitas nos jardins"
+   ],
+   "significado": "A Igreja separada do mundo, cercada e exclusiva de Cristo. Fechado = ninguem entra senao o Dono; figura da santificacao e da guarda de Deus sobre um povo especial.",
+   "temas": [
+    "jardim",
+    "separacao",
+    "santidade",
+    "guardar",
+    "cerca",
+    "exclusivo",
+    "dentro"
+   ],
+   "base": "Cantares 4:12,16; 5:1; 6:2; 8:13",
+   "confianca": "forte"
+  },
+  {
+   "termo": "fonte selada",
+   "variantes": [
+    "manancial fechado",
+    "fonte dos jardins",
+    "poco de aguas vivas"
+   ],
+   "significado": "A vida do Espirito dentro da Igreja, selada e reservada so para o Senhor — ninguem mais bebe dela. Fonte que nao seca e nao se mistura.",
+   "temas": [
+    "fonte",
+    "agua viva",
+    "manancial",
+    "selo",
+    "Espirito Santo",
+    "beber",
+    "poco"
+   ],
+   "base": "Cantares 4:12,15; Joao 4:14; 7:37-39; Efesios 1:13",
+   "confianca": "forte"
+  },
+  {
+   "termo": "bandeira",
+   "variantes": [
+    "bandeiras",
+    "estandarte",
+    "estandartes",
+    "o seu estandarte sobre mim era o amor"
+   ],
+   "significado": "O amor de Cristo levantado sobre a Igreja como bandeira: cobre, identifica e declara de quem ela e. Na casa do banquete a Igreja come com Ele debaixo desse amor.",
+   "temas": [
+    "bandeira",
+    "estandarte",
+    "amor",
+    "banquete",
+    "mesa",
+    "cobertura",
+    "comunhao"
+   ],
+   "base": "Cantares 2:4; Romanos 8:35-39",
+   "confianca": "forte"
+  },
+  {
+   "termo": "passas",
+   "variantes": [
+    "passa",
+    "bolos de passas",
+    "sustentai-me com passas"
+   ],
+   "significado": "Alimento concentrado e de reserva — o sustento espiritual duradouro que segura a Igreja no caminho ate o arrebatamento. O Instituto ICM documenta so isso; leituras mais detalhadas de passas x macas nao foram achadas documentadas e nao devem ser tratadas como gabarito.",
+   "temas": [
+    "sustento",
+    "alimento",
+    "forca",
+    "reserva",
+    "caminho",
+    "desfalecer",
+    "fortalecer"
+   ],
+   "base": "Cantares 2:5",
+   "confianca": "forte"
+  },
+  {
+   "termo": "macieira",
+   "variantes": [
+    "maca",
+    "macas",
+    "confortai-me com macas",
+    "sombra da macieira",
+    "seu fruto e doce"
+   ],
+   "significado": "Jesus entre os filhos dos homens: da sombra (descanso e protecao) e fruto doce (alimento e deleite). Debaixo dela a Igreja se assenta e ali Ele a desperta.",
+   "temas": [
+    "sombra",
+    "fruto",
+    "doce",
+    "descanso",
+    "assentar",
+    "arvore",
+    "despertar"
+   ],
+   "base": "Cantares 2:3,5; 8:5",
+   "confianca": "forte"
+  },
+  {
+   "termo": "desfaleco de amor",
+   "variantes": [
+    "enferma de amor",
+    "doente de amor",
+    "desfalecer de amor"
+   ],
+   "significado": "A saudade que consome a Igreja pelo Noivo ausente — anseio pela volta dEle, nao um estado de fraqueza espiritual.",
+   "temas": [
+    "saudade",
+    "anseio",
+    "suspiro",
+    "amor",
+    "desfalecer",
+    "esperar",
+    "volta"
+   ],
+   "base": "Cantares 2:5; 5:8",
+   "confianca": "forte"
+  },
+  {
+   "termo": "voz",
+   "variantes": [
+    "vozes",
+    "a voz do meu amado",
+    "esta e a voz",
+    "faze-me ouvir a tua voz",
+    "a voz da rola"
+   ],
+   "significado": "O chamado pessoal de Cristo que a Igreja reconhece. A ICM tem hino proprio sobre isso ('Esta e a Voz, a Voz do Meu Amado').",
+   "temas": [
+    "voz",
+    "ouvir",
+    "chamado",
+    "reconhecer",
+    "falar",
+    "despertar"
+   ],
+   "base": "Cantares 2:8,14; 5:2; 8:13; Joao 10:4,27",
+   "confianca": "forte"
+  },
+  {
+   "termo": "dormir",
+   "variantes": [
+    "dormia",
+    "adormecida",
+    "adormecidos",
+    "eu dormia mas o meu coracao velava",
+    "sono"
+   ],
+   "significado": "A Igreja sonolenta no tempo do fim: o coracao ainda ama, mas o corpo nao se levanta. Perigo de perder a hora da visitacao.",
+   "temas": [
+    "dormir",
+    "vigiar",
+    "despertar",
+    "hora",
+    "virgens",
+    "prontidao",
+    "velar"
+   ],
+   "base": "Cantares 5:2; Mateus 25:5-6; Romanos 13:11",
+   "confianca": "forte"
+  },
+  {
+   "termo": "tunica",
+   "variantes": [
+    "tunicas",
+    "ja despi a minha tunica",
+    "como a tornarei a vestir",
+    "ja lavei os meus pes"
+   ],
+   "significado": "O comodismo que faz a Igreja demorar a abrir — desculpas religiosas ('ja fiz a minha parte') na hora exata do chamado. Leitura provavel, apoiada no paralelo das desculpas de Lucas 14.",
+   "temas": [
+    "comodismo",
+    "demora",
+    "desculpa",
+    "acomodar",
+    "vestir",
+    "levantar"
+   ],
+   "base": "Cantares 5:3; Lucas 14:18-20",
+   "confianca": "provavel"
+  },
+  {
+   "termo": "raposinha",
+   "variantes": [
+    "raposinhas",
+    "raposa",
+    "raposas",
+    "apanhai-nos as raposas"
+   ],
+   "significado": "As coisas pequenas — pecados miudos, contendas, descuidos — que o adversario usa para comer a FLOR antes que vire fruto. Atacam exatamente quando a vinha esta florescendo.",
+   "temas": [
+    "raposinhas",
+    "vinha",
+    "flor",
+    "fruto",
+    "guardar",
+    "santificacao",
+    "pequenos pecados",
+    "zelo"
+   ],
+   "base": "Cantares 2:15; Ezequiel 13:4",
+   "confianca": "forte"
+  },
+  {
+   "termo": "lirio",
+   "variantes": [
+    "lirios",
+    "lirio entre os espinhos",
+    "lirio dos vales",
+    "apascenta entre os lirios"
+   ],
+   "significado": "A Igreja fiel guardando pureza e beleza cercada de espinhos — no meio do mundo e da religiosidade falsa. E entre os lirios que o Amado apascenta.",
+   "temas": [
+    "lirio",
+    "espinhos",
+    "pureza",
+    "meio do mundo",
+    "separada",
+    "apascentar",
+    "branco"
+   ],
+   "base": "Cantares 2:1-2,16; 6:2-3",
+   "confianca": "forte"
+  },
+  {
+   "termo": "rosa de sarom",
+   "variantes": [
+    "rosa de saron",
+    "rosa",
+    "eu sou a rosa de sarom",
+    "lirio dos vales"
+   ],
+   "significado": "Beleza que floresce no campo aberto. Ha duas leituras dentro da propria ICM: o Instituto ICM aplica a IGREJA que floresce no tempo final, mas a hinologia da ICM aplica a JESUS ('Ele e a Rosa de Sarom', 'Jesus, o Lirio dos Vales'). Para buscar louvor, os dois lados valem.",
+   "temas": [
+    "rosa de Sarom",
+    "lirio dos vales",
+    "florescer",
+    "primavera",
+    "beleza",
+    "campo"
+   ],
+   "base": "Cantares 2:1",
+   "confianca": "forte"
+  },
+  {
+   "termo": "unguento",
+   "variantes": [
+    "unguentos",
+    "unguento derramado",
+    "perfume",
+    "perfumes",
+    "nardo",
+    "aromas",
+    "balsamo",
+    "cheiro"
+   ],
+   "significado": "O Nome e a uncao de Cristo — perfume derramado que atrai. Na Igreja, o bom cheiro do Espirito que se exala e faz as virgens correrem atras dEle.",
+   "temas": [
+    "perfume",
+    "uncao",
+    "aroma",
+    "nardo",
+    "oleo",
+    "nome",
+    "derramado",
+    "cheiro"
+   ],
+   "base": "Cantares 1:3,12; 4:10-11,16; 2 Corintios 2:14-15; 1 Joao 2:20",
+   "confianca": "forte"
+  },
+  {
+   "termo": "mirra",
+   "variantes": [
+    "ramalhete de mirra",
+    "morara entre os meus seios",
+    "monte da mirra",
+    "cacho de chipre"
+   ],
+   "significado": "Cristo crucificado guardado junto ao coracao — a mirra e a especiaria da morte e do sepultamento. A Igreja nao larga a cruz do peito.",
+   "temas": [
+    "mirra",
+    "cruz",
+    "coracao",
+    "guardar",
+    "morte",
+    "ramalhete",
+    "sacrificio"
+   ],
+   "base": "Cantares 1:13-14; 4:6; 5:5; Marcos 15:23; Joao 19:39",
+   "confianca": "forte"
+  },
+  {
+   "termo": "selo",
+   "variantes": [
+    "selos",
+    "selado",
+    "selada",
+    "poe-me como selo sobre o teu coracao",
+    "selo sobre o teu braco",
+    "muitas aguas"
+   ],
+   "significado": "A marca do Espirito Santo: posse, pertenca e garantia. Amor forte como a morte, que as muitas aguas nao apagam nem os rios afogam — selo no coracao (afeto) e no braco (forca/obra).",
+   "temas": [
+    "selo",
+    "coracao",
+    "braco",
+    "fogo",
+    "chama",
+    "muitas aguas",
+    "amor forte",
+    "pertencer",
+    "garantia"
+   ],
+   "base": "Cantares 8:6-7; Efesios 1:13; 4:30; 2 Corintios 1:22; Romanos 8:35-39",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "sou do meu amado",
+   "variantes": [
+    "eu sou do meu amado",
+    "o meu amado e meu e eu sou dele",
+    "o meu amado e meu",
+    "ele me tem afeicao"
+   ],
+   "significado": "A certeza da pertenca mutua e exclusiva entre Cristo e a Igreja. A ICM tem hino direto sobre este verso ('Eu Sou do Meu Amado e Ele Me Tem Afeicao').",
+   "temas": [
+    "sou do meu amado",
+    "pertenco",
+    "meu amado e meu",
+    "afeicao",
+    "alianca",
+    "exclusivo",
+    "seguranca"
+   ],
+   "base": "Cantares 2:16; 6:3; 7:10; 1 Corintios 6:19-20",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "pomba",
+   "variantes": [
+    "pombas",
+    "pomba minha",
+    "a minha pomba",
+    "olhos de pomba",
+    "o oculto das ladeiras"
+   ],
+   "significado": "A Igreja escondida na Rocha que e Cristo — mansa, simples, de vista unica. Ele pede que ela mostre a face e faca ouvir a voz de dentro do esconderijo.",
+   "temas": [
+    "pomba",
+    "rocha",
+    "fenda",
+    "esconderijo",
+    "refugio",
+    "mansidao",
+    "face",
+    "voz",
+    "abrigo"
+   ],
+   "base": "Cantares 1:15; 2:14; 5:2; 6:9; Exodo 33:22; 1 Corintios 10:4",
+   "confianca": "forte"
+  },
+  {
+   "termo": "inverno",
+   "variantes": [
+    "passou o inverno",
+    "a chuva cessou",
+    "aparecem as flores",
+    "tempo de cantar",
+    "primavera"
+   ],
+   "significado": "A virada do tempo: acabou o periodo de sofrimento e escondimento, chegou o tempo de florescer e de cantar — o tempo da visitacao e do arrebatamento.",
+   "temas": [
+    "inverno",
+    "primavera",
+    "flores",
+    "cantar",
+    "tempo",
+    "chuva",
+    "passou",
+    "novo tempo"
+   ],
+   "base": "Cantares 2:11-13",
+   "confianca": "forte"
+  },
+  {
+   "termo": "rola",
+   "variantes": [
+    "rolas",
+    "a voz da rola ouve-se na nossa terra",
+    "zamir",
+    "passaro que canta"
+   ],
+   "significado": "O canto que so se ouve no tempo certo, anunciando o encontro. O Instituto ICM le a rola como a Igreja/pomba do Espirito arrulhando, e o cantor da primavera (zamir) como a palavra revelada de Jesus que desperta a Igreja.",
+   "temas": [
+    "rola",
+    "canto",
+    "cantar",
+    "voz",
+    "anuncio",
+    "tempo",
+    "despertar"
+   ],
+   "base": "Cantares 2:12",
+   "confianca": "forte"
+  },
+  {
+   "termo": "levanta-te",
+   "variantes": [
+    "levanta te",
+    "levanta-te amiga minha",
+    "formosa minha e vem",
+    "vem comigo do libano",
+    "levantai-vos"
+   ],
+   "significado": "O convite do Noivo para a Igreja se levantar e SAIR com Ele — deixar os covis dos leoes e os montes dos leopardos e subir.",
+   "temas": [
+    "levanta-te",
+    "vem",
+    "sair",
+    "subir",
+    "chamado",
+    "convite",
+    "partir"
+   ],
+   "base": "Cantares 2:10,13; 4:8; Apocalipse 22:17",
+   "confianca": "forte"
+  },
+  {
+   "termo": "gamo",
+   "variantes": [
+    "gamos",
+    "filho dos veados",
+    "corco",
+    "saltando sobre os montes",
+    "montes de beter"
+   ],
+   "significado": "A vinda rapida do Senhor, saltando por cima de todo obstaculo. Fecha o livro como pedido: 'Vem depressa, amado meu.'",
+   "temas": [
+    "gamo",
+    "montes",
+    "saltar",
+    "depressa",
+    "vinda",
+    "volta",
+    "correr"
+   ],
+   "base": "Cantares 2:8-9,17; 8:14",
+   "confianca": "forte"
+  },
+  {
+   "termo": "guarda",
+   "variantes": [
+    "guardas",
+    "guardas que rondavam pela cidade",
+    "guardas dos muros",
+    "espancaram-me",
+    "tiraram-me o manto"
+   ],
+   "significado": "Os que deviam cuidar da esposa e em vez disso a ferem e a expoem — lideres e religiosos que machucam quem esta buscando o Amado. Ainda assim ela nao desiste da busca. Leitura provavel, apoiada em Ezequiel 34.",
+   "temas": [
+    "guardas",
+    "muros",
+    "ferir",
+    "manto",
+    "cidade",
+    "buscar",
+    "perseguicao"
+   ],
+   "base": "Cantares 3:3; 5:7; Ezequiel 34:1-6",
+   "confianca": "provavel"
+  },
+  {
+   "termo": "de noite busquei",
+   "variantes": [
+    "em meu leito busquei",
+    "busquei-o e nao o achei",
+    "rodearei a cidade",
+    "achei-o e nao o larguei"
+   ],
+   "significado": "A Igreja quando perde a consciencia da presenca: levanta, procura, pergunta, e quando acha nao larga mais. Busca que nao aceita ficar sem Ele.",
+   "temas": [
+    "buscar",
+    "achar",
+    "noite",
+    "nao largar",
+    "presenca",
+    "procurar",
+    "saudade"
+   ],
+   "base": "Cantares 3:1-4; 5:6",
+   "confianca": "forte"
+  },
+  {
+   "termo": "filhas de jerusalem",
+   "variantes": [
+    "filhas de siao",
+    "virgens sem numero",
+    "rainhas e concubinas"
+   ],
+   "significado": "A multidao religiosa em volta que observa, pergunta e admira, mas nao tem a mesma intimidade. Contraste com a 'unica' pomba. Leitura provavel.",
+   "temas": [
+    "filhas de Jerusalem",
+    "contraste",
+    "testemunho",
+    "multidao",
+    "unica",
+    "intimidade"
+   ],
+   "base": "Cantares 1:5; 5:8-9,16; 6:8-9",
+   "confianca": "provavel"
+  },
+  {
+   "termo": "exercito com bandeiras",
+   "variantes": [
+    "formidavel como um exercito",
+    "terrivel como um exercito",
+    "alva do dia",
+    "formosa como a lua",
+    "brilhante como o sol"
+   ],
+   "significado": "A Igreja manifestada em gloria e em ordem: bela para o Amado e temivel para o inimigo. Sobe como a alva, brilha como o sol.",
+   "temas": [
+    "exercito",
+    "bandeiras",
+    "gloria",
+    "sol",
+    "lua",
+    "alva",
+    "manifestacao",
+    "vitoria"
+   ],
+   "base": "Cantares 6:4,10",
+   "confianca": "forte"
+  },
+  {
+   "termo": "morena",
+   "variantes": [
+    "eu sou morena porem amavel",
+    "o sol me queimou",
+    "tendas de quedar",
+    "cortinas de salomao"
+   ],
+   "significado": "A Igreja marcada pelo sol da aflicao e do trabalho — por fora queimada, mas amavel e formosa aos olhos do Amado. Ele nao olha a marca, olha o coracao. Leitura provavel.",
+   "temas": [
+    "morena",
+    "formosa",
+    "amavel",
+    "aflicao",
+    "aceita",
+    "marcas",
+    "trabalho"
+   ],
+   "base": "Cantares 1:5-6",
+   "confianca": "provavel"
+  },
+  {
+   "termo": "vento",
+   "variantes": [
+    "ventos",
+    "vento norte",
+    "vento sul",
+    "assopra no meu jardim",
+    "destilem os seus aromas"
+   ],
+   "significado": "O Espirito soprando sobre o jardim — o vento norte (frio, prova) e o vento sul (calor, bencao) — para que o perfume da Igreja saia e chegue ao Amado. O aroma so sai quando o vento bate.",
+   "temas": [
+    "vento",
+    "Espirito",
+    "soprar",
+    "jardim",
+    "aromas",
+    "prova",
+    "exalar",
+    "avivamento"
+   ],
+   "base": "Cantares 4:16; Joao 3:8; Tiago 1:2-4",
+   "confianca": "forte"
+  },
+  {
+   "termo": "vem depressa",
+   "variantes": [
+    "apressa-te amado meu",
+    "montes dos aromas",
+    "vem amado meu",
+    "maranata",
+    "ora vem"
+   ],
+   "significado": "O ultimo verso do livro e o clamor da esposa pela volta do Esposo — o proprio 'Maranata' de Apocalipse. A Igreja fecha o cantico pedindo que Ele venha.",
+   "temas": [
+    "vem",
+    "depressa",
+    "maranata",
+    "volta",
+    "clamor",
+    "ora vem",
+    "arrebatamento"
+   ],
+   "base": "Cantares 8:14; Apocalipse 22:17,20",
+   "confianca": "forte"
+  },
+  {
+   "termo": "parede",
+   "variantes": [
+    "paredes",
+    "muro que separa",
+    "separacao",
+    "esta detras da nossa parede"
+   ],
+   "significado": "As dificuldades e os obstaculos que impedem a igreja de ver o Senhor, embora Ele esteja perto. A ICM le Ct 2:9 junto com Isaias: 'as vossas iniquidades fazem separacao entre vos e o vosso Deus' — mas o Senhor 'esta nos ouvindo, aceitando as nossas suplicas, os nossos jejuns; Ele esta perto dos que O invocam em verdade'.",
+   "temas": [
+    "dificuldade",
+    "obstaculo",
+    "separacao",
+    "perto",
+    "clamor",
+    "jejum",
+    "suplica",
+    "Ele esta aqui"
+   ],
+   "base": "Cantares 2:9; Isaias 59:2; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "grade",
+   "variantes": [
+    "grades",
+    "reluzindo pelas grades"
+   ],
+   "significado": "As barreiras — e a ICM ensina que muitas vezes e o proprio servo que as coloca. Sobre Ct 2:9: 'grades falam de prisao, mas Ele e a luz do mundo, e para os que seguem ha luz'; e 'o Senhor quer dar a bencao, mas as vezes o servo poe as grades'.",
+   "temas": [
+    "barreira",
+    "prisao",
+    "cativeiro",
+    "libertacao",
+    "luz",
+    "revelacao",
+    "abre",
+    "bencao retida"
+   ],
+   "base": "Cantares 2:9; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "janela",
+   "variantes": [
+    "janelas",
+    "janelas do coracao",
+    "olhando pelas janelas"
+   ],
+   "significado": "Os olhos e o coracao do servo, por onde o Senhor olha para ver se O estao procurando: 'Ele esta olhando para o nosso coracao, para os nossos olhos, a ver se O estao procurando'; e vendo 'as nossas necessidades, como curas, batismo com o Espirito Santo'.",
+   "temas": [
+    "coracao",
+    "olhar",
+    "buscar",
+    "necessidade",
+    "cura",
+    "batismo no Espirito",
+    "revelacao",
+    "Ele me ve"
+   ],
+   "base": "Cantares 2:9; Apocalipse 1:14; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "azeite",
+   "variantes": [
+    "azeites",
+    "oleo da candeia",
+    "provimento de azeite",
+    "orvalho de hermom",
+    "reserva de azeite"
+   ],
+   "significado": "A provisao do Espirito Santo para a hora da noite — o que separa a igreja fiel da infiel. 'As dez eram iguais ate certo ponto: estavam esperando o esposo, tinham candeias e vestes. A diferenca unica e que cinco proveram-se do azeite!' A igreja infiel sabe que precisa de oleo, mas 'nao vao a venda, ao lugar onde se encontra o azeite'.",
+   "temas": [
+    "azeite",
+    "oleo",
+    "Espirito Santo",
+    "preparo",
+    "reserva",
+    "virgens prudentes",
+    "uncao",
+    "enchei-vos"
+   ],
+   "base": "Cantares 5:2; Mateus 25:1-13; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "candeia",
+   "variantes": [
+    "candeias",
+    "lampada",
+    "lampadas",
+    "luzes acesas",
+    "fogo"
+   ],
+   "significado": "Simbolo do Espirito Santo, que nao pode ficar sujeito ao comodismo: 'a candeia e simbolo do Espirito Santo, e nao o podemos colocar sujeito ao nosso comodismo. Ele e feito para ser posto no alto'. Na hora da noite, 'a igreja fiel tem candeia, azeite e fogo, para que esteja acesa nesta hora... luz para a caminhada, que se faz urgente'.",
+   "temas": [
+    "candeia",
+    "lampada",
+    "luz acesa",
+    "fogo",
+    "Espirito Santo",
+    "vigilancia",
+    "brilhar",
+    "caminhada"
+   ],
+   "base": "Cantares 3:1; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "cama",
+   "variantes": [
+    "camas",
+    "leito",
+    "leitos",
+    "de noite busquei em minha cama"
+   ],
+   "significado": "Simbolo do comodismo espiritual: 'cama e simbolo de comodismo. Nao se coloca uma candeia debaixo da cama, disse Jesus.' Ligado a igreja 'deitada, preguicosa, sem disposicao para levantar-se para trabalhar'.",
+   "temas": [
+    "comodismo",
+    "preguica",
+    "despertar",
+    "levanta-te",
+    "sono",
+    "acorda igreja"
+   ],
+   "base": "Cantares 3:1; 5:2; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "noite",
+   "variantes": [
+    "noites",
+    "de noite",
+    "cair das sombras",
+    "trevas",
+    "ultima hora"
+   ],
+   "significado": "O periodo de escuridao espiritual do fim do tempo, em que 'so a igreja fiel, a igreja no Espirito, discerne esta hora e anda as claras... porque caminha com Jesus'. E a hora de que Joao diz: 'filhinhos, e ja a ultima hora'. Trata do preparo da igreja para o arrebatamento.",
+   "temas": [
+    "noite",
+    "trevas",
+    "ultima hora",
+    "discernir o tempo",
+    "vigiar",
+    "luz",
+    "fim dos tempos"
+   ],
+   "base": "Cantares 3:1; 1 Joao 2:18; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "meia-noite",
+   "variantes": [
+    "meia noite",
+    "hora da meia-noite",
+    "ai vem o esposo",
+    "sai-lhe ao encontro",
+    "antes que refresque o dia"
+   ],
+   "significado": "A hora exata do arrebatamento no relogio profetico da ICM: 'neste capitulo a caracteristica e da hora do arrebatamento, a Meia-Noite. A igreja e vista pelo Senhor preparada para ouvir a sua voz, os ultimos adornos foram colocados... a igreja da ultima hora, a igreja da Meia-Noite', casada com Mt 25:6.",
+   "temas": [
+    "meia-noite",
+    "clamor",
+    "ai vem o esposo",
+    "arrebatamento",
+    "encontro",
+    "hora chegada",
+    "prontos"
+   ],
+   "base": "Cantares 4:6; Mateus 25:6; Cantares de Salomao - Analise e Comentarios, ICM/Presbiterio Espirito-Santense",
+   "confianca": "explicita"
+  },
+  {
+   "termo": "primicias",
+   "variantes": [
+    "primicias",
+    "primicia",
+    "molho",
+    "ceifa",
+    "cevada",
+    "primogenito"
+   ],
+   "significado": "A ressurreição de Cristo. O molho arrancado da terra e movido perante o Senhor é Jesus tirado da terra e apresentado vivo ao Pai — o primeiro que ressuscitou, e por isso a igreja tem direito à ressurreição.",
+   "temas": [
+    "ressurreicao",
+    "ressuscitou",
+    "vive",
+    "primogenito",
+    "vida",
+    "venceu a morte",
+    "direito a ressurreicao",
+    "volta de Jesus"
+   ],
+   "confianca": "explicita",
+   "base": "Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal"
+  },
+  {
+   "termo": "expiacao",
+   "variantes": [
+    "expiacao",
+    "jejum",
+    "jejuarao",
+    "arrependei",
+    "arrependimento"
+   ],
+   "significado": "O preparo da igreja: arrependimento, jejum e santificação. O jejum é recurso da graça, e sem santificação ninguém verá o Senhor.",
+   "temas": [
+    "arrependimento",
+    "jejum",
+    "santificacao",
+    "consagracao",
+    "novo nascimento",
+    "preparo",
+    "recursos da graca",
+    "perdao"
+   ],
+   "confianca": "explicita",
+   "base": "Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal"
+  },
+  {
+   "termo": "israel",
+   "variantes": [
+    "israel",
+    "povo de israel",
+    "filhos de israel"
+   ],
+   "significado": "Tipo da Igreja. O plano que Deus estabeleceu para Israel é figura do plano que Ele estabeleceu para a igreja — a saída do Egito, a travessia, a caminhada e a entrada na terra.",
+   "temas": [
+    "igreja",
+    "povo de Deus",
+    "plano de Deus",
+    "promessa",
+    "eleitos",
+    "caminhada"
+   ],
+   "confianca": "explicita",
+   "base": "Tipologia Bíblica — ICM, \"As sete festas de Israel\" (10/08/2026), transcrição oficial do canal"
+  }
+ ],
+ "gerado_em": "2026-08-11",
+ "aviso": "Este dicionario e uma FERRAMENTA DE BUSCA. Ele serve para, a partir das palavras de um texto biblico, sugerir temas e figuras que ajudem a achar louvores e hinos no acervo. Onde existe doutrina publicada da Igreja Cristã Maranata (comentarios do Instituto ICM, cursos do Instituto Biblico, boletins e a himnologia), o dicionario segue essa doutrina e cita a fonte no campo 'base'. Onde nao havia fonte, a figura foi marcada com confianca 'provavel' ou nao foi incluida. Este arquivo NAO substitui e NAO imita revelacao: quem revela a Palavra e o Senhor, pelo Espirito Santo, ao ministerio e a igreja. Use como indice de busca, nunca como palavra de Deus."
 }

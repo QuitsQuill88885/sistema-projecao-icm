@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.5.9"
+VERSAO = "2.5.10"
 PORTA = 8765
 
 def raiz():
@@ -352,6 +352,74 @@ def _completar_thread():
         COMPLETA.update({"erro": "Não consegui baixar. Confira a internet e tente de "
                                  "novo — nada foi mexido.",
                          "fim": True, "rodando": False})
+
+
+def restaurar_tudo(apagar_conteudo=False):
+    """Devolve o Sistema ao estado de fábrica.
+
+    Apaga o que o OPERADOR criou — configurações, histórico, louvores, fundos e
+    apresentações importadas. O conteúdo pesado (animações, cifras, melodias)
+    só sai se for pedido: são 590 MB que levaram um pendrive para chegar aqui,
+    e apagar isso por engano seria cruel.
+    """
+    alvos = ["configuracoes.json", "historico.json", "Meus louvores",
+             "Meus fundos", "Minhas apresentações", "slides_importados"]
+    if apagar_conteudo:
+        alvos += ["animacoes", "cifras", "melodias"]
+    apagados = []
+    for nome in alvos:
+        p = os.path.join(DADOS_USUARIO, nome)
+        try:
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+                apagados.append(nome)
+            elif os.path.isfile(p):
+                os.remove(p)
+                apagados.append(nome)
+        except Exception:
+            pass
+    return apagados
+
+
+def _roteiro_de_saida(comandos, reabrir=None):
+    """Escreve um .bat que roda DEPOIS que o Sistema fechar.
+
+    O Windows não deixa um programa apagar a si mesmo enquanto roda. Então quem
+    apaga é um roteirinho solto, que espera o processo morrer, faz o serviço e
+    some — é assim que todo desinstalador de verdade funciona.
+    """
+    import tempfile
+    linhas = ["@echo off", "chcp 65001 >nul",
+              ":esperar",
+              'tasklist /fi "imagename eq Sistema.exe" | find /i "Sistema.exe" >nul',
+              "if not errorlevel 1 (timeout /t 1 /nobreak >nul & goto esperar)"]
+    linhas += comandos
+    if reabrir:
+        linhas.append('start "" "%s"' % reabrir)
+    bat = os.path.join(tempfile.mkdtemp(), "sistema_servico.bat")
+    with io.open(bat, "w", encoding="utf-8") as f:
+        f.write("\r\n".join(linhas) + "\r\n(goto) 2>nul & del \"%~f0\"\r\n")
+    subprocess.Popen(["cmd", "/c", bat], **SEM_JANELA)
+    return bat
+
+
+def desinstalar(apagar_dados=False):
+    """Tira o Sistema do computador.
+
+    O programa mora em Programas\\Sistema; os atalhos, na Área de Trabalho e no
+    menu Iniciar. Os DADOS do operador só somem se ele mandar — e a tela
+    pergunta isso com todas as letras antes.
+    """
+    prog = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Sistema")
+    cmds = ['rmdir /s /q "%s"' % prog]
+    for pasta in (os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"),
+                  os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows",
+                               "Start Menu", "Programs")):
+        cmds.append('del /q "%s" 2>nul' % os.path.join(pasta, "Sistema.lnk"))
+    if apagar_dados:
+        cmds.append('rmdir /s /q "%s"' % DADOS_USUARIO)
+    _roteiro_de_saida(cmds)
+    return True
 
 
 def pendrives_plugados():
@@ -777,6 +845,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                                      "erro": "", "fim": False})
                     threading.Thread(target=_atualizar_thread, daemon=True).start()
             return self._json({"ok": True})
+        if self.path.startswith("/api/restaurar"):       # estado de fábrica
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                d = json.loads(self.rfile.read(n).decode("utf-8")) if n else {}
+                apagados = restaurar_tudo(bool(d.get("conteudo")))
+                # reabrir depois de fechar: restaurar sem reiniciar deixava o
+                # programa na tela com as coisas antigas na memória
+                exe = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",
+                                   "Sistema", "Sistema.exe")
+                _roteiro_de_saida([], reabrir=exe if os.path.exists(exe) else None)
+                return self._json({"ok": True, "apagados": apagados})
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
+        if self.path.startswith("/api/desinstalar"):
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                d = json.loads(self.rfile.read(n).decode("utf-8")) if n else {}
+                desinstalar(bool(d.get("dados")))
+                return self._json({"ok": True})
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
         if self.path.startswith("/api/conteudo"):        # começa a completar
             with TRAVA:
                 if not COMPLETA["rodando"]:

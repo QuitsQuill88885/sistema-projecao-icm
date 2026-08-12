@@ -509,3 +509,60 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .cred-bloco p{margin:0 0 9px}
 .cred-bloco p:last-child{margin:0}
 .cred-bloco b{color:#a9bcd8;font-weight:600}
+
+/* ---- buscar o versículo pelo que ele DIZ ----
+   Quando o operador digita algo que não é nome de livro, a coluna dos livros
+   dá lugar a esta: o pastor cita, ele acha sem saber a referência. */
+.busca-trecho .trecho-cab{padding:8px 12px;font-size:11.5px;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ouro);background:#ffffff08}
+.item-trecho{cursor:pointer;padding:9px 12px}
+.item-trecho b{display:block;color:var(--ouro);font-size:12.5px;margin-bottom:2px}
+.item-trecho small{display:block;color:#a9bcd8;font-size:12px;line-height:1.35}
+.item-trecho:hover{background:#ffffff10}
+
+/* ---- o clique tem que dar sinal de vida ----
+   No meio do culto, botão que não responde faz o operador clicar de novo. */
+@keyframes pulso-btn{0%{transform:scale(1)}38%{transform:scale(.94);filter:brightness(1.35)}100%{transform:scale(1)}}
+.pulso{animation:pulso-btn .4s ease}
+/* cronômetro pausado: o número pisca devagar e o botão fica marcado */
+@keyframes pisca-pausa{0%,100%{opacity:1}50%{opacity:.42}}
+.timer-display.pausado{animation:pisca-pausa 1.25s ease-in-out infinite;color:#f5d76e}
+.big-btn.ativo{background:#3a2f12;border-color:var(--ouro);color:#f5d76e}
+
+/* ---- o seletor de tempo do cronômetro ----
+   As setinhas do Windows são miúdas e feias; estas são do Sistema, do tamanho
+   do dedo. O passo cresce sozinho: 1 min no começo, 30 min depois das 3 horas. */
+.passo-num{display:flex;align-items:center;gap:6px;background:#0f1c31;border:1px solid var(--borda);
+  border-radius:11px;padding:4px 6px}
+.passo-num input[type=number]{width:64px;text-align:center;border:none;background:transparent;
+  font-size:16px;font-weight:600;color:var(--txt);padding:6px 0;-moz-appearance:textfield}
+.passo-num input[type=number]::-webkit-outer-spin-button,
+.passo-num input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pn-b{width:34px;height:34px;border-radius:9px;background:#16253c;color:#cfe0f5;font-size:19px;
+  font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;
+  transition:background .13s,transform .13s}
+.pn-b:hover{background:#22385a}
+.pn-b:active{transform:scale(.92)}
+.pn-rot{min-width:62px;font-size:13px;color:var(--ouro);font-weight:600;text-align:center}
+
+/* ---- nada de selecionar texto onde não se escreve ----
+   Um arrasto sem querer pintava a letra de azul na prévia (e dava para copiar
+   o louvor). Os campos de digitar continuam normais, claro. */
+body{-webkit-user-select:none;user-select:none}
+input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
+  -webkit-user-select:text;user-select:text}
+
+/* ---- o "hidden" tem que esconder de verdade ----
+   .reset-row tem display:flex, e a classe vence o [hidden] do navegador: a
+   linha "Completar o Sistema" aparecia mesmo com todo o conteúdo instalado. */
+[hidden]{display:none!important}
+
+/* ---- a melhor versão de todas ----
+   Só a letra dourada dava a entender o contrário do que queria dizer. Quando
+   está atualizado E completo, a linha inteira veste ouro — discreto, sem
+   gritar — e o "Buscar" recua: continua funcionando, mas não chama. */
+.reset-row.melhor{background:linear-gradient(90deg,#2a2312 0%,#1a1710 62%,transparent 100%);
+  border-color:#6b5620;box-shadow:inset 3px 0 0 var(--ouro)}
+.reset-row.melhor b{color:#f5d76e}
+.reset-row.melhor .big-btn{background:#20304a;color:#8fa8cf;opacity:.62;font-weight:500}
+.reset-row.melhor .big-btn:hover{opacity:1;background:#2a3d5c;color:#cfe0f5}

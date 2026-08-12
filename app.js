@@ -890,7 +890,11 @@ let cifraDados = null,      // a resposta de /api/cifra do louvor aberto
     cifraDesloc = 0;        // quantos semitons acima/abaixo do impresso
 
 function escaparCifra(t) {
-  return (t || '').split('&').join('&amp;').split('<').join('&lt;');
+  // O marcador invisível (\x01) é o que pinta o trecho de amarelo NO TELÃO. Na folha de
+  // cifra ele não é interpretado e aparecia como caractere quebrado — 2.040
+  // vezes no acervo. Aqui ele sai; o "(BIS)" que ele envolvia continua lá.
+  return (t || '').replace(/\u0001/g, '')
+    .split('&').join('&amp;').split('<').join('&lt;');
 }
 
 /* Desenha a linha de acordes ACIMA da letra, cada um na coluna que veio do PDF.
@@ -1109,14 +1113,87 @@ function marcarSlide() {
 }
 
 // ---------- BÍBLIA ----------
+// A caixa da Bíblia faz DUAS coisas, e o operador não precisa saber disso.
+// Enquanto o que ele digita for nome de livro — inteiro, sem acento, ou a
+// abreviação que a mão escreve ("1jo", "sl", "gn") — ela filtra os livros.
+// Quando não for livro nenhum, ela vira busca por TRECHO: o pastor cita e o
+// operador acha o versículo sem saber a referência.
 function renderLivros(filtro) {
-  const cont = $('#lista-livros'); cont.innerHTML = '';
-  const f = (filtro || '').toLowerCase().trim();
+  const cont = $('#lista-livros'), tre = $('#lista-trechos');
+  cont.innerHTML = '';
+  const q = soLetras(filtro || '').replace(/\s+/g, '');
+  let achou = 0;
   BIBLIA.ordem.forEach(nome => {
-    if (f && !nome.toLowerCase().includes(f)) return;
+    if (q) {
+      const n = soLetras(nome).replace(/\s+/g, '');
+      let bate = n.includes(q);
+      if (!bate && n[0] === q[0]) {          // subsequência: "1co" acha 1 Coríntios
+        let i = 0;
+        for (const ch of n) if (ch === q[i]) i++;
+        bate = i === q.length;
+      }
+      if (!bate) return;
+    }
+    achou++;
     const d = document.createElement('div'); d.className = 'item'; d.textContent = nome;
     d.onclick = () => selecionarLivro(nome, d);
     cont.appendChild(d);
+  });
+  const porTrecho = !achou && soLetras(filtro || '').length >= 4;
+  cont.classList.toggle('oculto', porTrecho);
+  if (tre) {
+    tre.classList.toggle('oculto', !porTrecho);
+    if (porTrecho) buscarTrecho(filtro, tre);
+  }
+}
+// ---- buscar o versículo pelo que ele DIZ ----
+// O índice nasce na primeira busca e fica na memória: montar sempre custaria
+// meio segundo do culto, e montar no arranque custaria a abertura do programa.
+let versIndice = null;
+function indiceVersiculos() {
+  if (versIndice) return versIndice;
+  versIndice = [];
+  BIBLIA.ordem.forEach((livro, li) => {
+    (BIBLIA.livros[livro] || []).forEach((cap, ci) => {
+      for (const v in cap) versIndice.push([li, ci + 1, +v, soLetras(cap[v])]);
+    });
+  });
+  return versIndice;
+}
+function buscarTrecho(texto, alvo) {
+  const q = soLetras(texto);
+  if (q.length < 4) { alvo.innerHTML = ''; return; }
+  const termos = q.split(' ').filter(p => p.length > 2);
+  const achados = [];
+  for (const [li, cap, v, txt] of indiceVersiculos()) {
+    if (!txt.includes(q)) {                       // frase inteira é o melhor caso
+      let n = 0;
+      for (const t of termos) if (txt.includes(t)) n++;
+      if (n < termos.length) continue;            // todas as palavras, em qualquer ordem
+      achados.push([li, cap, v, 1]);
+    } else achados.push([li, cap, v, 2]);
+    if (achados.length > 400) break;
+  }
+  achados.sort((a, b) => b[3] - a[3]);
+  if (!achados.length) {
+    alvo.innerHTML = '<div class="vazio">Nenhum versículo com esse trecho.</div>';
+    return;
+  }
+  alvo.innerHTML = '<div class="trecho-cab">' + achados.length +
+    (achados.length === 1 ? ' versículo encontrado' : ' versículos encontrados') + '</div>';
+  achados.slice(0, 60).forEach(([li, cap, v]) => {
+    const livro = BIBLIA.ordem[li];
+    const t = (BIBLIA.livros[livro][cap - 1] || {})[v] || '';
+    const d = document.createElement('div');
+    d.className = 'item item-trecho';
+    d.innerHTML = '<b>' + livro + ' ' + cap + ':' + v + '</b><small>' +
+                  t.slice(0, 120) + (t.length > 120 ? '…' : '') + '</small>';
+    d.onclick = () => {                            // um clique projeta, como na grade
+      est.livro = livro; est.cap = cap;
+      selecionarLivro(livro);
+      projetarVerso(livro, cap, v);
+    };
+    alvo.appendChild(d);
   });
 }
 function selecionarLivro(nome, elDom) {
@@ -1376,20 +1453,75 @@ function renderFila() {
 
 // ---------- TIMER / RELÓGIO / TEXTO / FUNDOS ----------
 let timerUI = null;
-const fmt = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+// "117:00" no telão não diz nada a ninguém. Passando de uma hora, o mostrador
+// conta como relógio conta: 1:57:00.
+const fmt = ms => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
+  return h ? h + ':' + String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')
+           : Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+};
+// e o seletor fala como gente fala: "5 min", "1h30", "2 horas" — nunca "117 min"
+function rotuloMinutos(min) {
+  if (min < 60) return min + ' min';
+  const h = Math.floor(min / 60), m = min % 60;
+  if (!m) return h + (h === 1 ? ' hora' : ' horas');
+  return h + 'h' + String(m).padStart(2, '0');
+}
+// as setinhas do Sistema: passo miúdo no começo (1 min) e largo depois (15 min,
+// 30 min), porque ninguém marca duas horas de um em um minuto
+function passoDoTempo(min, sentido) {
+  const passo = min < 15 ? 1 : (min < 60 ? 5 : (min < 180 ? 15 : 30));
+  const bruto = min + sentido * passo;
+  return clamp(sentido > 0 ? Math.floor(bruto / passo) * passo
+                           : Math.ceil(bruto / passo) * passo, 1, 600);
+}
+function pintarMinutos() {
+  const i = $('#timer-min'), r = $('#min-rot');
+  if (!i) return;
+  const min = clamp(+i.value || 5, 1, 600);
+  i.value = min;
+  if (r) r.textContent = rotuloMinutos(min);
+  if (!est.timerFim && !est.timerParadoMs) $('#timer-view').textContent = fmt(min * 60000);
+}
+// O operador clica e precisa VER que o clique pegou. Sem isso ele clica duas
+// vezes, no meio do culto, achando que falhou.
+function pulsar(sel) {
+  const b = $(sel); if (!b) return;
+  b.classList.remove('pulso'); void b.offsetWidth; b.classList.add('pulso');
+  setTimeout(() => b.classList.remove('pulso'), 420);
+}
+// e o estado do cronômetro tem que estar na cara do botão, não só na cabeça
+function pintarTimer(estado) {          // 'correndo' | 'pausado' | 'parado'
+  const v = $('#timer-view'), p = $('#timer-pausar');
+  if (v) v.classList.toggle('pausado', estado === 'pausado');
+  if (p) p.textContent = estado === 'pausado' ? 'Continuar' : 'Pausar';
+  if (p) p.classList.toggle('ativo', estado === 'pausado');
+}
 function iniciarTimer(min, rotulo) {
   est.timerFim = Date.now() + min * 60000; est.timerParadoMs = 0; est.timerRotulo = rotulo || 'Oração';
   est.live = { tipo: 'timer' };
   projetar({ modo: 'timer', fundo: FB.plano, rotulo: est.timerRotulo, fimTs: est.timerFim, transicao: true, fade: 500 });
   clearInterval(timerUI); timerUI = setInterval(() => { $('#timer-view').textContent = fmt(est.timerFim - Date.now()); }, 250);
+  pintarTimer('correndo');
 }
 function pausarTimer() {
   if (!est.timerFim) return; est.timerParadoMs = Math.max(0, est.timerFim - Date.now()); clearInterval(timerUI);
   projetar({ modo: 'timer', fundo: FB.plano, rotulo: est.timerRotulo, parado: true, texto: fmt(est.timerParadoMs) });
+  $('#timer-view').textContent = fmt(est.timerParadoMs);
+  pintarTimer('pausado');
 }
 // Parar tem que APAGAR o tempo guardado: sem isso, encostar depois no botão
 // "Pausar" ressuscitava o cronômetro antigo no telão, contando de onde parou.
-function pararTimer() { clearInterval(timerUI); est.timerFim = 0; est.timerParadoMs = 0; descanso(); }
+// E tem que DEVOLVER o mostrador ao tempo escolhido: parar e o número continuar
+// onde parou faz o operador achar que não parou.
+function pararTimer() {
+  clearInterval(timerUI); est.timerFim = 0; est.timerParadoMs = 0;
+  const min = +($('#timer-min') ? $('#timer-min').value : 5) || 5;
+  $('#timer-view').textContent = fmt(min * 60000);
+  pintarTimer('parado');
+  descanso();
+}
 // Texto/Avisos: campo Título vira linha AMARELA; o texto vem branco embaixo. Projeta ao vivo.
 function projetarTexto(instant) {
   const tit = ($('#texto-titulo') ? $('#texto-titulo').value : '').trim();
@@ -2052,18 +2184,63 @@ function aplicarReset(o) {
     salvarIgreja(); aplicarNomeIgreja(); renderCultos(); renderAvisos();
     est.estilo = 'limpo'; aplicarEstilo(); $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
     Guardar.gravar('icm_bemvindo_ok', false);
+    // ATÉ AQUI só limpamos a memória desta tela. O que faz o Sistema voltar a
+    // ser NOVO é apagar os arquivos do operador ao lado do programa e reabrir:
+    // sem isso, ele reabria com o histórico, os louvores e a igreja de antes,
+    // e o botão "Restaurar tudo" parecia não fazer nada — foi o que o Samuel
+    // viu e reclamou, com razão.
+    try {
+      fetch('/api/restaurar', { method: 'POST', body: JSON.stringify({ conteudo: false }) });
+      toast('Restaurando… o Sistema vai fechar e abrir sozinho.');
+      setTimeout(() => { try { window.close(); } catch (e) {} }, 900);
+    } catch (e) {}
     fecharMenu(); abrirBemVindo(true); return;   // volta pro começo, como um sistema novo
   }
   toast('Configurações restauradas ao padrão.');
 }
+/* ---------- DESINSTALAR ----------
+   Duas perguntas, porque são duas decisões diferentes: tirar o programa é uma
+   coisa; apagar as animações, cifras e melodias que levaram um pendrive para
+   chegar aqui é outra, bem maior. */
+function ligarDesinstalar() {
+  const b = $('#btn-desinstalar'); if (!b) return;
+  b.onclick = () => confirmar(
+    'Desinstalar o Sistema deste computador?<br><br>O programa e os atalhos são ' +
+    'removidos. <b>As suas coisas ficam</b> — louvores, fundos, animações, cifras e ' +
+    'melodias continuam guardadas, e uma instalação nova as encontra do jeito que estão.',
+    () => confirmar(
+      'Quer apagar também as suas coisas?<br><br>Louvores e fundos que você adicionou, ' +
+      'o histórico dos cultos, e as <b>animações, cifras e melodias (cerca de 590 MB)</b>. ' +
+      'Isso não tem volta sem o pendrive de novo.',
+      () => desinstalarAgora(true),
+      'Sim, apagar tudo',
+      () => desinstalarAgora(false),
+      'Não, guardar as minhas coisas'),
+    'Desinstalar');
+}
+function desinstalarAgora(comDados) {
+  const st = $('#desinst-status');
+  if (st) st.textContent = 'Desinstalando… o Sistema vai fechar agora.';
+  try {
+    fetch('/api/desinstalar', { method: 'POST', body: JSON.stringify({ dados: !!comDados }) });
+    setTimeout(() => { try { window.close(); } catch (e) {} }, 1200);
+  } catch (e) {
+    if (st) st.textContent = 'Não consegui desinstalar por aqui.';
+  }
+}
 // caixa de confirmação (nada destrutivo acontece sem o operador confirmar)
-function confirmar(msg, aoConfirmar, rotulo) {
+// aoNao/rotuloNao: para as perguntas em que as DUAS respostas fazem alguma
+// coisa ("apagar as minhas coisas?" — sim apaga, não guarda; cancelar sai)
+function confirmar(msg, aoConfirmar, rotulo, aoNao, rotuloNao) {
   const ov = document.createElement('div'); ov.className = 'ajuda-overlay';
   ov.innerHTML = '<div class="ajuda-box" style="max-width:430px"><h3>Confirmar</h3><p>' + msg + '</p>' +
     '<div class="ajuda-btns"><button class="big-btn vermelho" id="cf-sim">' + (rotulo || 'Sim, restaurar') + '</button>' +
+    (aoNao ? '<button class="big-btn" id="cf-alt">' + (rotuloNao || 'Não') + '</button>' : '') +
     '<button class="big-btn" id="cf-nao">Cancelar</button></div></div>';
   document.body.appendChild(ov);
   ov.querySelector('#cf-nao').onclick = () => ov.remove();
+  const alt = ov.querySelector('#cf-alt');
+  if (alt) alt.onclick = () => { ov.remove(); aoNao(); };
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
   ov.querySelector('#cf-sim').onclick = () => { ov.remove(); aoConfirmar(); };
 }
@@ -2198,11 +2375,16 @@ async function verificarAtualizacao(silenciosa) {
     let tudo = null;
     try { tudo = await fetch('/api/conteudo').then(x => x.json()); } catch (e) {}
     if (st) {
+      const linha = st.closest('.reset-row');
       if (tudo && !tudo.falta) {
+        // a linha INTEIRA veste ouro. Só a letra dourada dava a entender o
+        // contrário do que a frase diz — como se faltasse alguma coisa.
         st.innerHTML = '<b class="st-ouro">Você está com a melhor versão do Sistema: ' +
                        'completa e atualizada (' + r.atual + ').</b>';
+        if (linha) linha.classList.add('melhor');
       } else if (!silenciosa) {
         st.textContent = 'Você já está na versão mais nova (' + r.atual + ').';
+        if (linha) linha.classList.remove('melhor');
       }
     }
     return;
@@ -2293,11 +2475,16 @@ function ligarEventos() {
   $('#btn-estilo').onclick = trocarEstilo;
   $('#busca-louvor').oninput = e => renderListaLouvores(e.target.value);
   $('#busca-livro').oninput = e => renderLivros(e.target.value);
-  $$('[data-min]').forEach(b => b.onclick = () => { const m = +b.dataset.min; $('#timer-min').value = m; $('#timer-view').textContent = fmt(m * 60000); });
-  $('#timer-min').oninput = e => $('#timer-view').textContent = fmt((+e.target.value || 0) * 60000);
-  $('#timer-iniciar').onclick = () => iniciarTimer(+$('#timer-min').value || 5, $('#timer-rotulo').value);
-  $('#timer-pausar').onclick = () => est.timerParadoMs ? iniciarTimer(est.timerParadoMs / 60000, est.timerRotulo) : pausarTimer();
-  $('#timer-parar').onclick = pararTimer;
+  $$('[data-min]').forEach(b => b.onclick = () => { $('#timer-min').value = +b.dataset.min; pintarMinutos(); });
+  $('#timer-min').oninput = pintarMinutos;
+  const passar = s => () => { $('#timer-min').value = passoDoTempo(+$('#timer-min').value || 5, s); pintarMinutos(); };
+  const bMe = $('#min-menos'), bMa = $('#min-mais');
+  if (bMe) bMe.onclick = passar(-1);
+  if (bMa) bMa.onclick = passar(1);
+  pintarMinutos();
+  $('#timer-iniciar').onclick = () => { pulsar('#timer-iniciar'); iniciarTimer(+$('#timer-min').value || 5, $('#timer-rotulo').value); };
+  $('#timer-pausar').onclick = () => { pulsar('#timer-pausar'); est.timerParadoMs ? iniciarTimer(est.timerParadoMs / 60000, est.timerRotulo) : pausarTimer(); };
+  $('#timer-parar').onclick = () => { pulsar('#timer-parar'); pararTimer(); };
   $('#relogio-projetar').onclick = () => { est.live = { tipo: 'relogio' }; projetar({ modo: 'relogio', fundo: FB.plano, transicao: true, fade: 400 }); };
   setInterval(() => { const d = new Date(); $('#relogio-view').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }, 1000);
   $('#texto-projetar').onclick = () => projetarTexto(false);
@@ -2347,6 +2534,7 @@ function ligarEventos() {
   ligarAtualizacao();
   ligarExportarUsb();
   ligarCompletar();
+  ligarDesinstalar();
   const bc = $('#btn-contato');
   if (bc) bc.onclick = () => {
     const mail = 'samuelsaxdiesel@gmail.com';
