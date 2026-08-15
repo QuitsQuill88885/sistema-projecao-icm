@@ -331,6 +331,13 @@ textarea.campo{line-height:1.4;resize:vertical}
       <div class="inst-tit">Qual instrumento você toca?</div>
       <div class="inst-grade" id="inst-grade"></div>
     </div>
+    <!-- O AFINADOR mora aqui, junto da cifra, porque é aqui que o músico está.
+         O microfone só abre em endereço seguro (https), então o botão leva para
+         a segunda porta do Sistema. O pacote do afinador é baixado UMA VEZ,
+         quando ele pede — quem só quer ler a cifra não carrega nada disso. -->
+    <div class="bt-fila" style="margin:0 0 8px"><button class="bt" id="bt-afinador">
+      <span style="font-weight:700">Afinador</span></button></div>
+    <div class="aba-afn" id="aba-afn" hidden></div>
     <div class="busca"><input id="qc" placeholder="Procurar cifra de outro louvor…" autocomplete="off"></div>
     <div class="cifra-agora" id="cifra-agora"></div>
     <div class="lista" id="lista-cifras"></div>
@@ -985,6 +992,67 @@ $('#cf-menos').onclick = () => { cf = Math.max(9, cf - 1); aplicarCf(); };
 aplicarCf();
 
 $('#qc').oninput = e => listarCifras(e.target.value);
+
+/* ---------- AFINADOR ----------
+   Roda no PRÓPRIO aparelho: o áudio não sai daqui. O que o computador faz é
+   só entregar o arquivo do afinador, uma vez.
+
+   O microfone exige endereço seguro (https). Se este celular entrou pelo
+   endereço comum, o botão leva para a segunda porta do Sistema — o aparelho
+   pergunta uma vez se confia no certificado, e depois entra direto. */
+let afnPronto = false;
+async function abrirAfinador() {
+  const cx = $('#aba-afn');
+  cx.hidden = false;
+  if (afnPronto) { cx.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  cx.innerHTML = '<div class="vazio">Preparando o afinador…</div>';
+
+  // já estou no endereço seguro? então é só carregar e usar
+  if (window.isSecureContext) {
+    try {
+      await new Promise((ok, no) => {
+        const s = document.createElement('script');
+        s.src = 'afinador.js'; s.onload = ok; s.onerror = no;
+        document.head.appendChild(s);
+      });
+      cx.innerHTML = ''; window.Afinador.montar(cx); afnPronto = true;
+      cx.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      cx.innerHTML = '<div class="vazio">Não consegui carregar o afinador.</div>';
+    }
+    return;
+  }
+
+  // não estou: pergunto ao computador onde fica a porta segura
+  let r = null;
+  try { r = await fetch('/api/afinador').then(x => x.json()); } catch (e) {}
+  if (!r || !r.porta) {
+    cx.innerHTML = '<div class="afn-aviso" style="font-size:12.5px;color:#f0d493;' +
+      'background:#2a2313;border:1px solid #6b5a24;border-radius:9px;padding:11px 13px;line-height:1.5">' +
+      'O afinador precisa de um endereço seguro para o navegador liberar o microfone, e o ' +
+      'computador não conseguiu abrir essa porta. No computador o afinador funciona normalmente.</div>';
+    return;
+  }
+  const url = 'https://' + location.hostname + ':' + r.porta + '/controle.html#afinador';
+  cx.innerHTML =
+    '<div class="afn-aviso" style="font-size:12.5px;color:#f0d493;background:#2a2313;' +
+    'border:1px solid #6b5a24;border-radius:9px;padding:12px 13px;line-height:1.55">' +
+    '<b>O afinador abre num endereço seguro.</b><br>' +
+    'É o navegador que exige isso para liberar o microfone. Na primeira vez o seu celular vai ' +
+    'perguntar se confia neste computador — toque em <b>Mostrar detalhes</b> e depois em ' +
+    '<b>visitar este site</b>. Ele pergunta <b>uma vez só</b>.' +
+    '<div style="margin-top:10px"><a href="' + url + '" style="display:block;text-align:center;' +
+    'background:#1d7a45;color:#fff;text-decoration:none;border-radius:9px;padding:12px;' +
+    'font-weight:700;font-size:13.5px">Abrir o afinador</a></div></div>';
+}
+$('#bt-afinador').onclick = abrirAfinador;
+// entrou já pelo endereço seguro, direto no afinador
+if (location.hash === '#afinador') {
+  addEventListener('load', () => {
+    const b = $('#aba-cifra'); if (b) { b.hidden = false; b.click(); }
+    abrirAfinador();
+  });
+}
 
 /* Qual louvor está no telão AGORA — só como referência. Um toque abre a cifra
    dele; nenhum toque aqui muda o que a congregação vê. */

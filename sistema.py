@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.6.0"
+VERSAO = "2.6.1"
 PORTA = 8765
 
 def raiz():
@@ -757,6 +757,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._json({"ok": True, "estado": dict(ESTADO), "idade": round(idade, 1)})
         if self.path.startswith("/api/animacoes"):       # louvores de CIAS com animação
             return self._json({"ok": True, "indice": ler_indice("animacoes")})
+        if self.path.startswith("/api/afinador"):
+            # Onde mora o afinador. O celular pergunta isto para saber se pode
+            # oferecer o botão: sem a porta segura, o microfone não abre lá.
+            # 0 = não subiu (o Sistema segue normal; o afinador fica só aqui).
+            return self._json({"ok": True, "porta": PORTAS.get("segura", 0),
+                               "seguro": bool(PORTAS.get("segura"))})
         if self.path.startswith("/api/historico"):     # o que ja foi projetado
             return self._json({"ok": True, "registros": ler_historico()})
         if self.path.startswith("/api/cifras"):          # em que PDF e página está cada cifra
@@ -1004,6 +1010,124 @@ def porta_livre(p):
         return s.connect_ex(("127.0.0.1", p)) != 0
 
 
+# ---------------------------------------------------------------------------
+# A SEGUNDA PORTA — a segura, e por que ela existe
+#
+# O afinador precisa do microfone, e o navegador só entrega o microfone a uma
+# página que chegou por endereço SEGURO (https). Não é sobre o que a página faz
+# com o áudio — o afinador nem manda áudio para lugar nenhum — é sobre PODER
+# CONFIAR que a página que chegou é a que o Sistema mandou. Em http qualquer um
+# na mesma rede poderia trocá-la no caminho, e o navegador não tem como saber.
+#
+# Por que DUAS portas e não só a segura:
+#   - a porta de todo dia (http) NUNCA pode falhar. Ela não avisa nada e não
+#     quebra quando o roteador troca o IP do computador.
+#   - o certificado é assinado pelo próprio Sistema (não há autoridade dentro da
+#     igreja para assinar), então o celular pergunta uma vez se confia. Quem vai
+#     afinar é músico e chega antes; o operador no meio do culto não pode topar
+#     com essa pergunta.
+#
+# O certificado é gerado UMA VEZ e guardado nos dados do usuário. Ele leva no
+# corpo todos os endereços do computador na rede, para o celular não reclamar de
+# nome trocado.
+# ---------------------------------------------------------------------------
+PORTA_SEGURA = 8766
+PORTAS = {"comum": 0, "segura": 0}
+
+
+def _meus_enderecos():
+    """Todos os IPs deste computador na rede local, mais localhost."""
+    ips = {"127.0.0.1"}
+    try:
+        for inf in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ips.add(inf[4][0])
+    except Exception:
+        pass
+    try:                                     # o IP que sai para a rede de fato
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80)); ips.add(s.getsockname()[0]); s.close()
+    except Exception:
+        pass
+    return sorted(ips)
+
+
+def certificado(pasta):
+    """Devolve (arquivo_cert, arquivo_chave), gerando se ainda não existir ou se
+    o computador ganhou um endereço novo."""
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    import datetime, ipaddress
+
+    os.makedirs(pasta, exist_ok=True)
+    cert = os.path.join(pasta, "sistema.crt")
+    chave = os.path.join(pasta, "sistema.key")
+    ips = _meus_enderecos()
+    marca = os.path.join(pasta, "sistema.enderecos")
+
+    # o certificado vale para os endereços que ele tinha quando nasceu; se a
+    # rede mudou, refaz — senão o celular acusa nome trocado
+    antigo = ""
+    try:
+        with open(marca, encoding="utf-8") as f:
+            antigo = f.read().strip()
+    except Exception:
+        pass
+    if os.path.exists(cert) and os.path.exists(chave) and antigo == ",".join(ips):
+        return cert, chave
+
+    k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    nome = x509.Name([
+        x509.NameAttribute(NameOID.COMMON_NAME, "Sistema - Projecao da igreja"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Sistema"),
+    ])
+    alt = [x509.DNSName("localhost")]
+    for ip in ips:
+        try: alt.append(x509.IPAddress(ipaddress.ip_address(ip)))
+        except Exception: pass
+    agora = datetime.datetime.now(datetime.timezone.utc)
+    c = (x509.CertificateBuilder()
+         .subject_name(nome).issuer_name(nome).public_key(k.public_key())
+         .serial_number(x509.random_serial_number())
+         .not_valid_before(agora - datetime.timedelta(days=1))
+         .not_valid_after(agora + datetime.timedelta(days=3650))
+         .add_extension(x509.SubjectAlternativeName(alt), critical=False)
+         .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+         .sign(k, hashes.SHA256()))
+    with open(chave, "wb") as f:
+        f.write(k.private_bytes(serialization.Encoding.PEM,
+                                serialization.PrivateFormat.TraditionalOpenSSL,
+                                serialization.NoEncryption()))
+    with open(cert, "wb") as f:
+        f.write(c.public_bytes(serialization.Encoding.PEM))
+    with open(marca, "w", encoding="utf-8") as f:
+        f.write(",".join(ips))
+    return cert, chave
+
+
+def subir_porta_segura(pasta):
+    """Sobe a MESMA aplicação numa porta https, só para quem precisa do
+    microfone. Se der errado, o Sistema segue normal — a porta de todo dia não
+    depende desta em nada."""
+    try:
+        import ssl
+        cert, chave = certificado(pasta)
+        p = PORTA_SEGURA
+        while not porta_livre(p) and p < PORTA_SEGURA + 20:
+            p += 1
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(cert, chave)
+        srv = socketserver.ThreadingTCPServer(("0.0.0.0", p), Handler)
+        srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+        threading.Thread(target=liberar_no_firewall, args=(p,), daemon=True).start()
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        return p
+    except Exception as e:
+        print("porta segura indisponivel (%s) - o afinador so vai funcionar no computador" % e)
+        return 0
+
+
 def abrir_navegador(url):
     """Abre em janela limpa (sem barra de endereço), como um programa de verdade."""
     perfil = os.path.join(os.environ.get("LOCALAPPDATA", os.getcwd()), "SistemaProjecao", "navegador")
@@ -1089,6 +1213,11 @@ def main():
     threading.Thread(target=liberar_no_firewall, args=(porta,), daemon=True).start()
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     raiz_url = "http://127.0.0.1:%d/" % porta
+    # a porta segura sobe junto, em segundo plano: gerar o certificado leva
+    # cerca de um segundo e não pode atrasar a abertura do programa
+    threading.Thread(target=lambda: PORTAS.update(
+        {"segura": subir_porta_segura(pasta_usuario("certificado"))}), daemon=True).start()
+    PORTAS["comum"] = porta
     time.sleep(0.3)
     marcar_splash(0.35)                        # servidor no ar
 

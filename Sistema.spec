@@ -1,9 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('manifest.json', '.'), ('dados', 'dados'), ('fundos', 'fundos'), ('fontes', 'fontes')]
+datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('dados', 'dados'), ('fundos', 'fundos'), ('fontes', 'fontes')]
 binaries = []
-hiddenimports = ['win32com.client', 'tkinter', 'qrcode', 'webview', 'webview.platforms.edgechromium']
+hiddenimports = ['win32com.client', 'tkinter', 'qrcode', 'webview', 'webview.platforms.edgechromium',
+                 # a porta segura (https) do afinador: o Sistema emite o proprio
+                 # certificado, entao a biblioteca precisa viajar dentro do programa
+                 'cryptography', 'cryptography.hazmat.backends.openssl', 'cryptography.x509']
 tmp_ret = collect_all('webview')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 

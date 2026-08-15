@@ -375,6 +375,17 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .ig-linha input[type=time]{background:#0b1729;color:#fff;border:1px solid var(--borda);border-radius:6px;
                            padding:4px 8px;font-size:12.5px;font-family:inherit}
 .ig-linha input[type=checkbox]{width:17px;height:17px;accent-color:var(--verde);cursor:pointer}
+/* ---- aba Música: texto para ler, não formulário para preencher ---- */
+.mus-bloco{background:#0c1830;border:1px solid var(--borda);border-radius:10px;
+  padding:13px 15px;margin-bottom:10px}
+.mus-bloco p{font-size:13px;color:#b9c9e4;line-height:1.65;margin:0 0 9px}
+.mus-bloco p:last-child{margin-bottom:0}
+.mus-bloco b{color:#e6eefb}
+.mus-bloco code{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ouro);
+  background:#0b1526;border-radius:4px;padding:1px 5px}
+.mus-lista{margin:0 0 9px;padding-left:18px}
+.mus-lista li{font-size:13px;color:#b9c9e4;line-height:1.6;margin-bottom:6px}
+.mus-lista li:last-child{margin-bottom:0}
 /* Ceia e Vigília: mesmo desenho das outras linhas, mas com DATA — elas não têm
    dia fixo, então não cabem na lista organizada por dia da semana */
 .ig-dia h4 small{color:#7d8ba6;font-size:10.5px;letter-spacing:.5px;text-transform:none;margin-left:8px;font-weight:500}

@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=27">
+<link rel="stylesheet" href="app.css?v=28">
 </head><body>
 <div id="app">
   <header>
@@ -149,7 +149,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=27"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=28"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -211,6 +211,7 @@
         <button class="menu-aba" data-sec="igreja">Minha igreja</button>
         <button class="menu-aba" data-sec="louvores">Meus louvores</button>
         <button class="menu-aba" data-sec="celular">Celular</button>
+        <button class="menu-aba" data-sec="musica">Música</button>
         <button class="menu-aba" data-sec="painel">Painel</button>
         <button class="menu-aba" data-sec="sistema">Sistema</button>
       </nav>
@@ -265,6 +266,49 @@
           </div>
           <h3 class="menu-h3">Louvores que você adicionou</h3>
           <div id="ed-lista" class="ed-lista"><div class="vazio">Nenhum ainda.</div></div>
+        </section>
+        <!-- MÚSICA — como o lado do músico funciona por dentro.
+             O Samuel pediu um lugar que explique a dinâmica inteira: cifra,
+             coletâneas, transposição, afinador e a razão das duas portas. É
+             leitura, não configuração: quem opera o culto não precisa passar
+             por aqui, e quem toca entende o que tem na mão. -->
+        <section class="menu-sec" data-sec="musica">
+          <p class="dica">Como funciona o lado do músico. Nada aqui precisa ser configurado — é para você saber o que o Sistema tem e por que ele se comporta assim.</p>
+
+          <h3 class="menu-h3">De onde vem a cifra</h3>
+          <div class="mus-bloco">
+            <p>O Sistema não guarda figuras de cifra: ele guarda <b>o acorde e a coluna da letra em que ele cai</b>. Por isso a cifra pode ser transposta, aumentada e reescrita em qualquer tom sem perder o alinhamento.</p>
+            <p>O material vem das coletâneas cifradas oficiais da ICM, lidas página a página:</p>
+            <ul class="mus-lista">
+              <li><b>Nível 2</b> — Coletânea de Hinos Cifrados, edição 2018. É a completa, com as sétimas, as novenas e os baixos invertidos.</li>
+              <li><b>Nível 1</b> — a mesma coletânea com <b>acordes simplificados</b>, para quem está começando. O mesmo louvor que no Nível 2 pede <code>Am7</code>, <code>G/B</code> e <code>C9</code>, aqui pede só <code>Am</code>, <code>G</code> e <code>C</code>.</li>
+              <li><b>Avulsos</b> — a coletânea de louvores avulsos cifrada, e a edição de 2025 com o que está no site oficial.</li>
+            </ul>
+          </div>
+
+          <h3 class="menu-h3">Cada instrumento lê o seu</h3>
+          <div class="mus-bloco">
+            <p>Quem toca violão recebe a folha de <b>acordes</b>. Quem toca sopro recebe o <b>caderno melódico</b>, já escrito na afinação do instrumento — o Si bemol do tenor e do soprano, o Mi bemol do alto e do barítono.</p>
+            <p>Não é a mesma folha traduzida na hora: são cadernos diferentes, e o Sistema entrega o que é seu quando você diz o que toca.</p>
+          </div>
+
+          <h3 class="menu-h3">Transpor</h3>
+          <div class="mus-bloco">
+            <p>Os dois botões de tom sobem e descem meio tom, como no Cifra Club. O deslocamento é <b>do seu aparelho e do louvor aberto</b>: cada músico escolhe o seu, e isso não mexe no telão nem no que os outros estão lendo.</p>
+            <p>A escrita segue a armadura do tom de chegada — tons de bemol saem com bemol, e não com sustenido. Escrever <code>A#</code> onde o músico espera <code>Bb</code> faz ele parar para pensar no meio do louvor.</p>
+          </div>
+
+          <h3 class="menu-h3">O afinador, e as duas portas</h3>
+          <div class="mus-bloco">
+            <p>O afinador fica na aba <b>Cifra</b> do celular, e roda <b>dentro do próprio aparelho</b>: o som não viaja até o computador e volta. Se viajasse, o atraso tornaria a agulha inútil. Vários músicos podem afinar ao mesmo tempo, cada um no seu.</p>
+            <p>Por causa disso o Sistema abre <b>duas portas</b>:</p>
+            <ul class="mus-lista">
+              <li>a <b>porta de todo dia</b>, que é por onde tudo funciona e nunca pergunta nada;</li>
+              <li>a <b>porta segura</b>, que só o afinador usa.</li>
+            </ul>
+            <p>A segunda existe porque o navegador só libera o microfone para uma página que chegou por endereço seguro. Não é sobre o que a página faz com o som — é sobre poder confiar que a página que chegou é a que o Sistema mandou.</p>
+            <p>Como não existe autoridade dentro da igreja para assinar esse endereço, <b>o próprio Sistema assina</b>. Por isso o celular pergunta uma vez se confia — e só uma vez, por aparelho. O certificado se refaz sozinho se o computador ganhar um endereço novo na rede.</p>
+          </div>
         </section>
         <!-- MINHA IGREJA -->
         <section class="menu-sec" data-sec="igreja">
@@ -390,11 +434,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=27"></script>
+<script src="dados/louvores.js?v=28"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=27"></script>
+<script src="dados/galeria.js?v=28"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=27"></script>
-<script src="app.js?v=27"></script>
+<script src="icones.js?v=28"></script>
+<script src="app.js?v=28"></script>
 </body></html>
