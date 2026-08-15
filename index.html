@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=24">
+<link rel="stylesheet" href="app.css?v=26">
 </head><body>
 <div id="app">
   <header>
@@ -73,12 +73,17 @@
             <button class="big-btn" data-min="3">3 min</button>
             <button class="big-btn" data-min="10">10 min</button>
             <!-- as setinhas do Windows são feias e miúdas; estas são do Sistema,
-                 grandes o bastante para o dedo e para o mouse com pressa -->
+                 grandes o bastante para o dedo e para o mouse com pressa.
+                 O rótulo ficava DEPOIS do "+", repetindo o número que já estava
+                 ali ("5" e "5 min" lado a lado) e esticando a caixa para fora da
+                 fileira. Agora a unidade vem colada no número, e a caixa tem a
+                 mesma altura dos botões ao lado — era isso que dava a sensação
+                 de desalinhado. -->
             <div class="passo-num">
               <button class="pn-b" id="min-menos" title="Menos tempo">−</button>
               <input type="number" id="timer-min" min="1" max="600" value="5">
+              <span class="pn-un" id="min-rot">min</span>
               <button class="pn-b" id="min-mais" title="Mais tempo">+</button>
-              <span class="pn-rot" id="min-rot">5 min</span>
             </div>
             <input type="text" id="timer-rotulo" placeholder="Rótulo" value="Oração" style="flex:1;min-width:120px">
           </div>
@@ -144,7 +149,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=24"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=26"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -267,6 +272,18 @@
           <input type="text" id="ig-nome" placeholder="Nome da igreja (ex.: ICM Iperó)">
           <input type="text" id="ig-endereco" placeholder="Endereço (opcional)" style="margin-top:8px">
           <div id="ig-cultos" class="ig-cultos"></div>
+          <!-- A Ceia e a Vigília não caem sempre no mesmo dia da semana: a
+               igreja marca conforme o mês. Ficavam de fora da lista acima (que
+               é organizada por dia da semana) e o aviso chutava "segunda-feira".
+               Aqui o operador põe a data DESTE mês e o aviso sai certo. -->
+          <div class="ig-dia" id="ig-moveis">
+            <h4>Ceia e Vigília <small>não têm dia fixo</small></h4>
+            <label class="ig-linha ig-movel"><span>Ceia</span>
+              <input type="date" id="ig-ceia-data"><input type="time" id="ig-ceia-hora" value="09:00"></label>
+            <label class="ig-linha ig-movel"><span>Vigília</span>
+              <input type="date" id="ig-vig-data"><input type="time" id="ig-vig-hora" value="22:00"></label>
+            <p class="dica" style="margin:8px 0 0">Sem data marcada, o aviso sai só com o convite e você escreve o dia na hora.</p>
+          </div>
           <div class="ig-rodape">
             <button class="big-btn verde" id="ig-salvar">Salvar</button>
             <span class="ig-salvo" id="ig-salvo">Alterações são salvas neste computador</span>
@@ -366,11 +383,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=24"></script>
+<script src="dados/louvores.js?v=26"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=24"></script>
+<script src="dados/galeria.js?v=26"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=24"></script>
-<script src="app.js?v=24"></script>
+<script src="icones.js?v=26"></script>
+<script src="app.js?v=26"></script>
 </body></html>

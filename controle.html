@@ -10,7 +10,17 @@
   --txt:#eaf0fb; --suave:#9db3d6; --ouro:#f5d76e; --verde:#2e8b57; --vermelho:#a31a1a; --azul:#14487a;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;background:var(--fundo);color:var(--txt);
+/* ALTURA: 100% mede a tela do iPhone COM a barra do Safari recolhida, e quando
+   ela reaparece o fim da página fica embaixo dela — foi assim que "o rodapé
+   comeu as últimas linhas da cifra". 100dvh acompanha a barra; o 100% fica de
+   reserva para navegador velho, que lê a primeira e ignora a segunda.
+
+   TAMANHO DO TEXTO: sem o text-size-adjust o iPhone AUMENTA o texto por conta
+   própria, e ele não aumenta a linha de acordes e a linha da letra na mesma
+   proporção — o acorde sai de cima da sílaba. No computador não acontece, por
+   isso a cifra parecia certa aqui e torta no celular dele. */
+html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;text-size-adjust:100%;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;background:var(--fundo);color:var(--txt);
   font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overscroll-behavior:none}
 body{display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
 button{font-family:inherit;color:inherit;border:none;cursor:pointer}
@@ -91,9 +101,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
    ele desliza a cifra, em vez de ficarem la em cima fora de alcance */
 .cifra-topo{position:sticky;top:0;z-index:7;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   padding:9px 10px;background:#101d33;border:1px solid var(--borda);border-radius:9px}
+/* O "‹ Escolher outra" era o maior elemento da barra e roubava a linha inteira
+   do nome do louvor e do tom. Agora é só a seta, do tamanho do dedo (36px, como
+   os outros botões), e o nome do louvor fica com o espaço que é dele. */
 .cifra-volta{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
-             padding:8px 12px;font-size:13px;font-weight:600}
-.cifra-nome{font-size:12.5px;color:#9db3d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+             width:36px;height:36px;flex:0 0 36px;font-size:17px;font-weight:700;line-height:1;
+             display:flex;align-items:center;justify-content:center;padding:0}
+.cifra-nome{flex:1;min-width:0;font-size:12.5px;color:#9db3d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* o PDF ocupa tudo: o leitor do próprio navegador dá zoom e rolagem, que é o
    que o músico precisa para repetir um trecho sem depender de ninguém */
 .cifra-quadro iframe{flex:1;width:100%;border:0;background:#fff}
@@ -112,11 +126,18 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* ---- a cifra desenhada, no lugar do PDF ---- */
 /* SEM overflow proprio: dois containers rolaveis aninhados travam a rolagem no
    Safari do iPhone. Quem rola e' a pagina. */
-.folha{padding:12px 2px 30px;background:var(--fundo)}
+/* respiro embaixo: a última linha da cifra tem que sobrar da barra do iPhone,
+   senão ele rola até o fim e o verso final fica escondido */
+.folha{padding:12px 2px calc(34px + env(safe-area-inset-bottom));background:var(--fundo)}
 /* monoespacada de proposito: e' o que mantem o acorde em cima da silaba certa.
    Com fonte proporcional o alinhamento vai embora e a cifra perde a serventia. */
+/* A folha desliza DE LADO só quando precisa (as pouquíssimas cifras que não
+   cabem nem encolhendo). overflow-y:hidden de propósito: com ele a rolagem
+   VERTICAL continua sendo a da página, e não se formam dois roladores no mesmo
+   sentido — que é o que trava no Safari do iPhone. */
 .folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
-  font-size:var(--cf,13px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre}
+  font-size:var(--cf,13px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre;
+  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 .folha .ac{color:var(--ouro);font-weight:700}
 .folha .no{color:#79c0ff;font-weight:700}
 .folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
@@ -205,10 +226,71 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
 .off.oculto{display:none}
 .off h2{font-size:19px;color:var(--ouro)}
 .off p{font-size:14px;color:var(--suave);line-height:1.6;max-width:34ch}
+
+/* ---- ABA TELÃO: o que o computador faz, feito daqui ---- */
+.linha-topo{display:flex;align-items:center;gap:10px}
+.linha-topo .estado{flex:1;min-width:0}
+/* ligar o telão é a ação mais pesada da tela: fica verde quando está desligado
+   (convite) e discreta quando já está ligado (aí o que importa é o "parar") */
+.liga{flex:none;background:#1d7a45;color:#fff;border-radius:9px;padding:8px 13px;
+  font-size:12px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.liga.on{background:#33203a;color:#ffb4b4;border:1px solid #6b2c3c}
+.liga:active{transform:scale(.96)}
+.bloco-tel{background:var(--painel);border:1px solid var(--borda);border-radius:12px;
+  padding:12px;margin-top:10px}
+.bt-tit{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--ouro);
+  font-weight:700;margin-bottom:10px}
+.bt-tit small{display:block;text-transform:none;letter-spacing:0;font-size:10.5px;
+  color:#7f9ac0;font-weight:500;margin-top:3px}
+.bt-fila{display:flex;gap:7px;margin-top:9px}
+.bt{flex:1;background:var(--painel2);color:var(--txt);border-radius:9px;padding:12px 6px;
+  font-size:13px;font-weight:600}
+.bt.verde{background:#1d7a45;color:#fff}
+.bt.vermelho{background:#7a2233;color:#ffd9d9}
+.bt:active{transform:scale(.97)}
+.bt-atalhos{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.bt-min{flex:1;min-width:62px;background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
+  border-radius:8px;padding:9px 4px;font-size:12px;font-weight:600}
+.bt-min.on{border-color:var(--ouro);color:var(--ouro)}
+/* o −/+ do celular segue o mesmo desenho do computador: a unidade colada no
+   número, e a caixa da mesma altura dos botões ao lado */
+.min-linha{display:flex;align-items:center;gap:5px;background:#0c1830;border:1px solid var(--borda);
+  border-radius:10px;padding:0 5px;height:44px;box-sizing:border-box;width:fit-content}
+.min-linha input{width:52px;text-align:right;border:none;background:transparent;color:var(--txt);
+  font-size:17px;font-weight:700;padding:0;-moz-appearance:textfield;font-family:inherit}
+.min-linha input::-webkit-outer-spin-button,.min-linha input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.min-b{width:34px;height:34px;flex:0 0 34px;border-radius:8px;background:#16233c;color:#cfe0f5;
+  font-size:19px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
+.min-b:active{background:#22385a}
+.min-un{font-size:12px;color:var(--ouro);font-weight:600;white-space:nowrap;margin-right:3px}
+.campo{width:100%;margin-top:9px;padding:12px 13px;border-radius:10px;border:1px solid var(--borda);
+  background:#0c1830;color:#fff;font-size:16px;font-family:inherit}
+textarea.campo{line-height:1.4;resize:vertical}
+.grade-fundos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px}
+.fcard{background:#0c1830;border:1px solid var(--borda);border-radius:9px;overflow:hidden;
+  cursor:pointer;position:relative;padding:0}
+.fcard img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
+/* fundo que o operador acrescentou: a imagem dele não trafega (é embutida e
+   pesada), então o cartão mostra só o nome — e escolher funciona igual */
+.fcard .sem{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:16/9;
+  background:#101d33;color:#5f7599;font-size:10.5px}
+.fcard span.rot{display:block;padding:5px 6px;font-size:10.5px;color:#a9bcd8;line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcard.espera{border-color:var(--ouro)}
+.fcard .estrela{position:absolute;top:4px;right:5px;font-size:11px;color:var(--ouro);
+  text-shadow:0 1px 3px #000}
+.fcard:active{transform:scale(.97)}
 </style></head>
 <body>
 <header>
-  <div class="estado" id="estado"><span class="pt"></span><span id="est-txt">Conectando…</span></div>
+  <!-- LIGAR E DESLIGAR O TELÃO DAQUI. Antes só o computador abria a projeção, e
+       quem está ao lado do telão tinha que atravessar a igreja no meio do culto
+       para apertar um botão. Fica na mesma linha do "AO VIVO" porque é a mesma
+       pergunta: o telão está ligado? -->
+  <div class="linha-topo">
+    <div class="estado" id="estado"><span class="pt"></span><span id="est-txt">Conectando…</span></div>
+    <button class="liga" id="liga">Abrir telão</button>
+  </div>
   <div class="previa" id="previa"><iframe id="pv" src="projecao.html?previa=1" scrolling="no"></iframe></div>
   <div class="previa-dica" id="previa-dica">toque aqui para recolher a prévia</div>
   <div class="agora" id="agora">—</div>
@@ -219,6 +301,7 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
   <button data-aba="biblia">Bíblia</button>
   <button data-aba="slides">Slides</button>
   <button data-aba="lista" id="aba-lista">Lista</button>
+  <button data-aba="telao" id="aba-telao">Telão</button>
   <button data-aba="cifra" id="aba-cifra" hidden>Cifra</button>
 </nav>
 
@@ -252,13 +335,52 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
     <div class="lista" id="lista-cifras"></div>
     <div class="cifra-quadro" id="cifra-quadro" hidden>
       <div class="cifra-topo" id="cifra-topo-linha">
-        <button class="cifra-volta" id="cifra-volta">‹ Escolher outra</button>
+        <button class="cifra-volta" id="cifra-volta" title="Escolher outra cifra" aria-label="Escolher outra cifra">‹</button>
         <span class="cifra-nome" id="cifra-nome"></span>
         <span class="tom-cx" id="tom-cx"></span>
         <span class="cifra-zoom"><button id="cf-menos" title="Letra menor">A−</button><button id="cf-mais" title="Letra maior">A+</button></span>
       </div>
       <div class="folha" id="folha"></div>
     
+    </div>
+  </div>
+  <!-- TELÃO — o que o computador tem e o celular não tinha: cronômetro, relógio,
+       recado e fundos. Foi pedido nome por nome. Tudo aqui é ORDEM para o
+       computador: ele é quem projeta, o celular só manda. -->
+  <div class="aba" data-aba="telao" hidden>
+    <div class="bloco-tel">
+      <div class="bt-tit">Cronômetro</div>
+      <div class="min-linha">
+        <button class="min-b" id="t-menos">−</button>
+        <input type="number" id="t-min" min="1" max="600" value="5" inputmode="numeric">
+        <span class="min-un" id="t-un">min</span>
+        <button class="min-b" id="t-mais">+</button>
+      </div>
+      <input type="text" id="t-rotulo" class="campo" placeholder="Rótulo (ex.: Oração)" value="Oração">
+      <div class="bt-fila">
+        <button class="bt verde" id="t-iniciar">Iniciar</button>
+        <button class="bt" id="t-pausar">Pausar</button>
+        <button class="bt vermelho" id="t-parar">Parar</button>
+      </div>
+      <div class="bt-atalhos"><button class="bt-min" data-min="3">3 min</button><button class="bt-min" data-min="5">5 min</button><button class="bt-min" data-min="10">10 min</button><button class="bt-min" data-min="15">15 min</button></div>
+    </div>
+
+    <div class="bloco-tel">
+      <div class="bt-tit">Relógio</div>
+      <div class="bt-fila"><button class="bt verde" id="t-relogio">Projetar o relógio</button></div>
+    </div>
+
+    <div class="bloco-tel">
+      <div class="bt-tit">Recado no telão</div>
+      <input type="text" id="t-titulo" class="campo" placeholder="Título (ex.: ATENÇÃO)">
+      <textarea id="t-texto" class="campo" rows="3" placeholder="Uma linha por linha da tela."></textarea>
+      <div class="bt-atalhos" id="t-prontos"></div>
+      <div class="bt-fila"><button class="bt verde" id="t-projetar">Projetar o recado</button></div>
+    </div>
+
+    <div class="bloco-tel">
+      <div class="bt-tit">Fundos <small>toque para projetar · segure para virar tela de espera</small></div>
+      <div class="grade-fundos" id="t-fundos"><div class="vazio">Ligue o computador para ver os fundos.</div></div>
     </div>
   </div>
   <!-- BÍBLIA -->
@@ -378,12 +500,111 @@ async function ouvir() {
     // apresentação saía, e sobravam botões que não faziam mais nada
     const ns = +(e.slides || 0);
     if (ns !== slidesN) { slidesN = ns; montarSlides(ns); }
-    acompanhar(e); pistaDoTelao(e); pintarFila(e);
+    acompanhar(e); pistaDoTelao(e); pintarFila(e); pintarTelao(e);
   } catch (err) {
     if (++falhas > 4) mostrarOffline();     // aqui é rede mesmo: título padrão
   }
 }
 setInterval(ouvir, 900); ouvir();
+
+/* ---------- ABA TELÃO ----------
+   Cronômetro, relógio, recado e fundos, do jeito que o computador faz. Cada
+   toque aqui é uma ORDEM: quem projeta continua sendo o computador, e é por
+   isso que o que aparece na tela é sempre o estado que ELE publicou, nunca um
+   palpite do celular. */
+let telaoAgora = 0;      // trava curta depois do toque, como a do Congelar
+function pintarTelao(e) {
+  // o botão de ligar/desligar
+  const lg = $('#liga');
+  if (lg && Date.now() - telaoAgora > 2500) {
+    lg.classList.toggle('on', !!e.projetando);
+    lg.textContent = e.projetando ? 'Fechar telão' : 'Abrir telão';
+  }
+  // o cronômetro que está correndo lá
+  const t = e.timer || {};
+  const bp = $('#t-pausar');
+  if (bp) bp.textContent = t.parado ? 'Retomar' : 'Pausar';
+  // os fundos
+  pintarFundos(e.fundos);
+}
+let fundosTxt = null;
+function pintarFundos(lista) {
+  if (!lista) return;
+  const txt = JSON.stringify(lista);
+  if (txt === fundosTxt) return;          // não repinta à toa (o dedo perde o alvo)
+  fundosTxt = txt;
+  const g = $('#t-fundos'); if (!g) return;
+  g.innerHTML = '';
+  if (!lista.length) { g.innerHTML = '<div class="vazio">Nenhum fundo.</div>'; return; }
+  lista.forEach((f, i) => {
+    const c = document.createElement('button');
+    c.className = 'fcard' + (f.e ? ' espera' : '');
+    c.innerHTML = (f.a ? '<img src="' + f.a + '" alt="" loading="lazy">'
+                       : '<span class="sem">sem miniatura</span>') +
+                  (f.e ? '<span class="estrela">★</span>' : '') +
+                  '<span class="rot">' + (f.n || '') + '</span>';
+    // toque = projeta. Segurar = vira a tela de espera, que é o mesmo gesto do
+    // "segure para guardar" que ele já usa no versículo.
+    let seg = null, segurou = false;
+    const soltar = () => { clearTimeout(seg); seg = null; };
+    c.addEventListener('touchstart', () => { segurou = false;
+      seg = setTimeout(() => { segurou = true; enviar('espera', { i });
+        if (navigator.vibrate) navigator.vibrate(30); }, 550); }, { passive: true });
+    c.addEventListener('touchend', soltar); c.addEventListener('touchmove', soltar);
+    c.onclick = () => { if (segurou) { segurou = false; return; } enviar('fundo', { i }); };
+    g.appendChild(c);
+  });
+}
+// ---- cronômetro do celular (mesmo desenho do computador) ----
+function unidadeMin() {
+  const v = +($('#t-min').value) || 5, u = $('#t-un');
+  if (!u) return;
+  if (v < 60) { u.textContent = 'min'; return; }
+  const h = Math.floor(v / 60), m = v % 60;
+  u.textContent = 'min · ' + (m ? h + 'h' + String(m).padStart(2, '0')
+                                : h + (h === 1 ? ' hora' : ' horas'));
+}
+// o passo cresce sozinho, igual ao do computador: ninguém marca duas horas de
+// minuto em minuto
+function passoMin(v, s) {
+  const p = v >= 180 ? 30 : v >= 60 ? 15 : v >= 20 ? 5 : 1;
+  return Math.max(1, Math.min(600, s > 0 ? v + p : v - (v - p >= 1 ? p : v - 1)));
+}
+$('#t-mais').onclick  = () => { $('#t-min').value = passoMin(+$('#t-min').value || 5, +1); unidadeMin(); };
+$('#t-menos').onclick = () => { $('#t-min').value = passoMin(+$('#t-min').value || 5, -1); unidadeMin(); };
+$('#t-min').oninput = unidadeMin;
+[...document.querySelectorAll('.bt-min')].forEach(b => {
+  b.onclick = () => { $('#t-min').value = b.dataset.min; unidadeMin(); };
+});
+$('#t-iniciar').onclick  = () => enviar('timer', { min: +$('#t-min').value || 5, rotulo: $('#t-rotulo').value });
+$('#t-pausar').onclick   = () => enviar('timerpausar');
+$('#t-parar').onclick    = () => enviar('timerparar');
+$('#t-relogio').onclick  = () => enviar('relogio');
+$('#t-projetar').onclick = () => enviar('texto', { titulo: $('#t-titulo').value, corpo: $('#t-texto').value });
+unidadeMin();
+// recados prontos, os mesmos do computador
+const PRONTOS = [
+  ['Silêncio e oração', 'MOMENTO DE ORAÇÃO', 'Pedimos silêncio e reverência.'],
+  ['Bem-vindos', 'SEJAM BEM-VINDOS', 'A paz do Senhor!'],
+  ['Celular', 'ATENÇÃO', 'Por favor, desligue ou silencie o celular.'],
+  ['Aniversariantes', 'ANIVERSARIANTES', 'Vamos orar pelos irmãos que fazem aniversário nesta semana.'],
+];
+(() => {
+  const c = $('#t-prontos'); if (!c) return;
+  PRONTOS.forEach(([rot, tit, corpo]) => {
+    const b = document.createElement('button'); b.className = 'bt-min'; b.textContent = rot;
+    b.onclick = () => { $('#t-titulo').value = tit; $('#t-texto').value = corpo; };
+    c.appendChild(b);
+  });
+})();
+// ligar e desligar o telão
+$('#liga').onclick = () => {
+  const ligado = $('#liga').classList.contains('on');
+  telaoAgora = Date.now();
+  $('#liga').classList.toggle('on', !ligado);
+  $('#liga').textContent = ligado ? 'Abrir telão' : 'Fechar telão';
+  enviar(ligado ? 'fecharprojecao' : 'abrirprojecao');
+};
 
 /* ---------- LISTA DE PROJEÇÃO no celular ----------
    Ver o que está montado e acrescentar. O grupo de louvor precisa dizer o que
@@ -677,6 +898,7 @@ function desenharFolha(d) {
   f.innerHTML = (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
                 '<pre>' + corpo + '</pre>';
   f.scrollTop = 0;
+  aplicarCf();          // cifra nova, largura nova: reajusta antes de ele ler
   pintarTom();
 }
 
@@ -710,7 +932,32 @@ try { cf = parseInt(localStorage.getItem('cf') || '13', 10) || 13; } catch (e) {
 function aplicarCf() {
   const f = $('#folha'); if (f) f.style.setProperty('--cf', cf + 'px');
   try { localStorage.setItem('cf', String(cf)); } catch (e) {}
+  ajustarLargura();
 }
+/* A LARGURA MANDA NO TAMANHO DA LETRA.
+   O A+/A− é o tamanho que o músico PEDIU; o que se aplica é o que cabe na
+   largura da tela. Sem isso a linha mais comprida saía pela direita e sumia — e
+   cifra sem o fim da linha não serve para tocar. Contado no acervo inteiro
+   (37.014 linhas): a mediana tem 23 colunas e 99% têm até 46, então quase
+   nenhuma cifra encolhe; a conta só entra nas compridas e quando ele aumenta a
+   letra. Piso de 10px — abaixo disso não se lê de pé, atrás da estante.
+   O valor GRAVADO continua sendo o que ele escolheu, não o encolhido. */
+function ajustarLargura() {
+  const f = $('#folha'), pre = f && f.querySelector('pre');
+  if (!pre) return;
+  const cabe = f.clientWidth - 4;
+  if (cabe <= 0) return;
+  f.style.setProperty('--cf', cf + 'px');
+  const preciso = pre.scrollWidth;
+  if (preciso <= cabe) return;                  // já cabe inteira: não mexe
+  const menor = Math.floor(cf * cabe / preciso);
+  // Encolher até 10px resolve 99,9% do acervo. Se nem a 10px couber — são 33
+  // linhas em 37.014, a pior com 85 colunas — NÃO encolhe: fica no tamanho que
+  // ele pediu e a folha desliza de lado. Encolher tudo e mesmo assim cortar
+  // seria o pior dos dois mundos.
+  if (menor >= 10) f.style.setProperty('--cf', menor + 'px');
+}
+addEventListener('resize', ajustarLargura);   // virou o celular de lado
 $('#cf-mais').onclick = () => { cf = Math.min(26, cf + 1); aplicarCf(); };
 $('#cf-menos').onclick = () => { cf = Math.max(9, cf - 1); aplicarCf(); };
 aplicarCf();

@@ -375,6 +375,13 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .ig-linha input[type=time]{background:#0b1729;color:#fff;border:1px solid var(--borda);border-radius:6px;
                            padding:4px 8px;font-size:12.5px;font-family:inherit}
 .ig-linha input[type=checkbox]{width:17px;height:17px;accent-color:var(--verde);cursor:pointer}
+/* Ceia e Vigília: mesmo desenho das outras linhas, mas com DATA — elas não têm
+   dia fixo, então não cabem na lista organizada por dia da semana */
+.ig-dia h4 small{color:#7d8ba6;font-size:10.5px;letter-spacing:.5px;text-transform:none;margin-left:8px;font-weight:500}
+.ig-linha input[type=date]{background:#0b1729;color:#fff;border:1px solid var(--borda);border-radius:6px;
+                           padding:4px 8px;font-size:12.5px;font-family:inherit;color-scheme:dark}
+.ig-movel{cursor:default}
+.ig-movel span{flex:0 0 74px}
 /* avisos prontos = chips compactos (não sujam a tela) */
 .av-lista{display:flex;flex-wrap:wrap;gap:7px}
 .av-chip{background:#0c1830;border:1px solid var(--borda);border-radius:20px;padding:7px 14px;
@@ -531,19 +538,26 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 
 /* ---- o seletor de tempo do cronômetro ----
    As setinhas do Windows são miúdas e feias; estas são do Sistema, do tamanho
-   do dedo. O passo cresce sozinho: 1 min no começo, 30 min depois das 3 horas. */
-.passo-num{display:flex;align-items:center;gap:6px;background:#0f1c31;border:1px solid var(--borda);
-  border-radius:11px;padding:4px 6px}
-.passo-num input[type=number]{width:64px;text-align:center;border:none;background:transparent;
-  font-size:16px;font-weight:600;color:var(--txt);padding:6px 0;-moz-appearance:textfield}
+   do dedo. O passo cresce sozinho: 1 min no começo, 30 min depois das 3 horas.
+   A caixa tem a MESMA altura dos botões da fileira (36px). Antes ela media 44 e
+   sobrava 4px em cima e embaixo de tudo que estava ao lado — era daí que vinha a
+   sensação de desalinhado que o Samuel apontou. */
+.passo-num{display:flex;align-items:center;gap:4px;background:#0f1c31;border:1px solid var(--borda);
+  border-radius:10px;padding:0 4px;height:36px;box-sizing:border-box}
+.passo-num input[type=number]{width:42px;text-align:right;border:none;background:transparent;
+  font-size:15px;font-weight:600;color:var(--txt);padding:0;-moz-appearance:textfield}
 .passo-num input[type=number]::-webkit-outer-spin-button,
 .passo-num input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.pn-b{width:34px;height:34px;border-radius:9px;background:#16253c;color:#cfe0f5;font-size:19px;
+.pn-b{width:28px;height:28px;border-radius:7px;background:#16253c;color:#cfe0f5;font-size:17px;
   font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;
-  transition:background .13s,transform .13s}
+  flex:0 0 28px;transition:background .13s,transform .13s}
 .pn-b:hover{background:#22385a}
 .pn-b:active{transform:scale(.92)}
-.pn-rot{min-width:62px;font-size:13px;color:var(--ouro);font-weight:600;text-align:center}
+/* a unidade cola no número; só vira "min · 1h30" quando passa de uma hora */
+.pn-un{font-size:12.5px;color:var(--ouro);font-weight:600;white-space:nowrap;margin-right:3px}
+/* o campo do rótulo ("Oração") media 40 numa fileira de 36 e ficava 2px fora
+   de esquadro com o resto — a fileira inteira agora corre na mesma linha */
+.view[data-aba="timer"] .row input[type=text]{height:36px;box-sizing:border-box;padding-top:0;padding-bottom:0}
 
 /* ---- nada de selecionar texto onde não se escreve ----
    Um arrasto sem querer pintava a letra de azul na prévia (e dava para copiar

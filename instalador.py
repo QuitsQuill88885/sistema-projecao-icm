@@ -120,7 +120,9 @@ def instalar(progresso):
     exe = os.path.join(DESTINO, "Sistema.exe")
     for pasta in (pasta_area_de_trabalho(), pasta_menu_iniciar()):
         if pasta and os.path.isdir(pasta):
-            atalho(os.path.join(pasta, NOME + ".lnk"), exe)
+            novo = os.path.join(pasta, NOME + ".lnk")
+            limpar_atalhos_antigos(pasta, menos=novo)   # nada de dois ícones do Sistema
+            atalho(novo, exe)
 
     progresso(85, "Instalando o conteúdo…")
     copiar_conteudo_extra(progresso)
@@ -378,6 +380,41 @@ def fixar_no_iniciar(exe):
     return False
 
 
+def limpar_atalhos_antigos(pasta, menos=None):
+    """Tira da pasta o atalho de uma instalação anterior, antes de pôr o novo.
+
+    Reescrever o .lnk de mesmo nome já funcionava; o que sobrava era o atalho de
+    um nome ANTIGO, apontando para um exe que não existe mais. Ficavam dois
+    ícones do Sistema na área de trabalho e um deles não abria nada. Só mexe no
+    que é comprovadamente nosso: o atalho tem que apontar para dentro da pasta
+    onde o Sistema mora. Atalho de outro programa não é tocado nunca.
+    """
+    tirados = 0
+    try:
+        import win32com.client
+        sh = win32com.client.Dispatch("WScript.Shell")
+        alvo_nosso = os.path.normcase(os.path.abspath(DESTINO))
+        for a in os.listdir(pasta):
+            if not a.lower().endswith(".lnk"):
+                continue
+            p = os.path.join(pasta, a)
+            if menos and os.path.normcase(p) == os.path.normcase(menos):
+                continue
+            try:
+                t = sh.CreateShortcut(p).TargetPath or ""
+            except Exception:
+                continue
+            if os.path.normcase(os.path.abspath(t)).startswith(alvo_nosso):
+                try:
+                    os.remove(p)
+                    tirados += 1
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return tirados
+
+
 def atalho(caminho, alvo):
     try:
         import win32com.client
@@ -389,6 +426,36 @@ def atalho(caminho, alvo):
         s.Save()
     except Exception:
         pass
+
+
+def versao_do_pacote():
+    """A versão que ESTE instalador carrega dentro dele."""
+    exe = os.path.join(origem(), "programa", "Sistema.exe")
+    if not os.path.exists(exe):
+        return "?"
+    try:
+        import win32api
+        info = win32api.GetFileVersionInfo(exe, "\\")
+        ms, ls = info["FileVersionMS"], info["FileVersionLS"]
+        return "%d.%d.%d" % (ms >> 16, ms & 0xFFFF, ls >> 16)
+    except Exception:
+        return "?"
+
+
+def versao_instalada():
+    """Que versão já está no micro, se houver. Serve para o instalador dizer o
+    que vai fazer em vez de deixar o usuário no escuro — ele pode ter clicado
+    duas vezes sem querer, ou estar reinstalando de propósito."""
+    exe = os.path.join(DESTINO, "Sistema.exe")
+    if not os.path.exists(exe):
+        return None
+    try:
+        import win32api
+        info = win32api.GetFileVersionInfo(exe, "\\")
+        ms, ls = info["FileVersionMS"], info["FileVersionLS"]
+        return "%d.%d.%d" % (ms >> 16, ms & 0xFFFF, ls >> 16)
+    except Exception:
+        return "?"
 
 
 def abrir_pasta_dados():
@@ -404,6 +471,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;color:#eaf0fb;
 .tudo{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:26px;text-align:center}
 h1{font-size:25px;font-weight:800;letter-spacing:.4px}
 .sub{font-size:13.5px;color:#8fa8cf;max-width:46ch;line-height:1.6}
+/* "você já tem a versão X": a primeira coisa que quem reinstala precisa ler */
+.ja{font-size:13px;color:#f0d493;max-width:46ch;line-height:1.55;margin:0 0 4px;
+    padding:10px 14px;background:#2a2313;border:1px solid #6b5a24;border-radius:9px;text-align:center}
 .dica{font-size:12.5px;color:#7f96b8;max-width:46ch;line-height:1.6;margin:14px 0 0;
       padding:11px 13px;background:#101d33;border-left:3px solid #e8b93c;border-radius:0 7px 7px 0;text-align:left}
 .dica b{color:#cfe0f5}
@@ -430,14 +500,18 @@ button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-rad
   <h1>Instalar o Sistema</h1>
 
   <div id="tela1">
-    <p class="sub">O Sistema será instalado neste computador e ficará pronto para usar no culto — sem internet e sem depender de mais nada.</p>
+    <!-- Quem abre este arquivo já tendo o Sistema (por engano, ou de propósito
+         para atualizar) precisa saber ONDE ESTÁ antes de clicar. Sem isto ele
+         via "Instalar" e ficava com medo de perder o que já tem. -->
+    <p class="ja oculto" id="ja"></p>
+    <p class="sub" id="sub">O Sistema será instalado neste computador e ficará pronto para usar no culto — sem internet e sem depender de mais nada.</p>
     <ul class="itens">
       <li>2.459 louvores da ICM e a Bíblia completa</li>
       <li>Slides de PowerPoint e PDF da Escola Bíblica</li>
       <li>Atalho na Área de Trabalho e no menu Iniciar</li>
       <li>Pastas suas para fundos e apresentações</li>
     </ul>
-    <div class="linha"><button class="ok" onclick="comecar()">Instalar</button></div>
+    <div class="linha"><button class="ok" id="bt-instalar" onclick="comecar()">Instalar</button></div>
   </div>
 
   <div id="tela2" class="oculto">
@@ -456,6 +530,29 @@ button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-rad
 <script src="icones.js"></script>
 <script>
   document.getElementById('marca').innerHTML = (window.Icones && window.Icones.MARCA) ? window.Icones.MARCA(78) : '';
+  // Já tem Sistema neste micro? Então isto não é uma instalação nova, é uma
+  // atualização — e o texto e o botão têm que dizer isso, com todas as letras,
+  // porque quem instala por cima está com medo de perder o que já tem.
+  (async () => {
+    try {
+      const s = await window.pywebview.api.situacao();
+      if (!s || !s.instalada) return;
+      // nunca escrever um número que eu não sei: sem a versão do pacote em mãos,
+      // o texto fala do que é certo (o que já está instalado) e nada mais
+      const sabeNova = s.nova && s.nova !== '?';
+      const igual = sabeNova && s.instalada === s.nova;
+      document.getElementById('ja').textContent = igual
+        ? 'Você já está com a versão ' + s.instalada + ', que é esta mesma. Instalar de novo só repõe os arquivos.'
+        : (sabeNova
+            ? 'Você já tem a versão ' + s.instalada + '. Isto vai atualizar para a ' + s.nova + '.'
+            : 'Você já tem o Sistema instalado (versão ' + s.instalada + '). Isto vai repor os arquivos do programa.');
+      document.getElementById('ja').classList.remove('oculto');
+      document.getElementById('sub').textContent =
+        'Seus louvores, fundos, cifras e configurações NÃO são apagados. O Sistema fecha sozinho se estiver aberto.';
+      document.getElementById('bt-instalar').textContent = igual ? 'Reinstalar' : 'Atualizar';
+      document.querySelector('h1').textContent = igual ? 'Reinstalar o Sistema' : 'Atualizar o Sistema';
+    } catch (e) {}
+  })();
   function comecar(){ tela(2); acompanhar(); window.pywebview.api.instalar(); }
   function tela(n){ for(const k of [1,2,3]) document.getElementById('tela'+k).classList.toggle('oculto', k!==n); }
   // A TELA vem buscar o progresso. O caminho contrario (Python empurrando para
@@ -489,6 +586,12 @@ class Api:
         self.exe = ""
         self.estado = {"pct": 0, "txt": ""}
         self.terminou = False
+
+    def situacao(self):
+        """O que já existe neste micro. A tela usa para falar a verdade a quem
+        abriu o instalador com o Sistema já instalado — por engano ou para
+        atualizar. Não decide nada: só informa."""
+        return {"instalada": versao_instalada(), "nova": versao_do_pacote()}
 
     def progresso(self):
         """A tela chama isto de tempo em tempo. Chamada JS -> Python é segura;

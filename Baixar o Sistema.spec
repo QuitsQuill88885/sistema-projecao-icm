@@ -61,5 +61,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='versao_baixador.txt',
-    icon=['sistema.ico'],
+    icon=['instalador.ico'],
 )

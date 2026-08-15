@@ -66,11 +66,22 @@ const Guardar = {
 let CUSTOM = Guardar.ler('icm_fundos', []) || [], OCULTOS = Guardar.ler('icm_ocultos', []) || [];
 function salvarCustom() { Guardar.gravar('icm_fundos', CUSTOM); }
 function salvarOcultos() { Guardar.gravar('icm_ocultos', OCULTOS); }
+// PERGUNTA ANTES. O Samuel clicou em apagar um fundo e ele sumiu na hora, sem
+// volta — era o único ato destrutivo do Sistema que não perguntava nada.
+// Fundo que veio com o programa só fica ESCONDIDO (dá para trazer de volta em
+// Restaurar › Fundos); o que ele mesmo adicionou some de verdade, e a pergunta
+// diz qual dos dois casos é.
 function apagarFundo(f) {
-  if (f.custom) { CUSTOM = CUSTOM.filter(x => x !== f); salvarCustom(); }
-  else { if (!OCULTOS.includes(f.arquivo)) OCULTOS.push(f.arquivo); salvarOcultos(); }
-  if (est.descansoFundo === f.arquivo) est.descansoFundo = null;
-  renderFundos(); toast('Fundo removido.');
+  const nome = f.nome || 'este fundo';
+  const msg = f.custom
+    ? 'Apagar <b>' + nome + '</b>?<br><br>Ele foi você que adicionou — some de vez, e só volta se você adicionar de novo.'
+    : 'Esconder <b>' + nome + '</b>?<br><br>Ele veio com o Sistema, então não some de verdade: volta em Configurações › Sistema › Restaurar › <b>Fundos</b>.';
+  confirmar(msg, () => {
+    if (f.custom) { CUSTOM = CUSTOM.filter(x => x !== f); salvarCustom(); }
+    else { if (!OCULTOS.includes(f.arquivo)) OCULTOS.push(f.arquivo); salvarOcultos(); }
+    if (est.descansoFundo === f.arquivo) est.descansoFundo = null;
+    renderFundos(); toast(f.custom ? 'Fundo apagado.' : 'Fundo escondido.');
+  }, f.custom ? 'Sim, apagar' : 'Sim, esconder');
 }
 
 // fundos do estilo ativo
@@ -1481,7 +1492,9 @@ function pintarMinutos() {
   if (!i) return;
   const min = clamp(+i.value || 5, 1, 600);
   i.value = min;
-  if (r) r.textContent = rotuloMinutos(min);
+  // a unidade fica colada no número; só vale a pena escrever por extenso quando
+  // passa de uma hora, que é quando "90" não se lê de bate-pronto
+  if (r) r.textContent = min < 60 ? 'min' : 'min · ' + rotuloMinutos(min);
   if (!est.timerFim && !est.timerParadoMs) $('#timer-view').textContent = fmt(min * 60000);
 }
 // O operador clica e precisa VER que o clique pegou. Sem isso ele clica duas
@@ -1984,11 +1997,11 @@ const CULTOS_PADRAO = [
   { dia: 6, nome: 'Culto de Doutrina', hora: '19:30', on: true },
   { dia: 6, nome: 'Madrugada', hora: '06:00', on: true },
 ];
-let IGREJA = { nome: '', endereco: '', cultos: null };
+let IGREJA = { nome: '', endereco: '', cultos: null, moveis: {} };
 let MEUS = [];   // louvores que o usuário adicionou
 function carregarDadosUsuario() {
   est.descansoFundo = Guardar.ler('icm_espera', null);   // a tela de espera que você escolheu continua valendo
-  IGREJA = Object.assign({ nome: '', endereco: '', cultos: null }, Guardar.ler('icm_igreja', {}) || {});
+  IGREJA = Object.assign({ nome: '', endereco: '', cultos: null, moveis: {} }, Guardar.ler('icm_igreja', {}) || {});
   MEUS = Guardar.ler('icm_meus_louvores', []) || [];
   CUSTOM = Guardar.ler('icm_fundos', []) || [];
   OCULTOS = Guardar.ler('icm_ocultos', []) || [];
@@ -2091,6 +2104,19 @@ function renderCultos() {
     });
     c.appendChild(bloco);
   }
+  renderMoveis();
+}
+// Ceia e Vigília: data marcada pela igreja neste mês (ver o comentário do
+// avisoSemDiaFixo). Guardado junto com o resto da igreja, salva ao digitar.
+function renderMoveis() {
+  IGREJA.moveis = IGREJA.moveis || {};
+  [['ceia', '#ig-ceia-data', '#ig-ceia-hora'], ['vigilia', '#ig-vig-data', '#ig-vig-hora']].forEach(([k, sd, sh]) => {
+    const d = $(sd), h = $(sh); if (!d || !h) return;
+    const m = IGREJA.moveis[k] || {};
+    d.value = m.data || ''; if (m.hora) h.value = m.hora;
+    d.onchange = () => { (IGREJA.moveis[k] = IGREJA.moveis[k] || {}).data = d.value; salvarIgreja(); renderAvisos(); marcarSalvo(); };
+    h.onchange = () => { (IGREJA.moveis[k] = IGREJA.moveis[k] || {}).hora = h.value; salvarIgreja(); renderAvisos(); marcarSalvo(); };
+  });
 }
 // selo estável "Salvo" — o operador precisa ter certeza, não só um popup que some
 function marcarSalvo() {
@@ -2122,12 +2148,31 @@ function avisoSemana() {
   for (let d = 0; d < 7; d++) cultosDoDia(d).forEach(c => l.push(DIAS_NOME[d] + ' — ' + c.hora + ' — ' + c.nome));
   return { titulo: 'CULTOS DA SEMANA', corpo: l.join('\n') };
 }
+// A CEIA E A VIGÍLIA NÃO TÊM DIA FIXO — a igreja marca conforme o mês, e o
+// aviso chutava "Segunda-feira" toda vez. Agora sai a data que o operador
+// marcou em Configurações › Minha igreja; sem data marcada sai só o convite, e
+// ele escreve o dia na hora. Nunca mais um dia inventado no telão.
+// (E é "Ceia", não "Santa Ceia".)
+function porExtenso(iso) {
+  if (!iso) return '';
+  const p = String(iso).split('-'); if (p.length !== 3) return '';
+  const d = new Date(+p[0], +p[1] - 1, +p[2]);
+  if (isNaN(d)) return '';
+  return DIAS_NOME[d.getDay()] + ', ' + d.getDate() + '/' + p[1];
+}
+function avisoSemDiaFixo(chave, titulo, convite) {
+  const m = (IGREJA.moveis || {})[chave] || {};
+  const dia = porExtenso(m.data);
+  const quando = dia ? dia + (m.hora ? ' — ' + m.hora : '') : '';
+  return { titulo, corpo: (quando ? quando + '\n' : '') + convite };
+}
 function modelosAviso() {
   return [
     { nome: 'Próximo culto', auto: true, faz: avisoProximo },
     { nome: 'Cultos da semana', auto: true, faz: avisoSemana },
     { nome: 'Aniversariantes', faz: () => ({ titulo: 'ANIVERSARIANTES', corpo: 'Vamos orar pelos irmãos que fazem aniversário nesta semana.' }) },
-    { nome: 'Santa Ceia', faz: () => ({ titulo: 'SANTA CEIA', corpo: (cultosDoDia(1)[0] ? 'Segunda-feira — ' + cultosDoDia(1)[0].hora : 'Segunda-feira') + '\nParticipemos todos!' }) },
+    { nome: 'Ceia', faz: () => avisoSemDiaFixo('ceia', 'CEIA', 'Participemos todos!') },
+    { nome: 'Vigília', faz: () => avisoSemDiaFixo('vigilia', 'VIGÍLIA', 'Venhamos buscar ao Senhor.') },
     { nome: 'Bem-vindos', faz: () => ({ titulo: 'SEJAM BEM-VINDOS', corpo: (IGREJA.nome || 'Igreja Cristã Maranata') + '\nA paz do Senhor!' }) },
     { nome: 'Silêncio e oração', faz: () => ({ titulo: 'MOMENTO DE ORAÇÃO', corpo: 'Pedimos silêncio e reverência.' }) },
     { nome: 'Desligue o celular', faz: () => ({ titulo: 'ATENÇÃO', corpo: 'Por favor, desligue ou silencie o celular.' }) },
@@ -2180,7 +2225,7 @@ function aplicarReset(o) {
     est.freeze = false; est.telaCongelada = null; est.live = null;
     est.timerFim = 0; est.timerParadoMs = 0;
     renderFila();
-    IGREJA = { nome: '', endereco: '', cultos: CULTOS_PADRAO.map(c => Object.assign({}, c)) };
+    IGREJA = { nome: '', endereco: '', cultos: CULTOS_PADRAO.map(c => Object.assign({}, c)), moveis: {} };
     salvarIgreja(); aplicarNomeIgreja(); renderCultos(); renderAvisos();
     est.estilo = 'limpo'; aplicarEstilo(); $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
     Guardar.gravar('icm_bemvindo_ok', false);
@@ -2634,6 +2679,50 @@ function executarDoCelular(c) {
     // o celular manda o ALVO (on: true/false), não "inverta": assim dois toques
     // seguidos param no mesmo lugar em vez de congelar e descongelar
     case 'freeze':  if (c.on === undefined || !!c.on !== !!est.freeze) toggleFreeze(); break;
+
+    // ---- O CELULAR FAZENDO O QUE O COMPUTADOR FAZ ----
+    // Ele pediu com todas as letras: abrir e parar a projeção pelo celular, e
+    // ter ali o Timer, o Relógio, o Texto e os Fundos. Quem opera ao lado do
+    // telão nem sempre é quem está sentado no computador — e no meio do culto
+    // ninguém atravessa a igreja para apertar um botão.
+    case 'abrirprojecao':  if (!est.projetando) abrirProjecao(); break;
+    case 'fecharprojecao': if (est.projetando) fecharProjecao(); break;
+    case 'timer':
+      $('#timer-min').value = clamp(+c.min || 5, 1, 600);
+      if (c.rotulo !== undefined) $('#timer-rotulo').value = c.rotulo;
+      pintarMinutos();
+      iniciarTimer(+$('#timer-min').value, $('#timer-rotulo').value);
+      break;
+    // mesma regra do botão do computador: pausado, o toque RETOMA de onde parou
+    case 'timerpausar':
+      est.timerParadoMs ? iniciarTimer(est.timerParadoMs / 60000, est.timerRotulo) : pausarTimer();
+      break;
+    case 'timerparar': pararTimer(); break;
+    case 'relogio':
+      est.live = { tipo: 'relogio' };
+      projetar({ modo: 'relogio', fundo: FB.plano, transicao: true, fade: 400 });
+      break;
+    // o texto vai para os MESMOS campos da aba Texto do computador: o que o
+    // celular projetou fica lá, escrito, pronto para ser corrigido a quatro mãos
+    case 'texto':
+      if ($('#texto-titulo')) $('#texto-titulo').value = c.titulo || '';
+      if ($('#texto-livre'))  $('#texto-livre').value  = c.corpo  || '';
+      projetarTexto(false);
+      break;
+    // o celular manda o NÚMERO da lista, não o arquivo: fundo que ele mesmo
+    // acrescentou é uma imagem embutida de centenas de KB, e ela não precisa
+    // ir e voltar pela rede só para ser escolhida
+    case 'fundo': {
+      const f = listaFundos()[c.i]; if (!f) break;
+      est.live = { tipo: 'fundo' };
+      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: 500 });
+      break;
+    }
+    case 'espera': {   // define a tela de espera padrão, sem projetar nada agora
+      const f = listaFundos()[c.i]; if (!f) break;
+      definirEspera(f.arquivo); renderFundos();
+      break;
+    }
     default:        window.__cmdProj(c.cmd);
   }
 }
@@ -2650,13 +2739,32 @@ function ligarControleCelular() {
     } catch (e) { erros++; }
   }, 600);
   // publica o que está no telão, pro celular mostrar
+  //
+  // A LISTA DE FUNDOS vai junto, mas SEM a imagem dos fundos que o operador
+  // acrescentou: esses são guardados embutidos (data:), pesam centenas de KB
+  // cada um, e mandá-los de segundo em segundo entupiria o wi-fi da igreja
+  // justamente no culto. Eles vão como cartão com o nome, e o celular escolhe
+  // pelo NÚMERO da lista — quem resolve o arquivo é o computador. Assim o canal
+  // continua com os mesmos 2 KB de sempre.
   setInterval(() => {
     const el = $('#agora');
+    let fundos = null;
+    try {
+      fundos = listaFundos().map(f => ({
+        a: /^data:/.test(f.arquivo || '') ? '' : f.arquivo,   // '' = sem miniatura
+        n: f.nome, c: f.cat || 'Base', l: !!f.liso,
+        e: f.arquivo === esperaAtual(),                       // é a tela de espera
+      }));
+    } catch (e) {}
     try {
       fetch('/api/estado', { method: 'POST', body: JSON.stringify({
         agora: el ? el.textContent : '',
         projetando: est.projetando, congelado: est.freeze,
         slides: (SLIDES.lista || []).length,
+        // o que o celular precisa para ter as MESMAS telas do computador
+        estilo: est.estilo, espera: esperaAtual(), fundos,
+        tipo: est.live && est.live.tipo,
+        timer: { rot: est.timerRotulo, fim: est.timerFim, parado: est.timerParadoMs },
         // posição do que está no ar — o celular usa para acender o item certo
         // mesmo quando quem avançou foi o computador ou a Lista de Projeção
         louvor: est.louvorIdx, slide: est.louvorSlide, slidepp: est.slidePos,

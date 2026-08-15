@@ -96,11 +96,26 @@ html,body{height:100%;background:#000;overflow:hidden;
 #grande small{font-family:'Sistema A5','Sistema A1',sans-serif;font-weight:500;
   font-size:3.6cqh;color:#f5d76e;letter-spacing:.42em;text-indent:.42em;
   text-transform:uppercase;margin-bottom:2.6cqh;opacity:.93}
-#livre{top:12%;height:76%;font-family:'Sistema A3',sans-serif;color:#fff;font-size:6cqh;flex-direction:column;text-shadow:0 2px 10px #000c}
+/* padding maior que o .txt padrão (5,5%): aviso curto crescia até encostar na
+   borda — medido 86,6% da largura no "desligue o celular". Nada de telão bate
+   na moldura. */
+#livre{top:12%;height:76%;font-family:'Sistema A3',sans-serif;color:#fff;font-size:6cqh;flex-direction:column;text-shadow:0 2px 10px #000c;padding:0 9%}
 #livre .fitw{gap:.22em;align-items:center;text-align:center}
-#livre .mk{font-weight:900;font-size:1.25em;letter-spacing:1px;margin-bottom:.15em;display:block}
+#livre .mk{font-weight:900;font-size:1.25em;letter-spacing:1px;margin-bottom:.42em;display:block}
 .mk{color:#ffff00}   /* trecho/título amarelo (louvor, texto, avisos) */
 #livre .mk{font-weight:900}
+/* AVISO EM LISTA É TABELA, NÃO PARÁGRAFO.
+   Centrando cada linha por si, "Cultos da semana" saía com cada linha
+   começando num ponto diferente — medido na tela: 6,8%, 15,8%, 16,1%, 20,9%
+   e 24,7% da largura. Agora as colunas se alinham entre si e o BLOCO inteiro
+   é que fica centrado; o horário sai dourado e com dígito de largura fixa,
+   então os dois-pontos ficam um debaixo do outro. */
+#livre .tab{display:grid;column-gap:1.1em;row-gap:.2em;align-items:baseline;
+            justify-content:center;text-align:left}
+#livre .tab .cel{white-space:nowrap}
+#livre .tab .cel.hora{font-variant-numeric:tabular-nums;text-align:center;color:#f5d76e}
+/* lista sem separador (aniversariantes, nomes): mesma margem esquerda p/ todos */
+#livre .lista{display:flex;flex-direction:column;gap:.2em;text-align:left}
 /* ---- ESTILO LIMPO (1 Padrão): faixa no topo (2%..17%) ---- */
 .e-limpo #bib-ref{top:2.2%;height:14.5%}
 .e-limpo #bib-txt{top:22%;height:74%}
@@ -171,6 +186,39 @@ function linhas(cont, arr){ cont.innerHTML=''; cont.style.display='flex';
   const w=document.createElement('div'); w.className='fitw';
   for(const l of arr) w.appendChild(montarLinha(l));
   cont.appendChild(w); }
+// Avisos: o título (marcado, amarelo) fica centrado; o CORPO, quando é lista,
+// vira tabela alinhada. Sem isto "Cultos da semana" ficava com cada linha
+// começando num lugar — foi o que o Samuel chamou de "tudo desalinhado".
+const SEP_AVISO=/\s+[—–-]\s+/;
+const EH_HORA=/^\d{1,2}[:h]\d{2}$/;
+function montarAviso(cont, arr){
+  cont.innerHTML=''; cont.style.display='flex';
+  const w=document.createElement('div'); w.className='fitw';
+  const tit=[], corpo=[];
+  for(const l of (arr||[])) (String(l).indexOf('')>=0 ? tit : corpo).push(l);
+  tit.forEach(l=>w.appendChild(montarLinha(l)));
+  const cel=corpo.map(l=>String(l).split(SEP_AVISO).map(s=>s.trim()));
+  const cols=cel.length?Math.max.apply(null,cel.map(c=>c.length)):0;
+  // tabela só quando a lista REALMENTE é tabular (2+ linhas, todas com o mesmo
+  // número de partes) — uma frase solta com travessão continua sendo frase
+  const tabular = corpo.length>=2 && cols>=2 && cel.every(c=>c.length===cols);
+  if(tabular){
+    const t=document.createElement('div'); t.className='tab';
+    t.style.gridTemplateColumns='repeat('+cols+',auto)';
+    cel.forEach(c=>c.forEach(v=>{
+      const d=document.createElement('span');
+      d.className='cel'+(EH_HORA.test(v)?' hora':''); d.textContent=v; t.appendChild(d);
+    }));
+    w.appendChild(t);
+  } else if(corpo.length>=3){
+    const b=document.createElement('div'); b.className='lista';
+    corpo.forEach(l=>b.appendChild(montarLinha(l)));
+    w.appendChild(b);
+  } else {
+    corpo.forEach(l=>w.appendChild(montarLinha(l)));
+  }
+  cont.appendChild(w);
+}
 function fundo(url){ tela.style.background = url?`#000 url('${url}') center/100% 100% no-repeat`:'#000'; }
 // auto-ajuste: reduz a fonte até o conteúdo caber na caixa (nenhum louvor/versículo quebra)
 /* Ajusta a fonte para o texto SEMPRE caber inteiro na caixa.
@@ -204,10 +252,14 @@ function fit(box, cqh, escala, crescer, linhasRef){
   }
   let px = base;
   box.style.fontSize = px+'px';
-  const cabe = ()=> w.scrollHeight - box.clientHeight <= 1 && w.scrollWidth - box.clientWidth <= 1;
+  // largura ÚTIL: clientWidth inclui o respiro lateral, e comparar com ele
+  // deixava o texto avançar por cima da margem sem ninguém reclamar
+  const cs0 = getComputedStyle(box);
+  const larg = box.clientWidth - parseFloat(cs0.paddingLeft||0) - parseFloat(cs0.paddingRight||0);
+  const cabe = ()=> w.scrollHeight - box.clientHeight <= 1 && w.scrollWidth - larg <= 1;
   for(let i=0;i<20;i++){                       // encolhe até caber — nunca desiste no meio
     if(cabe()) break;
-    const r = Math.min(box.clientHeight/w.scrollHeight, box.clientWidth/w.scrollWidth) * 0.98;
+    const r = Math.min(box.clientHeight/w.scrollHeight, larg/w.scrollWidth) * 0.98;
     px *= (r < 1 ? r : 0.94);
     if(px < 6){ px = 6; box.style.fontSize = px+'px'; break; }
     box.style.fontSize = px+'px';
@@ -215,15 +267,29 @@ function fit(box, cqh, escala, crescer, linhasRef){
   // Uma linha "quebrou" quando ela virou duas: aviso com a frase partida no meio
   // ("Culto de Senhoras —" numa linha e "19:30" na outra) fica feio, mesmo cabendo.
   const quebrou = () => {
-    for(const el of w.children){
-      const lh = parseFloat(getComputedStyle(el).lineHeight) || (px * 1.42);
-      if(el.offsetHeight > lh * 1.6) return true;
+    // mede as LINHAS de verdade: com o aviso em tabela, w.children é a grade
+    // inteira e ela sempre pareceria "quebrada", travando o crescer
+    const finas = w.querySelectorAll('.linha, .cel');
+    for(const el of (finas.length ? finas : w.children)){
+      // mede quem REALMENTE tem o texto: o título do aviso mora dentro de um
+      // .mk com margem própria, e a margem entrava na conta — a linha parecia
+      // quebrada sem ter quebrado, e o crescer nunca saía do lugar
+      const alvo = (el.children.length === 1 && el.firstElementChild) ? el.firstElementChild : el;
+      const lh = parseFloat(getComputedStyle(alvo).lineHeight) || (px * 1.42);
+      if(alvo.offsetHeight > lh * 1.6) return true;
     }
     return false;
   };
   // sobrou espaço (ex.: só 1 versículo)? cresce até preencher, sem passar do limite
+  //
+  // O TETO DO AVISO ERA 1,7 E ISSO É GRANDE DEMAIS. Medido no telão: o
+  // "ATENÇÃO — desligue o celular" chegava a 8,51% da altura da tela, quase o
+  // DOBRO da letra do louvor oficial (4,36%), e a linha ocupava 86,6% da
+  // largura. Aviso é recado, não letreiro: com 1,15 um aviso de uma palavra
+  // ainda ganha corpo, e o de duas linhas fica maior que o louvor sem virar
+  // outra coisa na mesma tela (o título já sai 1,25x maior que o corpo).
   if(crescer && px >= base - 0.5 && !quebrou()){
-    const teto = base * (crescer === 'aviso' ? 1.7 : 2.2);
+    const teto = base * (crescer === 'aviso' ? 1.15 : 2.2);
     for(let i=0;i<18;i++){
       const tentativa = px * 1.06; if(tentativa > teto) break;
       box.style.fontSize = tentativa+'px';
@@ -282,7 +348,7 @@ function aplicar(e){
       el.livre.style.height = comBarra ? '72%' : '80%';
       // aviso costuma ter 2 ou 3 linhas curtas: sem CRESCER ele ficava boiando
       // minúsculo no meio da tela, ilegível do fundo da igreja
-      linhas(el.livre, e.linhas||[]); fit(el.livre, e.tam||6, e.escala, 'aviso');
+      montarAviso(el.livre, e.linhas||[]); fit(el.livre, e.tam||6, e.escala, 'aviso');
     }
     else if(e.modo==='relogio'){
       fundo(e.fundo); el.grande.style.display='flex';
