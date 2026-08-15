@@ -1093,13 +1093,32 @@ function fecharCifra() {
   est.modoCifra = false; atualizarExtras();
 }
 
-// Liga/desliga a exibição animada das CIAS. Ela vem LIGADA: é assim que o louvor
-// de criança se apresenta. Desligando, cai no texto normal.
+// Liga/desliga a exibição animada das CIAS NESTE louvor. Ela vem ligada ou
+// desligada conforme a preferência de fábrica (Configurações › Sistema); aqui é
+// a decisão da hora, para o louvor que está na mão.
 function alternarAnimacao() {
   est.modoAnim = est.modoAnim === false;      // undefined/true -> false; false -> true
   atualizarExtras();
   if (est.louvorIdx >= 0) projetarLouvor(est.louvorIdx, est.louvorSlide || 0, true);
   toast(est.modoAnim === false ? 'Exibindo o texto deste louvor.' : 'Exibindo a animação das CIAS.');
+}
+// A PREFERÊNCIA, que vale para todo louvor de CIAS e sobrevive a fechar e abrir.
+// De fábrica LIGADA: é assim que o louvor de criança se apresenta na igreja.
+// Desligada, o louvor das CIAS abre como texto e a animação fica a um toque de
+// distância no botão ao lado dos slides.
+function animAuto() { return Guardar.ler('icm_anim_auto', true) !== false; }
+function pintarAnimAuto() {
+  const b = $('#btn-anim-auto'); if (!b) return;
+  const on = animAuto();
+  b.textContent = on ? 'Ligado' : 'Desligado';
+  b.classList.toggle('verde', on);
+}
+function alternarAnimAuto() {
+  const novo = !animAuto();
+  Guardar.gravar('icm_anim_auto', novo);
+  est.modoAnim = novo;                 // vale já para o próximo louvor escolhido
+  pintarAnimAuto(); atualizarExtras();
+  toast(novo ? 'Louvor das CIAS abre com a animação.' : 'Louvor das CIAS abre como texto.');
 }
 
 // Mostra/esconde os botões conforme o louvor que está selecionado agora.
@@ -1975,7 +1994,9 @@ function renderSlides() {
 function projetarSlide(i) {
   if (!SLIDES.lista || !SLIDES.lista[i]) return;
   est.slidePos = i; est.live = { tipo: 'slide', i, n: SLIDES.lista.length };
-  projetar({ modo: 'fundo', fundo: SLIDES.lista[i], transicao: true, fade: 260 });
+  // tela pronta, igual à das CIAS: vai inteira e sem esticar. Apresentação da
+  // Escola Bíblica em 4:3 estava sendo alargada até o 16:9 do telão.
+  projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: 260 });
   renderSlides();
   const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
 }
@@ -2001,6 +2022,7 @@ let IGREJA = { nome: '', endereco: '', cultos: null, moveis: {} };
 let MEUS = [];   // louvores que o usuário adicionou
 function carregarDadosUsuario() {
   est.descansoFundo = Guardar.ler('icm_espera', null);   // a tela de espera que você escolheu continua valendo
+  est.modoAnim = Guardar.ler('icm_anim_auto', true) !== false;   // CIAS com animação, de fábrica
   IGREJA = Object.assign({ nome: '', endereco: '', cultos: null, moveis: {} }, Guardar.ler('icm_igreja', {}) || {});
   MEUS = Guardar.ler('icm_meus_louvores', []) || [];
   CUSTOM = Guardar.ler('icm_fundos', []) || [];
@@ -2559,6 +2581,7 @@ function ligarEventos() {
   const cma = $('#cifra-maior'); if (cma) cma.onclick = () => ajustarFonteCifra(+1);
   const cov = $('#cifra-ov'); if (cov) cov.onclick = e => { if (e.target === cov) fecharCifra(); };
   const ban = $('#btn-anim'); if (ban) ban.onclick = alternarAnimacao;
+  const baa = $('#btn-anim-auto'); if (baa) { baa.onclick = alternarAnimAuto; pintarAnimAuto(); }
   carregarExtras();                            // cifras e animações que já foram importadas
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
   const bl = $('#btn-limpar'); if (bl) bl.onclick = limparLista;
@@ -2723,6 +2746,10 @@ function executarDoCelular(c) {
       definirEspera(f.arquivo); renderFundos();
       break;
     }
+    // o celular tem que alcançar TUDO que se faz no culto — foi pedido assim.
+    // Estilo e animação das CIAS eram as duas últimas que só existiam aqui.
+    case 'estilo': trocarEstilo(); break;
+    case 'anim':   alternarAnimacao(); break;
     default:        window.__cmdProj(c.cmd);
   }
 }

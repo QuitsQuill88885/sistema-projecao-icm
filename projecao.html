@@ -220,6 +220,15 @@ function montarAviso(cont, arr){
   cont.appendChild(w);
 }
 function fundo(url){ tela.style.background = url?`#000 url('${url}') center/100% 100% no-repeat`:'#000'; }
+/* TELA PRONTA — a animação das CIAS e o slide do PowerPoint.
+   A imagem JÁ é a tela inteira (título, letra e arte), então ela não se soma a
+   nada: só aparece. Vai INTEIRA, sem esticar, porque as telas das CIAS são 4:3
+   (1440x1080, as 337) e o telão é 16:9 — esticar engordaria a letra e o desenho
+   em 33%. O que sobra dos lados fica preto, como num telão de cinema.
+   ESTE MODO FALTAVA: o Sistema mandava modo:'slide' e nenhum caso o atendia, de
+   modo que a animação das CIAS caía no vazio e o telão ficava PRETO. Era por
+   isso que o Samuel nunca tinha visto a função das CIAS funcionar. */
+function telaPronta(url){ tela.style.background = url?`#000 url('${url}') center/contain no-repeat`:'#000'; }
 // auto-ajuste: reduz a fonte até o conteúdo caber na caixa (nenhum louvor/versículo quebra)
 /* Ajusta a fonte para o texto SEMPRE caber inteiro na caixa.
    A escala do A-/A+ entra ANTES do ajuste: aumentar aumenta, mas nunca deixa cortar. */
@@ -308,6 +317,7 @@ function aplicar(e){
     limpar();
     if(e.modo==='preto'){ fundo(''); }
     else if(e.modo==='fundo'){ fundo(e.fundo); }
+    else if(e.modo==='slide'){ telaPronta(e.src); }   // CIAS e PowerPoint
     else if(e.modo==='biblia'){
       fundo(e.fundo); el.ref.style.display='flex'; el.bib.style.display='flex';
       el.ref.textContent=e.ref||''; linhas(el.bib, e.linhas||[]); fit(el.bib, e.tam||5.55, e.escala);

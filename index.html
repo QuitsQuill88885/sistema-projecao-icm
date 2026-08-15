@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=26">
+<link rel="stylesheet" href="app.css?v=27">
 </head><body>
 <div id="app">
   <header>
@@ -149,7 +149,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=26"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=27"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -317,6 +317,13 @@
           <p class="dica">Ajustes gerais e restauração.</p>
           <div class="reset-row"><div><b>Apresentação inicial</b><small>Rever como o Sistema funciona e reconfigurar a igreja.</small></div>
             <button class="big-btn" id="btn-rever">Ver de novo</button></div>
+          <h3 class="menu-h3">Louvores das CIAS</h3>
+          <!-- De fábrica LIGADO: o louvor de criança se apresenta com a tela
+               animada, e é assim que a igreja está acostumada a ver. Desligando
+               aqui, ele abre no texto comum, e a animação continua a um toque de
+               distância no botão ao lado da lista de slides. -->
+          <div class="reset-row"><div><b>Abrir com a tela animada</b><small>Louvor das CIAS já entra no telão com a animação, sem você pedir. Desligado, ele abre como texto e você liga na hora, no botão <b>Animação</b>.</small></div>
+            <button class="big-btn" id="btn-anim-auto">Ligado</button></div>
           <h3 class="menu-h3">Atualizações</h3>
           <div class="reset-row" id="linha-completar" hidden><div><b>Completar o Sistema</b><small id="comp-status">Baixa as animações das CIAS, as cifras e os cadernos de melodia (≈ 590 MB). Este botão só aparece porque elas ainda não estão neste computador.</small></div>
             <button class="big-btn verde" id="btn-completar">Completar</button></div>
@@ -383,11 +390,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=26"></script>
+<script src="dados/louvores.js?v=27"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=26"></script>
+<script src="dados/galeria.js?v=27"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=26"></script>
-<script src="app.js?v=26"></script>
+<script src="icones.js?v=27"></script>
+<script src="app.js?v=27"></script>
 </body></html>

@@ -248,6 +248,7 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
 .bt.verde{background:#1d7a45;color:#fff}
 .bt.vermelho{background:#7a2233;color:#ffd9d9}
 .bt:active{transform:scale(.97)}
+.dica-tel{font-size:11px;color:#7f9ac0;margin-top:9px;text-align:center}
 .bt-atalhos{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
 .bt-min{flex:1;min-width:62px;background:#16233c;border:1px solid var(--borda);color:#cfe0f5;
   border-radius:8px;padding:9px 4px;font-size:12px;font-weight:600}
@@ -368,6 +369,21 @@ textarea.campo{line-height:1.4;resize:vertical}
     <div class="bloco-tel">
       <div class="bt-tit">Relógio</div>
       <div class="bt-fila"><button class="bt verde" id="t-relogio">Projetar o relógio</button></div>
+    </div>
+
+    <!-- As últimas coisas que só existiam no computador. Ele pediu que o celular
+         alcançasse TODAS as funções — quem opera ao lado do telão precisa poder
+         trocar o estilo e apagar a tela sem atravessar a igreja. -->
+    <div class="bloco-tel">
+      <div class="bt-tit">Telas</div>
+      <div class="bt-fila">
+        <button class="bt" id="t-estilo">Trocar estilo</button>
+        <button class="bt" id="t-preto">Tela preta</button>
+      </div>
+      <div class="bt-fila">
+        <button class="bt" id="t-anim">Animação das CIAS</button>
+      </div>
+      <p class="dica-tel" id="t-estilo-nome">—</p>
     </div>
 
     <div class="bloco-tel">
@@ -524,6 +540,9 @@ function pintarTelao(e) {
   const t = e.timer || {};
   const bp = $('#t-pausar');
   if (bp) bp.textContent = t.parado ? 'Retomar' : 'Pausar';
+  // qual estilo está no ar agora
+  const en = $('#t-estilo-nome');
+  if (en && e.estilo) en.textContent = 'No telão: ' + (e.estilo === 'mapa' ? 'Estilo Mapa-múndi' : 'Estilo Padrão');
   // os fundos
   pintarFundos(e.fundos);
 }
@@ -580,6 +599,9 @@ $('#t-iniciar').onclick  = () => enviar('timer', { min: +$('#t-min').value || 5,
 $('#t-pausar').onclick   = () => enviar('timerpausar');
 $('#t-parar').onclick    = () => enviar('timerparar');
 $('#t-relogio').onclick  = () => enviar('relogio');
+$('#t-estilo').onclick   = () => enviar('estilo');
+$('#t-preto').onclick    = () => enviar('preto');
+$('#t-anim').onclick     = () => enviar('anim');
 $('#t-projetar').onclick = () => enviar('texto', { titulo: $('#t-titulo').value, corpo: $('#t-texto').value });
 unidadeMin();
 // recados prontos, os mesmos do computador
