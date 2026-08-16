@@ -81,6 +81,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .onde{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ouro)}
 .item:active{background:var(--azul)}
 .item.sel{background:var(--azul);font-weight:600}
+.item .no-ar{font-style:normal;font-size:10px;color:var(--ouro);letter-spacing:.3px;margin-left:4px}
 .item small{color:var(--ouro);font-weight:700;min-width:34px}
 .vazio{padding:26px 14px;text-align:center;color:#6f86a8;font-style:italic;font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px}
@@ -333,7 +334,7 @@ textarea.campo{line-height:1.4;resize:vertical}
 <main>
   <!-- LOUVORES -->
   <div class="aba" data-aba="louvor">
-    <div class="busca"><input id="q" placeholder="Número, nome ou trecho da letra…" autocomplete="off"></div>
+    <div class="busca"><input id="q" placeholder="Número, nome ou trecho da letra…" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="off"></div>
     <div class="lista" id="lista"></div>
     <div id="slides-louvor"></div>
   </div>
@@ -1266,7 +1267,7 @@ function listarLouvores(f) {
     const d = document.createElement('div');
     d.className = 'item' + (i === louvorSel ? ' sel' : '');
     d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') +
-      '<span>' + s.titulo + '</span>' +
+      '<span>' + s.titulo + (i === louvorSel ? '<em class="no-ar"> · no ar</em>' : '') + '</span>' +
       '<button class="add" title="Guardar na Lista de Projeção">+</button>';
     d.onclick = ev => {
       if (ev.target.classList.contains('add')) {   // o + guarda; o toque projeta
@@ -1279,6 +1280,8 @@ function listarLouvores(f) {
     cont.appendChild(d); n++;
   }
   if (!n) cont.innerHTML = '<div class="vazio">Nada encontrado.</div>';
+  const sel = cont.querySelector('.item.sel');
+  if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
 function mostrarSlides(i) {
   const s = LOUVORES[i], c = $('#slides-louvor'); c.innerHTML = '';
