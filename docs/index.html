@@ -49,7 +49,7 @@ img{max-width:100%;height:auto;display:block}
 
 /* ---------- topo: o telao primeiro. e' o que a pessoa quer ver ---------- */
 .capa{background:linear-gradient(180deg,#0b1526 0%,#16294a 62%,#0b1526 100%);color:#eaf0fb;
-      padding:52px 0 44px;border-bottom:3px solid var(--sangue)}
+      padding:52px 0 44px;border-bottom:3px solid var(--sangue);overflow:hidden}
 .capa .faixa{display:grid;gap:30px;grid-template-columns:1fr;align-items:center}
 @media(min-width:900px){.capa .faixa{grid-template-columns:1fr 1.15fr;gap:44px}}
 .marca{display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -178,11 +178,11 @@ ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
 .cochicho{color:var(--suave);font-style:italic;font-size:14.5px;max-width:58ch;
           margin:18px auto 0;text-align:center;line-height:1.6}
 .duplo{display:grid;gap:30px;align-items:center;grid-template-columns:1fr}
-@media(min-width:820px){.duplo{grid-template-columns:1.4fr 1fr}}
+@media(min-width:820px){.duplo{grid-template-columns:1fr 1fr}}
 /* a foto do celular e' RETRATO: nunca deixar mais larga que um celular de
    verdade, e sempre inteira na tela, sem cortar nem esticar */
 .foto-celular{width:min(270px,72vw);margin:0 auto;border-radius:22px;
-              border:1px solid var(--borda);box-shadow:0 16px 40px #0003}
+              border:1px solid var(--borda);box-shadow:0 8px 24px #0003}
 .moldura{border-radius:10px;border:1px solid var(--borda);overflow:hidden}
 
 footer{background:var(--tinta);color:#7f96b8;padding:40px 0;font-size:14px;
