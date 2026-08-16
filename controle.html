@@ -206,6 +206,9 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .leitura{padding:11px 13px;background:#101d33;border-left:3px solid var(--ouro);
          border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5}
 .leitura b{color:var(--ouro)}
+.sug-cel{margin-top:10px}
+.sug-cel .sug-cab{font-size:11px;color:#6f86a8;letter-spacing:.5px;text-transform:uppercase;padding:0 4px 5px}
+.sug-cel .item{cursor:pointer}
 /* ---- marcar vários versículos e projetar numa tela só (como no computador) ---- */
 .sec-vers{display:flex;align-items:center;gap:8px;margin:14px 0 7px}
 .sec-vers .sec{margin:0;flex:1}
@@ -1283,6 +1286,32 @@ function listarLouvores(f) {
   const sel = cont.querySelector('.item.sel');
   if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
+let sugCelPedindo = false;
+function sugerirCelular(livro, cap, v) {
+  const cx = $('#sug-cel'); if (!cx) return;
+  cx.hidden = true; cx.innerHTML = '';
+  const cod = livro + '.' + cap + '.' + v;
+  const mostrar = () => {
+    const base = (window.SUGESTOES && window.SUGESTOES[cod]) || [];
+    if (!base.length) return;
+    cx.hidden = false;
+    cx.innerHTML = '<div class="sug-cab">Louvores para este versículo</div>';
+    base.slice(0, 3).forEach(([idx]) => {
+      const s = LOUVORES[idx]; if (!s) return;
+      const d = document.createElement('div'); d.className = 'item';
+      d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>';
+      d.onclick = () => { louvorSel = idx; enviar('louvor', {idx}); listarLouvores($('#q').value); mostrarSlides(idx); };
+      cx.appendChild(d);
+    });
+  };
+  if (window.SUGESTOES) { mostrar(); return; }
+  if (sugCelPedindo) return;
+  sugCelPedindo = true;
+  const sc = document.createElement('script');
+  sc.src = 'dados/sugestoes.js';
+  sc.onload = () => { sugCelPedindo = false; mostrar(); };
+  document.head.appendChild(sc);
+}
 function mostrarSlides(i) {
   const s = LOUVORES[i], c = $('#slides-louvor'); c.innerHTML = '';
   if (!s) return;
@@ -1346,7 +1375,7 @@ function buscarPorTrecho(txt) {
     d.className = 'item item-trecho';
     d.innerHTML = '<b>' + livro + ' ' + cap + ':' + v + '</b><small>' +
                   t.slice(0, 110) + (t.length > 110 ? '…' : '') + '</small>';
-    d.onclick = () => { livroSel = livro; capSel = cap; passoBiblia(); enviar('verso', { livro, cap, v }); };
+    d.onclick = () => { livroSel = livro; capSel = cap; passoBiblia(); enviar('verso', { livro, cap, v }); sugerirCelular(livro, cap, v); };
     c.appendChild(d);
   });
 }
@@ -1461,6 +1490,7 @@ function passoBiblia(voltando) {
         [...g.children].forEach(x => x.classList.remove('sel'));
         b.classList.add('sel'); mostrar();
         enviar('verso', {livro: livroSel, cap: capSel, v});
+        sugerirCelular(livroSel, capSel, v);
       };
       b.oncontextmenu = e => e.preventDefault();     // segurar não abre menu do navegador
       // segurar = guardar na lista, já marcado: com 2 ou mais marcados o Sistema
@@ -1486,6 +1516,7 @@ function passoBiblia(voltando) {
     // o versículo — e, marcando vários, vê a tela inteira que vai projetar.
     const rod = document.createElement('div'); rod.className = 'rodape-vers';
     rod.innerHTML = '<div class="leitura" id="leitura"></div>' +
+      '<div class="sug-cel" id="sug-cel" hidden></div>' +
       // botão VISÍVEL para guardar na lista o versículo que está aberto. O jeito
       // antigo era só "segurar o dedo", que ninguém descobria; agora tem botão.
       '<button class="bj-guardar" id="bj-guardar" hidden>＋ Guardar na lista</button>' +
