@@ -133,6 +133,14 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .inst.on b{color:var(--ouro)}
 .inst-trocar{background:none;border:none;color:#7f9ac0;font-size:11.5px;text-decoration:underline;
   padding:4px 2px;cursor:pointer}
+/* rolar sozinho: barra fina, gruda no topo junto com a cifra-topo */
+.auto-linha{position:sticky;top:52px;z-index:6;display:flex;align-items:center;gap:8px;
+  padding:7px 10px;background:#0d1a30;border:1px solid var(--borda);border-radius:9px;margin-top:6px}
+.auto-bt{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
+  padding:7px 13px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.auto-bt.on{background:var(--verde);color:#fff;border-color:var(--verde)}
+.auto-lbl{font-size:10px;color:#7f9ac0}
+.auto-linha input[type=range]{flex:1;min-width:60px}
 /* ---- a cifra desenhada, no lugar do PDF ---- */
 /* SEM overflow proprio: dois containers rolaveis aninhados travam a rolagem no
    Safari do iPhone. Quem rola e' a pagina. */
@@ -363,6 +371,15 @@ textarea.campo{line-height:1.4;resize:vertical}
         <span class="cifra-nome" id="cifra-nome"></span>
         <span class="tom-cx" id="tom-cx"></span>
         <span class="cifra-zoom"><button id="cf-menos" title="Letra menor">A−</button><button id="cf-mais" title="Letra maior">A+</button></span>
+      </div>
+      <!-- ROLAR SOZINHO: a folha desliza enquanto o músico toca, sem tirar a mão
+           do instrumento. Fica na barra que gruda no topo, então continua ao
+           alcance mesmo com a cifra rolada. -->
+      <div class="auto-linha" id="auto-linha">
+        <button class="auto-bt" id="auto-bt" aria-label="Rolar sozinho">▶ Rolar</button>
+        <span class="auto-lbl">devagar</span>
+        <input type="range" id="auto-vel" min="1" max="10" value="3" aria-label="Velocidade">
+        <span class="auto-lbl">rápido</span>
       </div>
       <div class="folha" id="folha"></div>
     
@@ -980,9 +997,43 @@ async function abrirCifra(s) {
   }
 }
 $('#cifra-volta').onclick = () => {
+  pararAuto();
   $('#cifra-quadro').hidden = true;
   document.querySelector('.aba[data-aba="cifra"]').classList.remove('cifra-aberta');
 };
+
+/* ROLAR SOZINHO — a folha desliza enquanto o músico toca.
+   Quem rola é o main (a folha não tem rolagem própria, para não travar no
+   Safari). O passo é fracionário e acumulado, senão em velocidade baixa o
+   scrollTop (que é inteiro) nunca mudava. Um toque na folha pausa — o músico
+   precisa poder parar na hora sem procurar botão. */
+// setInterval, não requestAnimationFrame: o rAF congela quando a aba sai da
+// frente, e aí a folha parava sozinha. O passo é fracionário e acumulado,
+// senão em velocidade baixa o scrollTop (inteiro) nunca mudava.
+let autoOn = false, autoAcc = 0, autoTimer = null;
+const AUTO_MS = 40;                        // ~25 passos por segundo
+function passoAuto() {
+  const v = +($('#auto-vel') && $('#auto-vel').value || 3);
+  return 0.25 + v * 0.35;                  // px por passo: de ~0,6 a ~3,75
+}
+function iniciarAuto() {
+  autoOn = true; autoAcc = 0;
+  const b = $('#auto-bt'); if (b) { b.textContent = '⏸ Parar'; b.classList.add('on'); }
+  clearInterval(autoTimer);
+  autoTimer = setInterval(() => {
+    const m = document.querySelector('main');
+    autoAcc += passoAuto();
+    if (autoAcc >= 1) { const n = Math.floor(autoAcc); m.scrollTop += n; autoAcc -= n; }
+    if (m.scrollTop + m.clientHeight >= m.scrollHeight - 1) pararAuto();   // chegou ao fim
+  }, AUTO_MS);
+}
+function pararAuto() {
+  autoOn = false; clearInterval(autoTimer); autoTimer = null;
+  const b = $('#auto-bt'); if (b) { b.textContent = '▶ Rolar'; b.classList.remove('on'); }
+}
+$('#auto-bt').onclick = () => { autoOn ? pararAuto() : iniciarAuto(); };
+// tocar na folha pausa (mas não quando ele arrasta para ler outra parte)
+$('#folha').addEventListener('click', () => { if (autoOn) pararAuto(); });
 
 /* Tamanho da letra: o músico está a um metro da estante, não a trinta
    centímetros do celular. Fica gravado, como o instrumento. */
