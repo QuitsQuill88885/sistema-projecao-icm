@@ -528,6 +528,8 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .cred-bloco p{margin:0 0 9px}
 .cred-bloco p:last-child{margin:0}
 .cred-bloco b{color:#a9bcd8;font-weight:600}
+.cred-mais-btn{background:none;border:none;color:#4e6a9a;font-size:11px;cursor:pointer;padding:3px 0 0;display:block;letter-spacing:.3px}
+.cred-mais-btn:hover{color:#a9bcd8}
 
 /* ---- buscar o versículo pelo que ele DIZ ----
    Quando o operador digita algo que não é nome de livro, a coluna dos livros

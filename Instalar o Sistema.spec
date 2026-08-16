@@ -56,5 +56,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='versao_instalador.txt',   # nome do programa no firewall e nas propriedades
-    icon=['instalador.ico'],
+    icon=['sistema.ico'],
 )

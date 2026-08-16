@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=28">
+<link rel="stylesheet" href="app.css?v=29">
 </head><body>
 <div id="app">
   <header>
@@ -149,7 +149,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=28"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=29"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -400,16 +400,19 @@
           <div class="cred-bloco">
             <p><b>Sistema</b> — projeção para igrejas.<br>
                Desenvolvido por <b>Samuel Mariano Ribeiro</b>, 2026.</p>
-            <p>O código é livre: pode ser copiado, modificado e usado por qualquer
-               igreja, inclusive comercialmente. A única condição é que o nome do
-               autor continue citado. Código sob licença MIT, conteúdo sob
-               Creative Commons Atribuição 4.0.</p>
-            <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
-               fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
-               licença.</p>
-            <p>Fontes: <b>Outfit</b> (Rodrigo Fuenzalida) e <b>Bebas Neue</b>
-               (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
-               com o programa.</p>
+            <div id="cred-extra" style="display:none">
+              <p>O código é livre: pode ser copiado, modificado e usado por qualquer
+                 igreja, inclusive comercialmente. A única condição é que o nome do
+                 autor continue citado. Código sob licença MIT, conteúdo sob
+                 Creative Commons Atribuição 4.0.</p>
+              <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
+                 fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
+                 licença.</p>
+              <p>Fontes: <b>Outfit</b> (Rodrigo Fuenzalida) e <b>Bebas Neue</b>
+                 (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
+                 com o programa.</p>
+            </div>
+            <button id="btn-cred-mais" class="cred-mais-btn">ver mais ▾</button>
           </div>
 </section>
       </div>
@@ -434,11 +437,11 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=28"></script>
+<script src="dados/louvores.js?v=29"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=28"></script>
+<script src="dados/galeria.js?v=29"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=28"></script>
-<script src="app.js?v=28"></script>
+<script src="icones.js?v=29"></script>
+<script src="app.js?v=29"></script>
 </body></html>

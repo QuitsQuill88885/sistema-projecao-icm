@@ -2642,6 +2642,12 @@ function ligarEventos() {
   };
   $$('[data-ir]').forEach(b => b.onclick = () => menuSecao(b.dataset.ir));
   $$('[data-reset]').forEach(b => b.onclick = () => resetar(b.dataset.reset));
+  const bm = $('#btn-cred-mais');
+  if (bm) bm.onclick = () => {
+    const ex = $('#cred-extra'), aberto = ex.style.display !== 'none';
+    ex.style.display = aberto ? 'none' : 'block';
+    bm.textContent = aberto ? 'ver mais ▾' : 'ver menos ▴';
+  };
   document.addEventListener('keydown', e => {
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
     // a cifra aberta também segura as teclas: ali a seta rola a folha. Se ela

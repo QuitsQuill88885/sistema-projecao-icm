@@ -58,5 +58,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='versao_instalador.txt',
-    icon=['instalador.ico'],
+    icon=['sistema.ico'],
 )
