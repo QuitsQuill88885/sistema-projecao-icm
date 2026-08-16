@@ -111,6 +111,16 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* o PDF ocupa tudo: o leitor do próprio navegador dá zoom e rolagem, que é o
    que o músico precisa para repetir um trecho sem depender de ninguém */
 .cifra-quadro iframe{flex:1;width:100%;border:0;background:#fff}
+/* CIFRA ABERTA: a folha SUBSTITUI a tela de escolha. Sem isto o quadro nascia
+   embaixo do seletor de instrumento, do afinador, da busca, do "no telão" e da
+   lista inteira — a bagunça que o Samuel apontou. Com a cifra aberta, some tudo
+   isso e fica só a folha e o "‹ voltar". */
+.aba[data-aba="cifra"].cifra-aberta > .inst-caixa,
+.aba[data-aba="cifra"].cifra-aberta > .bt-fila,
+.aba[data-aba="cifra"].cifra-aberta > #aba-afn,
+.aba[data-aba="cifra"].cifra-aberta > .busca,
+.aba[data-aba="cifra"].cifra-aberta > #cifra-agora,
+.aba[data-aba="cifra"].cifra-aberta > #lista-cifras{display:none}
 /* ---- INSTRUMENTO: quadradinhos, escolhidos uma vez e guardados ---- */
 .inst-caixa{padding:10px 2px 4px}
 .inst-tit{font-size:12.5px;color:#9db3d6;margin-bottom:9px}
@@ -953,7 +963,12 @@ async function abrirCifra(s) {
   $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
   $('#folha').innerHTML = '<p class="cab">Carregando…</p>';
   desloc = 0;                       // louvor novo comeca no tom impresso
+  // A cifra SUBSTITUI a tela de escolha: sem isto o quadro aparecia amontoado
+  // embaixo do seletor de instrumento, do afinador, da busca e da lista inteira
+  // — a bagunça que o Samuel apontou. Agora fica só a folha e o "‹ voltar".
+  document.querySelector('.aba[data-aba="cifra"]').classList.add('cifra-aberta');
   $('#cifra-quadro').hidden = false;
+  const m = document.querySelector('main'); if (m) m.scrollTop = 0;
   aplicarCf();
   const em = euToco === 'violao' ? 'C' : euToco;
   try {
@@ -964,7 +979,10 @@ async function abrirCifra(s) {
     $('#folha').innerHTML = '<p class="cab">Não consegui buscar. Veja se o computador ainda está ligado.</p>';
   }
 }
-$('#cifra-volta').onclick = () => { $('#cifra-quadro').hidden = true; };
+$('#cifra-volta').onclick = () => {
+  $('#cifra-quadro').hidden = true;
+  document.querySelector('.aba[data-aba="cifra"]').classList.remove('cifra-aberta');
+};
 
 /* Tamanho da letra: o músico está a um metro da estante, não a trinta
    centímetros do celular. Fica gravado, como o instrumento. */
