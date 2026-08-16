@@ -159,6 +159,7 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .fundo-card:hover{border-color:var(--azul2)}
 .fundo-card{position:relative}
 .fundo-card.espera{border-color:var(--ouro)}
+.fundo-card.projetando{border-color:var(--verde);box-shadow:0 0 0 1px var(--verde)}
 .fundo-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer}
 .fundo-card .nome{display:block;padding:7px;font-size:13px;text-align:center;cursor:pointer}
 /* ações do fundo aparecem só ao passar o mouse; a ativa mostra o selo dourado */

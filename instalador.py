@@ -263,10 +263,14 @@ def fechar_sistema_aberto(espera=6.0):
 
 def matar_webview():
     """Encerra so os processos do motor do Edge que pertencem ao Sistema."""
+    # ATENÇÃO: NÃO usar '*Sistema.exe*' aqui — 'Instalar o Sistema.exe' também
+    # contém essa substring e o filtro mataria o WebView do PRÓPRIO instalador,
+    # travando a janela logo depois do clique em "Instalar".
+    # Os dois filtros abaixo bastam: cobrem a pasta do programa instalado e a
+    # pasta de dados do usuário, sem riscos de colateral.
     consulta = (
         r"Get-CimInstance Win32_Process -Filter ""Name='msedgewebview2.exe'"" | "
-        r"Where-Object { $_.CommandLine -like '*Sistema.exe*' -or "
-        r"$_.CommandLine -like '*\Programs\Sistema*' -or "
+        r"Where-Object { $_.CommandLine -like '*\Programs\Sistema*' -or "
         r"$_.CommandLine -like '*Sistema Projecao*' } | "
         r"ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }")
     try:
@@ -463,190 +467,6 @@ def abrir_pasta_dados():
     except Exception: pass
 
 
-HTML = """<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><title>Instalar o Sistema</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;color:#eaf0fb;overflow:hidden;
-  background:radial-gradient(ellipse at 50% 30%, #16294a 0%, #0b1526 72%)}
-.tudo{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:26px;text-align:center}
-h1{font-size:25px;font-weight:800;letter-spacing:.4px}
-.sub{font-size:13.5px;color:#8fa8cf;max-width:46ch;line-height:1.6}
-/* "você já tem a versão X": a primeira coisa que quem reinstala precisa ler */
-.ja{font-size:13px;color:#f0d493;max-width:46ch;line-height:1.55;margin:0 0 4px;
-    padding:10px 14px;background:#2a2313;border:1px solid #6b5a24;border-radius:9px;text-align:center}
-.dica{font-size:12.5px;color:#7f96b8;max-width:46ch;line-height:1.6;margin:14px 0 0;
-      padding:11px 13px;background:#101d33;border-left:3px solid #e8b93c;border-radius:0 7px 7px 0;text-align:left}
-.dica b{color:#cfe0f5}
-.barra{width:330px;height:7px;border-radius:6px;background:#1e2d49;overflow:hidden;margin-top:8px}
-.barra i{display:block;height:100%;width:0;border-radius:6px;transition:width .35s ease;
-  background:linear-gradient(90deg,#a31a1a,#f5d76e)}
-.passo{font-size:12.5px;color:#9db3d6;min-height:18px}
-.itens{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:6px;text-align:left}
-.itens li{font-size:12.5px;color:#cdd9ee;padding-left:19px;position:relative}
-.itens li::before{content:'';position:absolute;left:0;top:6px;width:7px;height:7px;border-radius:50%;background:#f5d76e}
-button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-radius:9px;padding:12px 24px;cursor:pointer;color:#fff}
-.ok{background:#2e8b57}.ok:hover{background:#37a066}
-.sec{background:#1e2d49;border:1px solid #2c3d5c}.sec:hover{background:#26375a}
-.linha{display:flex;gap:9px;margin-top:14px;justify-content:center}
-.linha.um{margin-top:22px}
-.grande{padding:15px 40px;font-size:15px}
-.oculto{display:none}
-#tela1,#tela2,#tela3{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
-#tela1.oculto,#tela2.oculto,#tela3.oculto{display:none}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
-</style></head><body>
-<div class="tudo">
-  <div id="marca"></div>
-  <h1>Instalar o Sistema</h1>
-
-  <div id="tela1">
-    <!-- Quem abre este arquivo já tendo o Sistema (por engano, ou de propósito
-         para atualizar) precisa saber ONDE ESTÁ antes de clicar. Sem isto ele
-         via "Instalar" e ficava com medo de perder o que já tem. -->
-    <p class="ja oculto" id="ja"></p>
-    <p class="sub" id="sub">O Sistema será instalado neste computador e ficará pronto para usar no culto — sem internet e sem depender de mais nada.</p>
-    <ul class="itens">
-      <li>2.459 louvores da ICM e a Bíblia completa</li>
-      <li>Slides de PowerPoint e PDF da Escola Bíblica</li>
-      <li>Atalho na Área de Trabalho e no menu Iniciar</li>
-      <li>Pastas suas para fundos e apresentações</li>
-    </ul>
-    <div class="linha"><button class="ok" id="bt-instalar" onclick="comecar()">Instalar</button></div>
-  </div>
-
-  <div id="tela2" class="oculto">
-    <div class="barra"><i id="preenche"></i></div>
-    <p class="passo" id="passo">Preparando…</p>
-  </div>
-
-  <div id="tela3" class="oculto">
-    <p class="sub">Tudo pronto. O <b>Sistema</b> já está na sua Área de Trabalho e no menu Iniciar.</p>
-    <p class="dica">Para deixar ele fixo na barra de tarefas: com o Sistema aberto,
-      clique com o <b>botão direito</b> no ícone dele lá embaixo e escolha
-      <b>“Fixar na barra de tarefas”</b>.</p>
-    <div class="linha um"><button class="ok grande" onclick="abrir()">Abrir o Sistema</button></div>
-  </div>
-</div>
-<script src="icones.js"></script>
-<script>
-  document.getElementById('marca').innerHTML = (window.Icones && window.Icones.MARCA) ? window.Icones.MARCA(78) : '';
-  // Já tem Sistema neste micro? Então isto não é uma instalação nova, é uma
-  // atualização — e o texto e o botão têm que dizer isso, com todas as letras,
-  // porque quem instala por cima está com medo de perder o que já tem.
-  (async () => {
-    try {
-      const s = await window.pywebview.api.situacao();
-      if (!s || !s.instalada) return;
-      // nunca escrever um número que eu não sei: sem a versão do pacote em mãos,
-      // o texto fala do que é certo (o que já está instalado) e nada mais
-      const sabeNova = s.nova && s.nova !== '?';
-      const igual = sabeNova && s.instalada === s.nova;
-      document.getElementById('ja').textContent = igual
-        ? 'Você já está com a versão ' + s.instalada + ', que é esta mesma. Instalar de novo só repõe os arquivos.'
-        : (sabeNova
-            ? 'Você já tem a versão ' + s.instalada + '. Isto vai atualizar para a ' + s.nova + '.'
-            : 'Você já tem o Sistema instalado (versão ' + s.instalada + '). Isto vai repor os arquivos do programa.');
-      document.getElementById('ja').classList.remove('oculto');
-      document.getElementById('sub').textContent =
-        'Seus louvores, fundos, cifras e configurações NÃO são apagados. O Sistema fecha sozinho se estiver aberto.';
-      document.getElementById('bt-instalar').textContent = igual ? 'Reinstalar' : 'Atualizar';
-      document.querySelector('h1').textContent = igual ? 'Reinstalar o Sistema' : 'Atualizar o Sistema';
-    } catch (e) {}
-  })();
-  function comecar(){ tela(2); acompanhar(); window.pywebview.api.instalar(); }
-  function tela(n){ for(const k of [1,2,3]) document.getElementById('tela'+k).classList.toggle('oculto', k!==n); }
-  // A TELA vem buscar o progresso. O caminho contrario (Python empurrando para
-  // a tela de outra thread) travava o instalador em "Preparando..." para sempre.
-  let relogio = null;
-  function acompanhar(){
-    if (relogio) return;
-    relogio = setInterval(async () => {
-      try {
-        const d = await window.pywebview.api.progresso();
-        document.getElementById('preenche').style.width = (d.pct || 0) + '%';
-        document.getElementById('passo').textContent = d.txt || '';
-        if (d.fim) {
-          clearInterval(relogio); relogio = null;
-          document.getElementById('preenche').style.width = '100%';
-          setTimeout(() => tela(d.exe ? 3 : 2), 400);
-        }
-      } catch (e) {}
-    }, 200);
-  }
-  function abrir(){ window.pywebview.api.abrir(); }
-  function pastas(){ window.pywebview.api.pastas(); }
-  function sair(){ window.pywebview.api.sair(); }
-</script></body></html>
-"""
-
-
-class Api:
-    def __init__(self):
-        self.janela = None
-        self.exe = ""
-        self.estado = {"pct": 0, "txt": ""}
-        self.terminou = False
-
-    def situacao(self):
-        """O que já existe neste micro. A tela usa para falar a verdade a quem
-        abriu o instalador com o Sistema já instalado — por engano ou para
-        atualizar. Não decide nada: só informa."""
-        return {"instalada": versao_instalada(), "nova": versao_do_pacote()}
-
-    def progresso(self):
-        """A tela chama isto de tempo em tempo. Chamada JS -> Python é segura;
-        o contrário (Python -> JS de outra thread) trava."""
-        d = dict(self.estado)
-        d["fim"] = self.terminou
-        d["exe"] = bool(self.exe)
-        return d
-
-    def instalar(self):
-        def tarefa():
-            # COM PRECISA ser inicializado nesta thread. Sem isto, as chamadas de
-            # atalho e de fixar no Iniciar (WScript.Shell e Shell.Application)
-            # travam a janela inteira — o Windows chega a dizer "não está
-            # respondendo". A cópia dos arquivos não tem culpa: leva 0,8 segundo.
-            try:
-                import pythoncom
-                pythoncom.CoInitialize()
-            except Exception:
-                pythoncom = None
-            def progresso(pct, txt):
-                # SÓ guarda. Antes isto chamava evaluate_js daqui, de uma thread
-                # de trabalho: o Python esperava a thread da janela, a janela
-                # esperava a resposta, e o instalador congelava em "Preparando…"
-                # para sempre. Agora a TELA é que vem buscar (ver progresso()).
-                self.estado = {"pct": pct, "txt": txt}
-            try:
-                self.exe = instalar(progresso)
-            except Exception as e:
-                progresso(100, "Erro: " + str(e))
-            finally:
-                self.terminou = True
-                if pythoncom:
-                    try: pythoncom.CoUninitialize()
-                    except Exception: pass
-        threading.Thread(target=tarefa, daemon=True).start()
-        return True
-
-    def abrir(self):
-        try:
-            if self.exe and os.path.exists(self.exe):
-                subprocess.Popen([self.exe], cwd=os.path.dirname(self.exe),
-                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        except Exception:
-            pass
-        self.sair()
-
-    def pastas(self):
-        abrir_pasta_dados()
-
-    def sair(self):
-        try: self.janela.destroy()
-        except Exception: pass
-
-
 def main_silencioso():
     """Instala sem abrir janela. Serve para conferir a instalação de verdade e
     para instalar em vários computadores da igreja sem ficar clicando."""
@@ -689,22 +509,194 @@ def main_silencioso():
 
 
 def main():
-    import webview, tempfile
-    api = Api()
-    pasta = tempfile.mkdtemp()
-    with open(os.path.join(pasta, "instalar.html"), "w", encoding="utf-8") as f:
-        f.write(HTML)
-    ico = os.path.join(origem(), "icones.js")
+    # Interface em tkinter — sem dependência de WebView2.
+    # O WebView2 era o motor do instalador antes, mas tinha inicialização lenta
+    # e corrupção do diretório de dados entre execuções. Tkinter está embutido
+    # no Python e não precisa de nada externo.
+    try:
+        import tkinter as tk
+        from tkinter import ttk
+    except ImportError:
+        main_silencioso()
+        return
+
+    fechar_splash()
+
+    FUNDO = "#0b1526"
+    OURO  = "#f5d76e"
+    CINZA = "#8fa8cf"
+    VERDE = "#2e8b57"
+    BRANCO = "#eaf0fb"
+    AZUL_ESC = "#1e2d49"
+
+    root = tk.Tk()
+    root.title("Instalar o Sistema")
+    root.resizable(False, False)
+    root.configure(bg=FUNDO)
+    ico = os.path.join(origem(), "sistema.ico")
     if os.path.exists(ico):
-        shutil.copy2(ico, os.path.join(pasta, "icones.js"))
-    LARG, ALT = 620, 560
+        try: root.iconbitmap(ico)
+        except Exception: pass
+
+    LARG, ALT = 500, 440
     x, y = centro_da_tela(LARG, ALT)
-    api.janela = webview.create_window("Instalar o Sistema", os.path.join(pasta, "instalar.html"),
-                                       width=LARG, height=ALT, x=x, y=y, resizable=False,
-                                       background_color="#0b1526", js_api=api)
-    # a janela já está montada: pode tirar a telinha de carregamento.
-    # Sem isto ela ficava na tela para sempre, sobrando por cima do instalador.
-    webview.start(fechar_splash, gui="edgechromium")
+    if x is not None:
+        root.geometry("%dx%d+%d+%d" % (LARG, ALT, x, y))
+    else:
+        root.geometry("%dx%d" % (LARG, ALT))
+
+    try:
+        style = ttk.Style(root)
+        style.theme_use("default")
+        style.configure("S.Horizontal.TProgressbar",
+                        troughcolor=AZUL_ESC, background=OURO,
+                        thickness=8, borderwidth=0)
+    except Exception:
+        pass
+
+    ja_instalada = versao_instalada()
+    nova = versao_do_pacote()
+
+    # ---- Tela 1: início ----
+    f1 = tk.Frame(root, bg=FUNDO, padx=44, pady=28)
+    tk.Label(f1, text="Sistema", font=("Segoe UI", 26, "bold"),
+             bg=FUNDO, fg=BRANCO).pack(pady=(0, 2))
+    tk.Label(f1, text="Projeção da Igreja Cristã Maranata",
+             font=("Segoe UI", 11), bg=FUNDO, fg=CINZA).pack()
+
+    if ja_instalada:
+        igual = (ja_instalada == nova)
+        sabeNova = nova and nova != "?"
+        if igual:
+            msg = ("Você já está com a versão %s, que é esta mesma. "
+                   "Instalar de novo só repõe os arquivos." % ja_instalada)
+        elif sabeNova:
+            msg = ("Você já tem a versão %s. "
+                   "Isto vai atualizar para a %s." % (ja_instalada, nova))
+        else:
+            msg = ("Você já tem o Sistema instalado (versão %s). "
+                   "Isto vai repor os arquivos do programa." % ja_instalada)
+        fbox = tk.Frame(f1, bg="#2a2313", bd=1, relief="solid")
+        fbox.pack(fill="x", pady=(14, 0))
+        tk.Label(fbox, text=msg, font=("Segoe UI", 10), bg="#2a2313", fg=OURO,
+                 wraplength=390, justify="center", padx=10, pady=8).pack()
+    else:
+        tk.Label(f1,
+                 text="O Sistema será instalado neste computador,\n"
+                      "pronto para usar no culto — sem internet.",
+                 font=("Segoe UI", 10), bg=FUNDO, fg=CINZA,
+                 wraplength=400, justify="center").pack(pady=(12, 0))
+
+    tk.Label(f1, text="Seus dados, fundos e configurações não são apagados.",
+             font=("Segoe UI", 10), bg=FUNDO, fg=CINZA,
+             wraplength=400).pack(pady=(8, 0))
+
+    if ja_instalada and ja_instalada == nova:
+        btn_txt = "Reinstalar"
+    elif ja_instalada:
+        btn_txt = "Atualizar"
+    else:
+        btn_txt = "Instalar"
+
+    btn = tk.Button(f1, text=btn_txt, font=("Segoe UI", 13, "bold"),
+                    bg=VERDE, fg="white", relief="flat", padx=24, pady=10,
+                    cursor="hand2", activebackground="#37a066",
+                    activeforeground="white", bd=0)
+    btn.pack(pady=(22, 0))
+
+    # ---- Tela 2: progresso ----
+    f2 = tk.Frame(root, bg=FUNDO, padx=44, pady=50)
+    tk.Label(f2, text="Instalando o Sistema…", font=("Segoe UI", 16, "bold"),
+             bg=FUNDO, fg=BRANCO).pack(pady=(0, 24))
+    try:
+        pbar = ttk.Progressbar(f2, style="S.Horizontal.TProgressbar",
+                                length=400, mode="determinate")
+    except Exception:
+        pbar = ttk.Progressbar(f2, length=400, mode="determinate")
+    pbar.pack()
+    passo_var = tk.StringVar(value="Preparando…")
+    tk.Label(f2, textvariable=passo_var, font=("Segoe UI", 10),
+             bg=FUNDO, fg=CINZA).pack(pady=(10, 0))
+
+    # ---- Tela 3: pronto ----
+    f3 = tk.Frame(root, bg=FUNDO, padx=44, pady=28)
+    tk.Label(f3, text="Pronto!", font=("Segoe UI", 26, "bold"),
+             bg=FUNDO, fg=BRANCO).pack(pady=(0, 4))
+    tk.Label(f3, text="O Sistema está na Área de Trabalho e no menu Iniciar.",
+             font=("Segoe UI", 11), bg=FUNDO, fg=CINZA, wraplength=400).pack()
+    fdica = tk.Frame(f3, bg="#101d33")
+    fdica.pack(fill="x", pady=(16, 0))
+    tk.Label(fdica,
+             text='Para fixar na barra de tarefas: com o Sistema aberto,\n'
+                  'clique com o botão direito no ícone e escolha\n'
+                  '"Fixar na barra de tarefas".',
+             font=("Segoe UI", 10), bg="#101d33", fg=CINZA,
+             padx=14, pady=10, justify="left", wraplength=390).pack(anchor="w")
+
+    exe_path = [""]
+
+    def abrir_e_fechar():
+        p = exe_path[0]
+        if p and os.path.exists(p):
+            try:
+                subprocess.Popen([p], cwd=os.path.dirname(p),
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            except Exception:
+                pass
+        root.destroy()
+
+    tk.Button(f3, text="Abrir o Sistema", font=("Segoe UI", 13, "bold"),
+              bg=VERDE, fg="white", relief="flat", padx=24, pady=10,
+              cursor="hand2", activebackground="#37a066", activeforeground="white",
+              bd=0, command=abrir_e_fechar).pack(pady=(22, 0))
+
+    # ---- Troca de telas ----
+    def mostrar(f):
+        for fr in (f1, f2, f3):
+            fr.pack_forget()
+        f.pack(fill="both", expand=True)
+
+    # ---- Lógica ----
+    estado = {"pct": 0, "txt": "Preparando…", "fim": False}
+
+    def atualizar(pct, txt):
+        estado["pct"] = pct
+        estado["txt"] = txt
+
+    def verificar():
+        pbar["value"] = estado["pct"]
+        passo_var.set(estado["txt"])
+        if estado["fim"]:
+            if exe_path[0]:
+                mostrar(f3)
+            # sem exe_path: fica em f2 mostrando o erro no passo_var
+        else:
+            root.after(150, verificar)
+
+    def iniciar():
+        btn.config(state="disabled")
+        mostrar(f2)
+
+        def tarefa():
+            atualizar(2, "Iniciando…")
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
+            try:
+                exe_path[0] = instalar(atualizar)
+            except Exception as e:
+                atualizar(100, "Erro: " + str(e))
+            finally:
+                estado["fim"] = True
+
+        threading.Thread(target=tarefa, daemon=True).start()
+        root.after(150, verificar)
+
+    btn.config(command=iniciar)
+    mostrar(f1)
+    root.mainloop()
 
 
 if __name__ == "__main__":

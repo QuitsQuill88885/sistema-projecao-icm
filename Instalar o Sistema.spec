@@ -1,11 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('build_inst/programa', 'programa'), ('icones.js', '.')]
+datas = [('build_inst/programa', 'programa'), ('icones.js', '.'), ('sistema.ico', '.')]
 binaries = []
-hiddenimports = ['win32com.client', 'webview', 'webview.platforms.edgechromium']
-tmp_ret = collect_all('webview')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+hiddenimports = ['win32com.client']
 
 
 a = Analysis(

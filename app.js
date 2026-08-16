@@ -1941,15 +1941,23 @@ function renderFundos() {
   }
   listaFundos().filter(f => est.fundoCat === 'Todos' || (f.cat || 'Base') === est.fundoCat).forEach(f => {
     const eEspera = f.arquivo === esperaAtual();
-    const c = document.createElement('div'); c.className = 'fundo-card' + (eEspera ? ' espera' : '');
+    const eAtivo = est.live && est.live.tipo === 'fundo' && est.ultimo && est.ultimo.fundo === f.arquivo;
+    const c = document.createElement('div'); c.className = 'fundo-card' + (eEspera ? ' espera' : '') + (eAtivo ? ' projetando' : '');
     c.innerHTML = '<img src="' + f.arquivo + '" alt="">' +
       (eEspera ? '<span class="badge-espera">★ Espera</span>' : '') +
       '<div class="fundo-acoes">' +
-        (eEspera ? '' : '<button class="fa fa-espera" title="Definir como tela de espera padrão">Espera</button>') +
+        (eEspera ? '' : '<button class="fa fa-espera" title="2 cliques também definem a tela de espera">Espera</button>') +
         '<button class="fa fa-del" title="Apagar este fundo">✕</button>' +
       '</div><span class="nome">' + f.nome + '</span>';
-    const projetarFundo = () => { est.live = { tipo: 'fundo' }; projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: 500 }); toast('Fundo: ' + f.nome); };
-    c.querySelector('img').onclick = projetarFundo; c.querySelector('.nome').onclick = projetarFundo;
+    const projetarFundo = () => {
+      est.live = { tipo: 'fundo' };
+      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: 500 });
+      renderFundos();
+      toast('Fundo: ' + f.nome);
+    };
+    // 1 clique = projeta + anel verde; 2 cliques = vira tela de espera (anel dourado)
+    c.onclick = () => { clearTimeout(c._t); c._t = setTimeout(projetarFundo, 220); };
+    c.ondblclick = () => { clearTimeout(c._t); definirEspera(f.arquivo); renderFundos(); toast('★ Tela de espera: ' + f.nome); };
     const sb = c.querySelector('.fa-espera'); if (sb) sb.onclick = ev => { ev.stopPropagation(); definirEspera(f.arquivo); renderFundos(); toast('Tela de espera: ' + f.nome); };
     c.querySelector('.fa-del').onclick = ev => { ev.stopPropagation(); apagarFundo(f); };
     g.appendChild(c);
