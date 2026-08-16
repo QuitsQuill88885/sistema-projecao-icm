@@ -344,7 +344,14 @@ function aplicar(e){
       el.lou.style.height = e.titulo ? '' : '82%';
       el.lou.style.display='flex'; el.lou.className='txt';
       el.lou.innerHTML=''; const bloco=document.createElement('div'); bloco.className='bloco';
-      if(e.label){const lb=document.createElement('span');lb.className='label-coro';lb.textContent=e.label;bloco.appendChild(lb);}
+      // o rótulo diz TAMBÉM qual repetição é esta ("CORO · 2ª de 3"). Sem isso
+      // o slide repetido era idêntico ao primeiro e ninguém sabia onde estava.
+      if(e.label || e.rep){
+        const lb=document.createElement('span'); lb.className='label-coro';
+        let t = e.label || '';
+        if(e.rep) t = (t ? t + ' · ' : '') + e.rep.vez + 'ª de ' + e.rep.de;
+        lb.textContent = t; bloco.appendChild(lb);
+      }
       (e.linhas||[]).forEach(l=>bloco.appendChild(montarLinha(l)));
       bloco.style.setProperty('--lh', avancoLinha(e.escala));
       el.lou.appendChild(bloco); fit(el.lou, e.tam||6.4, e.escala, false, e.linhasRef);

@@ -197,6 +197,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* `display:flex` VENCE o atributo hidden — sem esta linha a barra ficava
    aparecendo fora do modo de marcar */
 .barra-juntar[hidden]{display:none}
+/* o botão VISÍVEL de guardar na lista: aparece quando um versículo está aberto,
+   dourado como a marca que ele deixa no número */
+.bj-guardar{width:100%;margin-top:8px;background:#2a2313;border:1px solid var(--ouro);
+  color:var(--ouro);border-radius:9px;padding:11px;font-size:13.5px;font-weight:700}
+.bj-guardar:active{background:#3a3016}
+.bj-guardar[hidden]{display:none}
 .bj-limpar{background:var(--painel2);color:var(--txt);border-radius:9px;padding:11px 14px;
   font-size:12.5px;font-weight:600;flex:none}
 .bj-ok{flex:1;background:var(--verde);color:#fff;border-radius:9px;padding:11px 10px;
@@ -452,6 +458,7 @@ let livroSel = null, capSel = null, louvorSel = -1, falhas = 0;
    primeira leitura do estado chega antes de o resto do arquivo rodar. */
 let modoJuntar = false;      // toque MARCA em vez de projetar
 let escolhidos = [];         // [{livro,cap,v}] na ordem em que foram tocados
+let ultimoVerso = null;      // o versículo aberto na leitura, alvo do botão Guardar
 let ultimaFila = [];         // a Lista de Projeção como o computador publicou
 let juntosNoAr = new Set();  // chaveV dos versículos MARCADOS na lista do computador
 let juntosTxt = null;        // o mesmo conjunto em texto, só para não repintar à toa
@@ -516,7 +523,12 @@ async function ouvir() {
     // por ~2,5s depois do toque, o botão manda em si mesmo: o estado que chega
     // ainda é anterior ao comando e faria o botão piscar de volta
     if (Date.now() - congelandoAgora > 2500) $('#frio').classList.toggle('on', !!e.congelado);
-    $('#previa').className = 'previa' + (e.congelado ? ' frio' : (e.projetando ? ' vivo' : ''));
+    // PRESERVA o 'mini': este className é reescrito a cada 900ms, e antes ele
+    // apagava o recolhimento que o operador tinha feito com o dedo — a prévia
+    // voltava sozinha logo depois de ele mandar recolher.
+    $('#previa').className = 'previa'
+      + (e.congelado ? ' frio' : (e.projetando ? ' vivo' : ''))
+      + ($('#previa').classList.contains('mini') ? ' mini' : '');
     // projeção fechada: apagar o rodapé em vez de deixar o operador apertando à toa
     document.querySelector('footer').classList.toggle('fechado', !e.projetando);
     // aceita ZERO: sem isto a grade de slides nunca era limpa quando a
@@ -1350,20 +1362,30 @@ function passoBiblia(voltando) {
     Object.keys(versos).map(Number).sort((a, b) => a - b).forEach(v => {
       const b = document.createElement('div'); b.className = 'g'; b.textContent = v;
       b.dataset.v = v;                                // a pintura em ouro procura por aqui
-      const mostrar = () => { const l = $('#leitura');
-        if (l) l.textContent = capSel + ':' + v + '  ' + (versos[v] || ''); };
+      const mostrar = () => {
+        const l = $('#leitura');
+        if (l) l.textContent = capSel + ':' + v + '  ' + (versos[v] || '');
+        // guarda qual versículo está aberto, para o botão visível de guardar na
+        // lista agir sobre ele — sem depender do "segurar", que ninguém achava
+        ultimoVerso = { livro: livroSel, cap: capSel, v: v };
+        mostrarBotaoGuardar();
+      };
       // Marca em vez de cronômetro: medir "faz quanto tempo" errava, porque o
       // clique que o navegador inventa depois do toque chega tarde demais quando
       // o dedo demora. Segurando mais de ~1,2s saíam DOIS comandos (guardar E
       // verso) e o telão mostrava os versículos juntos e voltava pra um só.
-      let foiLongo = false, t = null;
+      let foiLongo = false, t = null, ultimoToque = 0;
       b.onclick = () => {
         if (foiLongo) { foiLongo = false; return; }   // já tratado como toque longo
         // marcando vários: o toque MARCA, não projeta. Nada vai pro telão até o
         // botão verde — é o que separa este modo do toque de sempre.
         if (modoJuntar) { alternarEscolhido(livroSel, capSel, v); return; }
-        // tira só o azul dos outros: o ouro é o grupo que está montado e não é
-        // um toque solto que o desfaz
+        // DOIS toques seguidos guardam na lista e deixam o número dourado —
+        // como o Samuel pediu ("clicar duas vezes, fica douradinho ao redor").
+        const agora = Date.now();
+        if (agora - ultimoToque < 350) { ultimoToque = 0; guardarNaLista({livro: livroSel, cap: capSel, v}); return; }
+        ultimoToque = agora;
+        // um toque: projeta e mostra a leitura (com o botão de guardar embaixo)
         [...g.children].forEach(x => x.classList.remove('sel'));
         b.classList.add('sel'); mostrar();
         enviar('verso', {livro: livroSel, cap: capSel, v});
@@ -1371,15 +1393,12 @@ function passoBiblia(voltando) {
       b.oncontextmenu = e => e.preventDefault();     // segurar não abre menu do navegador
       // segurar = guardar na lista, já marcado: com 2 ou mais marcados o Sistema
       // projeta juntos. No modo de marcar não vale — lá o toque já faz isso.
+      // segurar continua guardando (quem já pegou o jeito não perde), mas agora
+      // é atalho, não o único caminho: o botão e o duplo-toque fazem o mesmo
       const comecou = () => { if (modoJuntar) return; foiLongo = false; t = setTimeout(() => {
         foiLongo = true; t = null;
         mostrar();
-        // pinta AGORA e segura a pintura: o estado que chega nos próximos
-        // segundos ainda é anterior ao comando e apagaria a marca recém-feita
-        juntosNoAr.add(chaveV({livro: livroSel, cap: capSel, v}));
-        juntosTxt = null; juntosMeuAte = Date.now() + 2500; pintarGradeVersos();
-        if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
-        enviar('guardar', {livro: livroSel, cap: capSel, v});
+        guardarNaLista({livro: livroSel, cap: capSel, v});
       }, 500); };
       const parou = () => { if (t) { clearTimeout(t); t = null; } };
       b.addEventListener('touchstart', comecou, {passive: true});
@@ -1395,6 +1414,9 @@ function passoBiblia(voltando) {
     // o versículo — e, marcando vários, vê a tela inteira que vai projetar.
     const rod = document.createElement('div'); rod.className = 'rodape-vers';
     rod.innerHTML = '<div class="leitura" id="leitura"></div>' +
+      // botão VISÍVEL para guardar na lista o versículo que está aberto. O jeito
+      // antigo era só "segurar o dedo", que ninguém descobria; agora tem botão.
+      '<button class="bj-guardar" id="bj-guardar" hidden>＋ Guardar na lista</button>' +
       '<div class="barra-juntar" id="barra-juntar" hidden>' +
       '<button class="bj-limpar" id="bj-limpar">Limpar</button>' +
       '<button class="bj-ok" id="bj-ok"></button></div>';
@@ -1402,6 +1424,14 @@ function passoBiblia(voltando) {
     $('#btn-juntar').onclick = alternarModoJuntar;
     $('#bj-limpar').onclick = () => { escolhidos = []; atualizarJuntar(); };
     $('#bj-ok').onclick = projetarJuntos;
+    $('#bj-guardar').onclick = () => {
+      if (!ultimoVerso) return;
+      juntosNoAr.add(chaveV(ultimoVerso));
+      juntosTxt = null; juntosMeuAte = Date.now() + 2500; pintarGradeVersos();
+      if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
+      enviar('guardar', ultimoVerso);
+      const l = $('#leitura'); if (l) l.textContent = 'Guardado na lista ✓  ' + ultimoVerso.cap + ':' + ultimoVerso.v;
+    };
     atualizarJuntar();
   }
   // indo pra frente começa do topo; voltando, devolve onde o operador parou
@@ -1446,6 +1476,20 @@ function lerJuntosDaFila(fila) {
   if (txt === juntosTxt) return;
   juntosTxt = txt; juntosNoAr = new Set(novo);
   pintarGradeVersos();
+}
+// guarda o versículo na Lista de Projeção e deixa o número dourado. É a MESMA
+// coisa que o segurar e o duplo-toque fazem — repete a lógica do computador,
+// que ele disse funcionar bem: marca em ouro o que já está na lista.
+function guardarNaLista(x) {
+  juntosNoAr.add(chaveV(x));
+  juntosTxt = null; juntosMeuAte = Date.now() + 2500; pintarGradeVersos();
+  if (navigator.vibrate) navigator.vibrate([18, 40, 18]);
+  enviar('guardar', x);
+  const l = $('#leitura'); if (l) l.textContent = 'Guardado na lista ✓  ' + x.cap + ':' + x.v;
+}
+function mostrarBotaoGuardar() {
+  const b = $('#bj-guardar'); if (!b) return;
+  b.hidden = modoJuntar || !ultimoVerso;
 }
 /* ouro = vai aparecer junto. Marcando, mostra o que EU escolhi; fora do modo,
    mostra o grupo que está montado no computador. */
@@ -1510,6 +1554,7 @@ function atualizarJuntar() {
   const l = $('#leitura');
   if (modoJuntar) { if (l) l.innerHTML = previaEscolha(); }
   else if (l) l.textContent = 'Toque num número para ler aqui antes de projetar.';
+  mostrarBotaoGuardar();
   pintarGradeVersos();
 }
 /* Manda o grupo pro telão. O computador não tem um comando "projete estes":

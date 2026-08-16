@@ -132,11 +132,34 @@ function projetar(st) {
 }
 
 // ---------- estados ----------
+/* QUANTAS VEZES REPETE, E QUAL DELAS É ESTA.
+   O louvor repete: o MARANATA tem os slides 1-2-3 e depois 4-5-6 com o MESMO
+   conteúdo, e o CANDEIA tem o coro em 1, 4 e 6. A repetição SEMPRE esteve certa
+   nos slides — o que faltava era dizer isso na tela. O slide 4 era idêntico ao
+   slide 1 e quem passava não sabia se avançava ou se tinha errado, e quem canta
+   não sabia se ia repetir de novo. O Samuel disse que assim "não dá nem para
+   tocar o louvor".
+   A conta é feita uma vez por louvor e fica guardada: para cada slide, qual
+   repetição é (2ª de 3) — comparando o conteúdo, não a posição. */
+function repeticoes(s) {
+  if (s._rep) return s._rep;
+  const chave = sl => (sl.label || '') + '|' + sl.linhas.join('|');
+  const quantos = {}, indo = {};
+  s.slides.forEach(sl => { const k = chave(sl); quantos[k] = (quantos[k] || 0) + 1; });
+  s._rep = s.slides.map(sl => {
+    const k = chave(sl);
+    if (quantos[k] < 2) return null;             // não repete: nada a dizer
+    indo[k] = (indo[k] || 0) + 1;
+    return { vez: indo[k], de: quantos[k] };
+  });
+  return s._rep;
+}
 function stLouvor(idx, slide, fade) {
   const s = LOUVORES[idx], sl = s.slides[slide], prim = slide === 0;
   return {
     modo: 'louvor', fundo: prim ? FB.louvor1 : FB.louvor2,
     titulo: prim ? ((s.num ? s.num + ' - ' : '') + s.titulo) : '',
+    rep: repeticoes(s)[slide],
     label: sl.label, linhas: sl.linhas, tam: TAM_DEF.louvor, escala: est.escalaLouvor,
     // todos os slides do louvor usam o tamanho que serve pro maior deles (não "pula" de tamanho)
     linhasRef: s._maxL || (s._maxL = Math.max(...s.slides.map(x => x.linhas.length + (x.label ? 1 : 0)))),
