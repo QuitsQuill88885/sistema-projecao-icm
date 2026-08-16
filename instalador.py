@@ -558,11 +558,17 @@ def main():
     nova = versao_do_pacote()
 
     # ---- Tela 1: início ----
-    f1 = tk.Frame(root, bg=FUNDO, padx=44, pady=28)
-    tk.Label(f1, text="Sistema", font=("Segoe UI", 26, "bold"),
-             bg=FUNDO, fg=BRANCO).pack(pady=(0, 2))
+    f1 = tk.Frame(root, bg=FUNDO, padx=44, pady=18)
+    # Logo mark — círculo azul-escuro com S dourado, igual ao ícone do app
+    marca = tk.Canvas(f1, width=72, height=72, bg=FUNDO, highlightthickness=0)
+    marca.pack(pady=(0, 2))
+    marca.create_oval(4, 4, 68, 68, fill="#0d1f3c", outline="#2d5080", width=2)
+    marca.create_text(36, 36, text="S", font=("Segoe UI", 34, "bold"), fill=OURO)
+    tk.Label(f1, text="Sistema", font=("Segoe UI", 22, "bold"),
+             bg=FUNDO, fg=BRANCO).pack(pady=(2, 0))
     tk.Label(f1, text="Projeção da Igreja Cristã Maranata",
-             font=("Segoe UI", 11), bg=FUNDO, fg=CINZA).pack()
+             font=("Segoe UI", 10), bg=FUNDO, fg=CINZA).pack()
+    tk.Frame(f1, height=1, bg="#1e3050").pack(fill="x", pady=(12, 0))
 
     if ja_instalada:
         igual = (ja_instalada == nova)
