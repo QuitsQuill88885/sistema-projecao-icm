@@ -459,6 +459,13 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .folha .ac{color:var(--ouro);font-weight:700}
 .folha .cab{color:#7f9ac0;font-size:12px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
+/* o seletor de nível da cifra: a MESMA cifra em dois níveis (1 = acordes
+   simples, 2 = completos). Só aparece quando o louvor existe nos dois. */
+.niv-cx{display:inline-flex;gap:0;margin:0 0 10px;border:1px solid var(--borda);
+  border-radius:8px;overflow:hidden}
+.niv-cx button{background:#101d33;border:0;color:#7f9ac0;padding:6px 12px;
+  font-size:12px;cursor:pointer}
+.niv-cx button.on{background:#16233c;color:var(--ouro);font-weight:700}
 /* o seletor de tom, no formato que o músico já conhece do Cifra Club: o tom
    atual vira botão, e o botão abre a grade dos doze */
 .tom-cx{display:flex;gap:4px;align-items:center}

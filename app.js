@@ -897,16 +897,20 @@ function selecionarLouvor(i, semProjetar) {
 // A cifra vem de /api/musico, o MESMO catálogo que o celular usa. Assim a folha
 // que o operador abre no computador e a que o músico lê no celular são a mesma,
 // com os mesmos acordes nas mesmas colunas.
-let ANIMACOES = {}, CIFRAS = {};
+let ANIMACOES = {}, CIFRAS = {}, CIFRAS1 = {};
+// O NÍVEL da cifra (1 = acordes simples, 2 = completos) fica gravado como a
+// fonte da folha: quem lê pelo Nível 1 não escolhe de novo a cada louvor.
+let nivelCifra = String(Guardar.ler('icm_cifra_nivel', '2') || '2');
 function carregarExtras() {
   fetch('/api/animacoes').then(r => r.json()).then(r => { ANIMACOES = r.indice || {}; atualizarExtras(); }).catch(() => {});
-  fetch('/api/musico').then(r => r.json()).then(r => { CIFRAS = r.violao || {}; atualizarExtras(); }).catch(() => {});
+  fetch('/api/musico').then(r => r.json()).then(r => { CIFRAS = r.violao || {}; CIFRAS1 = r.violao1 || {}; atualizarExtras(); }).catch(() => {});
 }
 function temAnimacao(s) { return !!(s && s.col === 'CIA 2018' && ANIMACOES[String(parseInt(s.num, 10))]); }
 function daAnimacao(s) { return temAnimacao(s) ? ANIMACOES[String(parseInt(s.num, 10))] : null; }
 // o catálogo guarda o TOM, e há cifra cujo tom o PDF não declarou (string vazia).
 // Testar o valor esconderia o botão dessas: quem manda é a chave EXISTIR.
-function temCifra(s) { return !!s && CIFRAS[chaveLouvor(s)] !== undefined; }
+// O louvor "tem cifra" se existe em QUALQUER um dos dois níveis.
+function temCifra(s) { return !!s && (CIFRAS[chaveLouvor(s)] !== undefined || CIFRAS1[chaveLouvor(s)] !== undefined); }
 
 /* ---------- A CIFRA, DESENHADA AQUI DENTRO ----------
    Isto abria o PDF da coletânea num iframe. O PDF da Cifrada Nível II tem 93
@@ -1051,6 +1055,17 @@ function desenharFolha(d) {
   if (cifraDesloc) cab = '<p class="cab"><b>' + (cifraDesloc > 0 ? '+' : '') + cifraDesloc +
     (Math.abs(cifraDesloc) > 1 ? ' semitons' : ' semitom') + '</b> do impresso (' +
     (cifraTom || 'tom não declarado') + ')</p>';
+  // o seletor de nível: só aparece quando a MESMA cifra existe nos dois
+  // níveis; se só existe num, a folha avisa de qual veio — nenhum louvor
+  // fica sem cifra por causa da escolha.
+  let niv = '';
+  if (d.niveis && d.niveis.length > 1) {
+    niv = '<div class="niv-cx">' +
+          '<button data-n="1" class="' + (d.nivel === '1' ? 'on' : '') + '">Nível 1 · simples</button>' +
+          '<button data-n="2" class="' + (d.nivel === '2' ? 'on' : '') + '">Nível 2 · completo</button></div>';
+  } else if (d.nivel && d.nivel !== nivelCifra) {
+    cab += '<p class="cab">este louvor só tem cifra no Nível ' + d.nivel + '</p>';
+  }
   let corpo = '';
   if (d.violao && d.violao.linhas && d.violao.linhas.length) {
     for (const l of d.violao.linhas) {
@@ -1060,7 +1075,13 @@ function desenharFolha(d) {
   } else {
     corpo = 'Este louvor não tem cifra.';
   }
-  f.innerHTML = cab + '<pre>' + corpo + '</pre>';
+  f.innerHTML = niv + cab + '<pre>' + corpo + '</pre>';
+  f.querySelectorAll('.niv-cx button').forEach(b => b.onclick = () => {
+    if (b.dataset.n === nivelCifra && d.nivel === nivelCifra) return;
+    nivelCifra = b.dataset.n; Guardar.gravar('icm_cifra_nivel', nivelCifra);
+    // trocar de nível NÃO é trocar de louvor: o transporte (cifraDesloc) fica
+    if (cifraLouvor) buscarCifra(cifraLouvor);
+  });
   pintarTomCifra();
 }
 
@@ -1085,6 +1106,19 @@ function fonteCifraPadrao() {
   Guardar.gravar('icm_cifra_fonte', 14);
 }
 
+async function buscarCifra(s) {
+  try {
+    // em=C pede a folha de VIOLÃO, a de acordes. Os cadernos melódicos (Bb, Eb,
+    // F) são para o músico ler no próprio celular, cada um no dele.
+    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) +
+                          '?em=C&nivel=' + nivelCifra).then(r => r.json());
+    if (cifraLouvor !== s) return;   // ele já abriu outro louvor: esta resposta não vale mais
+    desenharFolha(d);
+  } catch (e) {
+    $('#cifra-folha').innerHTML = '<p class="cab">Não consegui carregar a cifra deste louvor.</p>';
+  }
+}
+
 async function abrirCifra() {
   const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
   if (!temCifra(s)) { toast('Este louvor não tem cifra.'); return; }
@@ -1098,16 +1132,7 @@ async function abrirCifra() {
   window.Icones && window.Icones.aplicar($('#cifra-ov'));
   aplicarFonteCifra();
   est.modoCifra = true; atualizarExtras();
-  try {
-    // em=C pede a folha de VIOLÃO, a de acordes. Os cadernos melódicos (Bb, Eb,
-    // F) são para o músico ler no próprio celular, cada um no dele.
-    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) + '?em=C')
-                    .then(r => r.json());
-    if (cifraLouvor !== s) return;   // ele já abriu outro louvor: esta resposta não vale mais
-    desenharFolha(d);
-  } catch (e) {
-    $('#cifra-folha').innerHTML = '<p class="cab">Não consegui carregar a cifra deste louvor.</p>';
-  }
+  buscarCifra(s);
 }
 function fecharCifra() {
   $('#cifra-ov').classList.add('oculto');

@@ -162,6 +162,14 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
 .cifra-zoom{display:flex;gap:6px;align-items:center}
+/* o seletor de nivel: a MESMA cifra em dois niveis (1 = acordes simples,
+   2 = completos com baixo e extensoes). So aparece quando o louvor existe
+   nos dois bancos. */
+.niv-cx{display:inline-flex;gap:0;margin:0 0 10px;border:1px solid var(--borda);
+  border-radius:8px;overflow:hidden}
+.niv-cx button{background:#101d33;border:0;color:#7f9ac0;padding:6px 12px;
+  font-size:12px;cursor:pointer}
+.niv-cx button.on{background:#16233c;color:var(--ouro);font-weight:700}
 /* o seletor de tom: dois botoes e o tom no meio, como o musico ja conhece */
 .tom-cx{display:flex;gap:4px;align-items:center;margin-left:auto}
 .tom-btn{background:#16233c;border:1px solid var(--ouro);color:var(--ouro);border-radius:8px;
@@ -720,7 +728,13 @@ function pintarFila(e) {
    Independente de propósito. O instrumentista repete um coro, volta um refrão
    ou procura outro louvor, e NADA disso mexe no telão — ele não pode ficar na
    mão de quem passa os slides. O que a projeção mostra aparece só como pista. */
-let CIFRAS = {}, MELODIAS = {}, MELODIAS1 = {}, INSTRUMENTOS = [];
+let CIFRAS = {}, CIFRAS1 = {}, MELODIAS = {}, MELODIAS1 = {}, INSTRUMENTOS = [];
+
+/* O NIVEL da cifra fica gravado no aparelho, como o instrumento: quem toca
+   pelo Nivel 1 (acordes simples) não quer escolher de novo a cada louvor. */
+let nivelCifra = '2';
+try { nivelCifra = localStorage.getItem('nivel_cifra') || '2'; } catch (e) {}
+function gravarNivel(v) { try { localStorage.setItem('nivel_cifra', v); } catch (e) {} }
 const chaveLouvor = s => (s.num || '') + '|' + s.titulo + '|' +
   ((s.slides[0] && s.slides[0].linhas[0]) || '');
 /* espaços repetidos recolhidos, IGUAL ao _simples do sistema.py e ao
@@ -746,7 +760,8 @@ const QUEM = [
 ];
 
 fetch('/api/musico').then(r => r.json()).then(r => {
-  CIFRAS = r.violao || {}; MELODIAS = r.melodia || {}; MELODIAS1 = r.melodia1 || {};
+  CIFRAS = r.violao || {}; CIFRAS1 = r.violao1 || {};
+  MELODIAS = r.melodia || {}; MELODIAS1 = r.melodia1 || {};
   INSTRUMENTOS = r.instrumentos || [];
   if (Object.keys(CIFRAS).length || Object.keys(MELODIAS).length) {
     $('#aba-cifra').hidden = false;
@@ -782,8 +797,14 @@ function pintarInstrumentos() {
 
 function temMaterial(s) {
   if (euToco === 'violao') {
-    const t = CIFRAS[chaveLouvor(s)];
-    return t === undefined ? null : { tom: t };
+    // o louvor "tem cifra" se existe em QUALQUER um dos dois niveis; o tom
+    // mostrado na lista e' o do nivel escolhido, se ele tiver
+    const k = chaveLouvor(s);
+    const t2 = CIFRAS[k], t1 = CIFRAS1[k];
+    if (t2 === undefined && t1 === undefined) return null;
+    const t = (nivelCifra === '1' && t1 !== undefined) ? t1
+              : (t2 !== undefined ? t2 : t1);
+    return { tom: t };
   }
   /* primeiro pelo título; se a Melódica batizou o louvor de outro jeito
      ("ALELUIA", "SOMENTE PELA FE"...), reencontra pela primeira linha da
@@ -950,8 +971,21 @@ function desenharFolha(d) {
                        (tomOriginal || '?') + ')');
   if (d.tons) {
     const outros = [];
-    for (const k in d.tons) if (k !== euToco) outros.push(k + ': ' + d.tons[k]);
+    // so entra tom que EXISTE: sem isto o cabecalho imprimia "C: null" quando
+    // o caderno melodico nao declarou o tom daquele instrumento
+    for (const k in d.tons) if (k !== euToco && d.tons[k]) outros.push(k + ': ' + d.tons[k]);
     if (outros.length) cab.push(outros.join(' · '));
+  }
+  // o seletor de nivel: so aparece quando a MESMA cifra existe nos dois
+  // niveis. Se so existe num, a folha avisa de qual veio e pronto — nenhum
+  // louvor fica sem cifra por causa da escolha.
+  let niv = '';
+  if (euToco === 'violao' && d.niveis && d.niveis.length > 1) {
+    niv = '<div class="niv-cx">' +
+          '<button data-n="1" class="' + (d.nivel === '1' ? 'on' : '') + '">Nível 1 · simples</button>' +
+          '<button data-n="2" class="' + (d.nivel === '2' ? 'on' : '') + '">Nível 2 · completo</button></div>';
+  } else if (euToco === 'violao' && d.nivel && d.nivel !== nivelCifra) {
+    cab.push('este louvor só tem cifra no Nível ' + d.nivel);
   }
   let corpo = '';
   if (euToco === 'violao' && d.violao) {
@@ -967,8 +1001,14 @@ function desenharFolha(d) {
   } else {
     corpo = 'Este louvor não tem material para o seu instrumento.';
   }
-  f.innerHTML = (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
+  f.innerHTML = niv + (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
                 '<pre>' + corpo + '</pre>';
+  f.querySelectorAll('.niv-cx button').forEach(b => b.onclick = () => {
+    if (b.dataset.n === nivelCifra && d.nivel === nivelCifra) return;
+    nivelCifra = b.dataset.n; gravarNivel(nivelCifra);
+    // trocar de nivel NAO e' trocar de louvor: o transporte (desloc) fica
+    if (louvorCifra) buscarFolha(louvorCifra);
+  });
   f.scrollTop = 0;
   aplicarCf();          // cifra nova, largura nova: reajusta antes de ele ler
   pintarTom();
@@ -980,6 +1020,20 @@ function desenharFolha(d) {
    tem 2 KB, menos do que trafega no barramento de um carro. E o dono quer o
    contrario: ver a cifra E o telao ao mesmo tempo, para saber o que a
    congregacao esta lendo enquanto ele toca. */
+let louvorCifra = null;   // o louvor aberto na folha — e' por ele que o seletor de nivel rebusca
+async function buscarFolha(s) {
+  louvorCifra = s;
+  const em = euToco === 'violao' ? 'C' : euToco;
+  try {
+    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) +
+                          '?em=' + em + '&nivel=' + nivelCifra).then(r => r.json());
+    if (louvorCifra !== s) return;  // ja abriu outro louvor: esta resposta nao vale mais
+    desenharFolha(d);
+  } catch (e) {
+    $('#folha').innerHTML = '<p class="cab">Não consegui buscar. Veja se o computador ainda está ligado.</p>';
+  }
+}
+
 async function abrirCifra(s) {
   $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
   $('#folha').innerHTML = '<p class="cab">Carregando…</p>';
@@ -991,14 +1045,7 @@ async function abrirCifra(s) {
   $('#cifra-quadro').hidden = false;
   const m = document.querySelector('main'); if (m) m.scrollTop = 0;
   aplicarCf();
-  const em = euToco === 'violao' ? 'C' : euToco;
-  try {
-    const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) +
-                          '?em=' + em).then(r => r.json());
-    desenharFolha(d);
-  } catch (e) {
-    $('#folha').innerHTML = '<p class="cab">Não consegui buscar. Veja se o computador ainda está ligado.</p>';
-  }
+  buscarFolha(s);
 }
 $('#cifra-volta').onclick = () => {
   pararAuto();

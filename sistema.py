@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.6.5"
+VERSAO = "2.6.7"
 PORTA = 8765
 
 def raiz():
@@ -132,6 +132,20 @@ def catalogo_do_musico():
         pass
     except Exception as e:
         sys.stderr.write("catalogo do musico, violao: %s" % e + chr(10))
+    # O NIVEL 1 e' um segundo banco, num arquivo proprio: a Coletanea publica a
+    # MESMA cifra em dois niveis (1 = acordes simples, 2 = completos com baixo
+    # e extensoes), e o instrumentista escolhe qual folha quer ler. O vivo de
+    # sempre (acordes.json) e' o Nivel 2; este arquivo nunca mexe nele.
+    violao1 = {}
+    try:
+        cam = os.path.join(pasta_usuario("cifras"), "acordes_nivel1.json")
+        with io.open(cam, encoding="utf-8") as f:
+            for chave, reg in json.load(f).items():
+                violao1[chave] = reg.get("tom") or ""
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        sys.stderr.write("catalogo do musico, violao nivel 1: %s" % e + chr(10))
     melodia, melodia1, instrumentos = {}, {}, []
     try:
         with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
@@ -155,23 +169,39 @@ def catalogo_do_musico():
         pass
     except Exception as e:
         sys.stderr.write("catalogo do musico, melodia: %s" % e + chr(10))
-    d = {"violao": violao, "melodia": melodia, "melodia1": melodia1,
-         "instrumentos": instrumentos}
+    d = {"violao": violao, "violao1": violao1, "melodia": melodia,
+         "melodia1": melodia1, "instrumentos": instrumentos}
     _CATALOGO.update({"ts": time.time(), "dados": d})
     return d
 
 
-def material_do_louvor(chave, afinacao="C"):
-    """A cifra de violão e/ou o caderno melódico de UM louvor."""
+def material_do_louvor(chave, afinacao="C", nivel="2"):
+    """A cifra de violão e/ou o caderno melódico de UM louvor.
+
+    `nivel` escolhe a coletanea da cifra: "1" = Nivel 1 (acordes simples),
+    "2" = Nivel 2 (completos, o banco de sempre). Se o louvor nao existe no
+    nivel pedido mas existe no outro, vem o outro — nenhum louvor fica sem
+    folha por causa da escolha. A resposta diz de qual nivel veio ("nivel") e
+    em quais niveis ele existe ("niveis"), para o celular desenhar o botao.
+    """
     saida = {"ok": True, "chave": chave, "em": afinacao}
-    try:
-        cam = os.path.join(pasta_usuario("cifras"), "acordes.json")
-        with io.open(cam, encoding="utf-8") as f:
-            reg = json.load(f).get(chave)
-        if reg:
-            saida["violao"] = {"tom": reg.get("tom"), "linhas": reg.get("linhas", [])}
-    except Exception:
-        pass
+    bancos = [("2", "acordes.json"), ("1", "acordes_nivel1.json")]
+    tem = {}
+    for rot, arq in bancos:
+        try:
+            with io.open(os.path.join(pasta_usuario("cifras"), arq),
+                         encoding="utf-8") as f:
+                reg = json.load(f).get(chave)
+            if reg and reg.get("linhas"):
+                tem[rot] = reg
+        except Exception:
+            pass
+    escolhido = str(nivel) if str(nivel) in tem else ("2" if "2" in tem else "1")
+    if escolhido in tem:
+        reg = tem[escolhido]
+        saida["violao"] = {"tom": reg.get("tom"), "linhas": reg.get("linhas", [])}
+        saida["nivel"] = escolhido
+        saida["niveis"] = sorted(tem.keys())
     try:
         with io.open(os.path.join(pasta_melodias(), "indice.json"), encoding="utf-8") as f:
             idx = json.load(f)
@@ -779,8 +809,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             from urllib.parse import unquote, urlparse, parse_qs
             u = urlparse(self.path)
             chave = unquote(u.path[len("/api/cifra/"):])
-            afinacao = (parse_qs(u.query).get("em") or ["C"])[0]
-            return self._json(material_do_louvor(chave, afinacao))
+            q = parse_qs(u.query)
+            afinacao = (q.get("em") or ["C"])[0]
+            nivel = (q.get("nivel") or ["2"])[0]
+            return self._json(material_do_louvor(chave, afinacao, nivel))
         if self.path.startswith("/api/atualizacao"):     # existe versão mais nova?
             nova = versao_mais_nova()
             tem = bool(nova) and _versao_tupla(nova) > _versao_tupla(VERSAO)
