@@ -61,3 +61,11 @@ Resultado: `dist_inst\Instalar o Sistema.exe` — é esse arquivo que se entrega
 | Apresentações convertidas | `%APPDATA%\Sistema Projecao\slides_importados` |
 
 As configurações ficam **fora** do programa de propósito: ao atualizar, nada se perde.
+
+## 1b. Depois de regenerar os dados
+
+Se rodou o gen_louvores.py, rode em seguida (repoe os consertos manuais do 143 e do 218):
+
+```bash
+python ferramentasplicar_consertos_louvores.py
+```
