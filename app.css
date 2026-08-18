@@ -463,6 +463,9 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .folha .rep{color:var(--ouro);font-style:italic}
 .folha .cab{color:#7f9ac0;font-size:12px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
+/* o versículo que a BUSCA POR REFERÊNCIA acendeu ("ageu 2:9" digitado):
+   contorno dourado até o operador clicar ou dar Enter */
+.gnum.alvo-busca{outline:2px solid var(--ouro);outline-offset:-2px}
 /* o seletor de nível da cifra: a MESMA cifra em dois níveis (1 = acordes
    simples, 2 = completos). Só aparece quando o louvor existe nos dois. */
 .niv-cx{display:inline-flex;gap:0;margin:0 0 10px;border:1px solid var(--borda);

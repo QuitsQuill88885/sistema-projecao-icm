@@ -1221,8 +1221,56 @@ function marcarSlide() {
 // abreviação que a mão escreve ("1jo", "sl", "gn") — ela filtra os livros.
 // Quando não for livro nenhum, ela vira busca por TRECHO: o pastor cita e o
 // operador acha o versículo sem saber a referência.
+// A REFERÊNCIA COMPLETA navega sozinha (pedido de 18/08): "ageu 2:9" abre o
+// livro, marca o capítulo e acende o versículo enquanto o operador digita;
+// Enter projeta. Aceita ":", ".", "," "v" ou espaço entre capítulo e verso, e
+// perdoa letra repetida ("sofffonias" acha Sofonias).
+function refDaBusca(texto) {
+  const m = /^(.+?)[\s.]+(\d{1,3})(?:\s*[:.;,vV\s]\s*(\d{1,3}))?\s*$/.exec((texto || '').trim());
+  if (!m) return null;
+  const dedup = t => t.replace(/(.)\1+/g, '$1');
+  const q = soLetras(m[1]).replace(/\s+/g, ''); if (!q) return null;
+  const qd = dedup(q);
+  let livro = null;
+  for (const nome of BIBLIA.ordem) {
+    const n = soLetras(nome).replace(/\s+/g, ''), nd = dedup(n);
+    let bate = n.includes(q) || nd.includes(qd);
+    if (!bate && nd[0] === qd[0]) {          // subsequência: "1co" acha 1 Coríntios
+      let i = 0;
+      for (const ch of nd) if (ch === qd[i]) i++;
+      bate = i === qd.length;
+    }
+    if (bate) { livro = nome; break; }
+  }
+  if (!livro) return null;
+  const caps = BIBLIA.livros[livro];
+  const cap = +m[2]; if (cap < 1 || cap > caps.length) return null;
+  let v = m[3] ? +m[3] : null;
+  if (v != null && caps[cap - 1][v] == null) v = null;   // verso que não existe: para no capítulo
+  return { livro, cap, v };
+}
+
 function renderLivros(filtro) {
   const cont = $('#lista-livros'), tre = $('#lista-trechos');
+  const ref = refDaBusca(filtro);
+  if (ref) {
+    cont.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'item sel'; d.textContent = ref.livro;
+    d.onclick = () => selecionarLivro(ref.livro, d);
+    cont.appendChild(d);
+    cont.classList.remove('oculto'); if (tre) tre.classList.add('oculto');
+    if (est.livro !== ref.livro) selecionarLivro(ref.livro, d);
+    if (est.cap !== ref.cap) {
+      const alvo = $$('#grid-caps .gnum').find(e => +e.textContent === ref.cap);
+      selecionarCap(ref.cap, alvo);
+    }
+    $$('#grid-vers .gnum').forEach(e => e.classList.toggle('alvo-busca', ref.v != null && +e.dataset.v === ref.v));
+    if (ref.v != null) {
+      const el = $$('#grid-vers .gnum').find(e => +e.dataset.v === ref.v);
+      if (el) el.scrollIntoView({ block: 'nearest' });
+    }
+    return;
+  }
   cont.innerHTML = '';
   const q = soLetras(filtro || '').replace(/\s+/g, '');
   let achou = 0;
@@ -2623,6 +2671,16 @@ function ligarEventos() {
   $('#btn-estilo').onclick = trocarEstilo;
   $('#busca-louvor').oninput = e => renderListaLouvores(e.target.value);
   $('#busca-livro').oninput = e => renderLivros(e.target.value);
+  // referência completa + Enter = projeta na hora ("ageu 2:9" ↵)
+  $('#busca-livro').onkeydown = e => {
+    if (e.key !== 'Enter') return;
+    const ref = refDaBusca(e.target.value);
+    if (ref && ref.v != null) {
+      est.setPos = -1;
+      projetarVerso(ref.livro, ref.cap, ref.v);
+      devolverPosicaoNaFila({ livro: ref.livro, cap: ref.cap, v: ref.v });
+    }
+  };
   $$('[data-min]').forEach(b => b.onclick = () => { $('#timer-min').value = +b.dataset.min; pintarMinutos(); });
   $('#timer-min').oninput = pintarMinutos;
   const passar = s => () => { $('#timer-min').value = passoDoTempo(+$('#timer-min').value || 5, s); pintarMinutos(); };
