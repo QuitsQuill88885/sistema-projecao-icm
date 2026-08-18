@@ -159,6 +159,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 .folha .ac{color:var(--ouro);font-weight:700}
 .folha .no{color:#79c0ff;font-weight:700}
+/* a estrutura do louvor, destacada: Coro / Introducao / repeticao (#38/#44) */
+.folha .rot{color:var(--ouro);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.folha .intro{color:#79c0ff;font-style:italic}
+.folha .rep{color:var(--ouro);font-style:italic}
 .folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
 .cifra-zoom{display:flex;gap:6px;align-items:center}
@@ -847,6 +851,19 @@ function escapar(t) {
    Em fonte monoespaçada a coluna É o caractere: acorde na coluna 8 fica em cima
    da 8ª letra. É por isso que a folha não pode usar fonte proporcional —
    com ela o alinhamento vai embora e a cifra perde a serventia. */
+/* A ESTRUTURA do louvor, destacada (#38/#44): "Coro", "Introdução:",
+   "Instrumentos", "Final:" e repeticoes ("bis", "2x") ganham cor propria.
+   O texto NAO muda (a coluna do acorde e' o caractere) — so' a cor. */
+const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
+const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
+const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+function marcarLinha(t, esc) {
+  if (RE_ROTULO.test(t)) return '<span class="rot">' + esc + '</span>';
+  if (RE_INTRO.test(t)) return '<span class="intro">' + esc + '</span>';
+  if (RE_REPETE.test(t)) return '<span class="rep">' + esc + '</span>';
+  return esc;
+}
+
 function linhaDeAcordes(acordes) {
   if (!acordes || !acordes.length) return '';
   let fila = '';
@@ -991,13 +1008,13 @@ function desenharFolha(d) {
   if (euToco === 'violao' && d.violao) {
     for (const l of d.violao.linhas) {
       const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], desloc, bemol)]);
-      corpo += linhaDeAcordes(a) + escapar(l.t) + '\n';
+      corpo += linhaDeAcordes(a) + marcarLinha(l.t, escapar(l.t)) + '\n';
     }
   } else if (euToco !== 'violao' && d.melodia) {
     for (const l of d.melodia.linhas)
       corpo += l.n ? '<span class="no">' + escapar(l.n.map(x =>
                        x === '|' ? x : transpor(x, desloc, bemol)).join(' ')) + '</span>\n'
-                   : escapar(l.t) + '\n';
+                   : marcarLinha(l.t || '', escapar(l.t)) + '\n';
   } else {
     corpo = 'Este louvor não tem material para o seu instrumento.';
   }

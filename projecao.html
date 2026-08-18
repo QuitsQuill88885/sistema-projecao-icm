@@ -346,10 +346,14 @@ function aplicar(e){
       el.lou.innerHTML=''; const bloco=document.createElement('div'); bloco.className='bloco';
       // o rótulo diz TAMBÉM qual repetição é esta ("CORO · 2ª de 3"). Sem isso
       // o slide repetido era idêntico ao primeiro e ninguém sabia onde estava.
-      if(e.label || e.rep){
+      if(e.label || e.rep || e.selo){
         const lb=document.createElement('span'); lb.className='label-coro';
         let t = e.label || '';
         if(e.rep) t = (t ? t + ' · ' : '') + e.rep.vez + 'ª de ' + e.rep.de;
+        // o selo do LIVRO (Coletânea Nível 1): "bis"/"2x"/"3x" = canta de
+        // novo; "hino" = repete o hino inteiro. É o aviso que faltava quando
+        // a repetição não está duplicada nos slides.
+        if(e.selo) t = (t ? t + ' · ' : '') + (e.selo === 'hino' ? 'repete o hino' : 'cantar ' + (e.selo === 'bis' ? '2x (bis)' : e.selo));
         lb.textContent = t; bloco.appendChild(lb);
       }
       (e.linhas||[]).forEach(l=>bloco.appendChild(montarLinha(l)));

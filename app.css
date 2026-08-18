@@ -457,6 +457,10 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
   font-size:var(--cf,14px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre}
 .folha .ac{color:var(--ouro);font-weight:700}
+/* a estrutura do louvor, destacada: Coro / Introdução / repetição (#38/#44) */
+.folha .rot{color:var(--ouro);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.folha .intro{color:#79c0ff;font-style:italic}
+.folha .rep{color:var(--ouro);font-style:italic}
 .folha .cab{color:#7f9ac0;font-size:12px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
 /* o seletor de nível da cifra: a MESMA cifra em dois níveis (1 = acordes

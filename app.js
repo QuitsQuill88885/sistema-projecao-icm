@@ -160,6 +160,10 @@ function stLouvor(idx, slide, fade) {
     modo: 'louvor', fundo: prim ? FB.louvor1 : FB.louvor2,
     titulo: prim ? ((s.num ? s.num + ' - ' : '') + s.titulo) : '',
     rep: repeticoes(s)[slide],
+    // o selo do LIVRO (bis/2x/3x/repete o hino), tirado da Coletânea Nível 1.
+    // É diferente do rep: o rep conta slides duplicados; o selo avisa a
+    // repetição que o livro manda cantar mesmo sem slide duplicado.
+    selo: (window.REPETICOES && REPETICOES[chaveLouvor(s)] || {})[String(slide)],
     label: sl.label, linhas: sl.linhas, tam: TAM_DEF.louvor, escala: est.escalaLouvor,
     // todos os slides do louvor usam o tamanho que serve pro maior deles (não "pula" de tamanho)
     linhasRef: s._maxL || (s._maxL = Math.max(...s.slides.map(x => x.linhas.length + (x.label ? 1 : 0)))),
@@ -953,6 +957,20 @@ function linhaDeAcordes(acordes) {
   return '<span class="ac">' + escaparCifra(fila) + '</span>\n';
 }
 
+/* A ESTRUTURA do louvor, destacada (#38/#44): o livro marca "Coro",
+   "Introdução: ...", "Instrumentos", "Final:" e as repetições ("bis", "2x").
+   Sem destacar, tudo isso parecia verso e o músico procurava o coro no olho.
+   O texto NÃO muda (a coluna do acorde é o caractere) — só ganha cor. */
+const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
+const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
+const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+function marcarLinha(t, esc) {
+  if (RE_ROTULO.test(t)) return '<span class="rot">' + esc + '</span>';
+  if (RE_INTRO.test(t)) return '<span class="intro">' + esc + '</span>';
+  if (RE_REPETE.test(t)) return '<span class="rep">' + esc + '</span>';
+  return esc;
+}
+
 /* ---------- TRANSPOR: o tom que o músico quiser ----------
    Como no Cifra Club: os doze tons numa grade, meio tom para cada lado e o
    restaurar. O deslocamento é só desta tela e do louvor aberto — nada disso
@@ -1070,7 +1088,7 @@ function desenharFolha(d) {
   if (d.violao && d.violao.linhas && d.violao.linhas.length) {
     for (const l of d.violao.linhas) {
       const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], cifraDesloc, bemol)]);
-      corpo += linhaDeAcordes(a) + escaparCifra(l.t) + '\n';
+      corpo += linhaDeAcordes(a) + marcarLinha(l.t, escaparCifra(l.t)) + '\n';
     }
   } else {
     corpo = 'Este louvor não tem cifra.';

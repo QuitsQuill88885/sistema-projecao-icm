@@ -50,3 +50,4 @@ desktop.ini
 
 # backup do historico antigo (que tinha o conteudo dentro)
 .git_antigo_com_conteudo/
+dados/repeticoes.js
