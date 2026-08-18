@@ -60,6 +60,7 @@ html,body{height:100%;background:#000;overflow:hidden;
       width:min(100vw,177.78vh);height:min(100vh,56.25vw);
       background:#000 center/100% 100% no-repeat;overflow:hidden;container-type:size}
 .camada{position:absolute;inset:0;transition:opacity var(--fade,0ms) ease}
+#fundo-fx{position:absolute;inset:0;opacity:0;pointer-events:none}
 .oculto{opacity:0}
 .txt{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;
      text-align:center;line-height:1.3;text-shadow:0 2px 8px #000a;padding:0 5.5%}
@@ -84,6 +85,10 @@ html,body{height:100%;background:#000;overflow:hidden;
 /* wrapper de medição p/ auto-ajuste (shrink-to-fit) */
 .fitw{display:flex;flex-direction:column;gap:.12em;max-width:100%}
 /* "fim" no canto inferior direito do último slide do louvor */
+/* o "3 de 4" da prévia do celular: grande o bastante pra ler na telinha */
+#pos-tag{position:absolute;left:1.6%;bottom:2.4%;display:none;color:#fff;
+  background:rgba(8,14,26,.62);border-radius:1.2vw;padding:.5vw 2vw;
+  font:700 3.4vw/1.5 'Sistema A3',sans-serif;letter-spacing:.05em;z-index:60}
 #fim-tag{position:absolute;right:2.6%;bottom:2.4%;font-family:'Sistema A3',sans-serif;color:#fff;
          opacity:.72;font-size:3.4cqh;letter-spacing:.5px;display:none;text-shadow:0 2px 6px #000b}
 #grande{inset:0;font-family:'Bebas',sans-serif;color:#fff;font-size:24cqh;
@@ -143,6 +148,10 @@ html,body{height:100%;background:#000;overflow:hidden;
 </style></head>
 <body>
 <div id="tela" class="e-limpo">
+  <!-- o fundo NOVO entra por esta camada, em fade; o corte seco pra tela de
+       espera (depois do último louvor/animação) era o background trocando
+       na hora enquanto só o TEXTO sabia atravessar suave. -->
+  <div id="fundo-fx"></div>
   <div class="camada" id="cam">
     <div class="txt" id="bib-ref"></div>
     <div class="txt" id="bib-txt"></div>
@@ -152,13 +161,19 @@ html,body{height:100%;background:#000;overflow:hidden;
     <div class="txt" id="livre"></div>
     <div class="txt" id="bib-multi"></div>
     <div id="fim-tag">fim</div>
+    <!-- "3 de 4": SÓ na prévia do celular (?previa=1). O operador de lá
+         precisa saber qual tela está no ar; a congregação não vê isto. -->
+    <div id="pos-tag"></div>
   </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 const tela=$('#tela'), cam=$('#cam');
 const el={ref:$('#bib-ref'),bib:$('#bib-txt'),tit:$('#lou-tit'),lou:$('#lou-txt'),multi:$('#bib-multi'),
-          grandeS:$('#grande small'),grandeV:$('#grande span'),grande:$('#grande'),livre:$('#livre'),fim:$('#fim-tag')};
+          grandeS:$('#grande small'),grandeV:$('#grande span'),grande:$('#grande'),livre:$('#livre'),fim:$('#fim-tag'),
+          pos:$('#pos-tag')};
+// prévia do celular? (o iframe do controle abre projecao.html?previa=1)
+const PREVIA = new URLSearchParams(location.search).has('previa');
 let timerInt=null, relogioInt=null, ULT=null, fadeT=null;
 // cursor: aparece ao mexer o mouse, some sozinho após 3s (limpo p/ congregação, sem pânico p/ operador)
 const standalone = (window.top===window.self);
@@ -170,7 +185,7 @@ if(standalone){
 
 function limpar(){
   for(const k of ['ref','bib','tit','lou','livre','multi']) el[k].style.display='none';
-  el.grande.style.display='none'; el.fim.style.display='none';
+  el.grande.style.display='none'; el.fim.style.display='none'; el.pos.style.display='none';
   clearInterval(timerInt); clearInterval(relogioInt); timerInt=relogioInt=null;
 }
 // monta uma linha; trechos entre  saem AMARELOS (ex.: "(BIS)", "(2X)")
@@ -219,7 +234,24 @@ function montarAviso(cont, arr){
   }
   cont.appendChild(w);
 }
-function fundo(url){ tela.style.background = url?`#000 url('${url}') center/100% 100% no-repeat`:'#000'; }
+/* O fundo atravessa em FADE (o corte seco pra tela de espera era aqui): o
+   fundo novo entra pela camada #fundo-fx com a MESMA duração do texto, e só
+   depois vira o fundo de verdade. Com fade 0 continua instantâneo. */
+let FUNDO_ATUAL=null, FUNDO_T=null;
+const fx=document.querySelector('#fundo-fx');
+function fundo(url){
+  const alvo = url?`#000 url('${url}') center/100% 100% no-repeat`:'#000';
+  if(alvo===FUNDO_ATUAL) return;
+  FUNDO_ATUAL=alvo;
+  const ms=parseFloat(getComputedStyle(cam).getPropertyValue('--fade'))||0;
+  clearTimeout(FUNDO_T);
+  if(ms<=0){ tela.style.background=alvo; fx.style.transition='none'; fx.style.opacity='0'; return; }
+  fx.style.transition='none'; fx.style.opacity='0'; fx.style.background=alvo;
+  void fx.offsetWidth;                     // firma o estado antes de animar
+  fx.style.transition='opacity '+ms+'ms ease';
+  fx.style.opacity='1';
+  FUNDO_T=setTimeout(()=>{ tela.style.background=alvo; fx.style.transition='none'; fx.style.opacity='0'; }, ms+50);
+}
 /* TELA PRONTA — a animação das CIAS e o slide do PowerPoint.
    A imagem JÁ é a tela inteira (título, letra e arte), então ela não se soma a
    nada: só aparece. Vai INTEIRA, sem esticar, porque as telas das CIAS são 4:3
@@ -346,20 +378,27 @@ function aplicar(e){
       el.lou.innerHTML=''; const bloco=document.createElement('div'); bloco.className='bloco';
       // o rótulo diz TAMBÉM qual repetição é esta ("CORO · 2ª de 3"). Sem isso
       // o slide repetido era idêntico ao primeiro e ninguém sabia onde estava.
-      if(e.label || e.rep || e.selo){
+      if(e.label || e.selo){
         const lb=document.createElement('span'); lb.className='label-coro';
-        let t = e.label || '';
-        if(e.rep) t = (t ? t + ' · ' : '') + e.rep.vez + 'ª de ' + e.rep.de;
-        // o selo do LIVRO (Coletânea Nível 1): "bis"/"2x"/"3x" = canta de
-        // novo; "hino" = repete o hino inteiro. É o aviso que faltava quando
-        // a repetição não está duplicada nos slides.
-        if(e.selo) t = (t ? t + ' · ' : '') + (e.selo === 'hino' ? 'repete o hino' : 'cantar ' + (e.selo === 'bis' ? '2x (bis)' : e.selo));
+        // REGRA DO SAMUEL (18/08, fechada): coro sem repetição = "CORO";
+        // coro com bis = "CORO 2x"; repetição fora do coro = "cantar 2x";
+        // "repete o hino" quando o livro manda repetir inteiro. O contador
+        // "1ª de N" MORREU de vez — nem o operador precisa (ele vê a prévia).
+        const vezes = e.selo === 'bis' ? '2x' : e.selo;   // bis = 2x
+        let t = '';
+        if (e.selo === 'hino') t = (e.label ? e.label + ' · ' : '') + 'repete o hino';
+        else if (e.label && e.selo) t = e.label + ' ' + vezes;      // "CORO 2x"
+        else if (e.label) t = e.label;                              // "CORO"
+        else if (e.selo) t = 'cantar ' + vezes;                     // "cantar 2x"
         lb.textContent = t; bloco.appendChild(lb);
       }
       (e.linhas||[]).forEach(l=>bloco.appendChild(montarLinha(l)));
       bloco.style.setProperty('--lh', avancoLinha(e.escala));
       el.lou.appendChild(bloco); fit(el.lou, e.tam||6.4, e.escala, false, e.linhasRef);
       if(e.fim && (e.linhas||[]).length) el.fim.style.display='block';   // "fim" no último slide
+      // "3 de 4" — só na prévia do celular (a congregação nunca vê)
+      if(PREVIA && e.pos && e.de){ el.pos.textContent = e.pos + ' de ' + e.de; el.pos.style.display='block'; }
+      else el.pos.style.display='none';
     }
     else if(e.modo==='texto'){
       fundo(e.fundo); el.livre.style.display='flex';

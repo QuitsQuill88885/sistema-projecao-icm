@@ -168,6 +168,9 @@ function stLouvor(idx, slide, fade) {
     // todos os slides do louvor usam o tamanho que serve pro maior deles (não "pula" de tamanho)
     linhasRef: s._maxL || (s._maxL = Math.max(...s.slides.map(x => x.linhas.length + (x.label ? 1 : 0)))),
     fim: slide === s.slides.length - 1,   // "fim" no cantinho do último slide (igual Glorifica)
+    // posição pro CELULAR ("3 de 4" na prévia): o operador de lá precisa saber
+    // qual tela está no ar sem contar slide de cabeça
+    pos: slide + 1, de: s.slides.length,
     transicao: true, fade: fade ? 600 : 240,   // fade suave entre slides; um pouco maior no encerramento
   };
 }
@@ -964,6 +967,9 @@ function linhaDeAcordes(acordes) {
 const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
 const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
 const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+// linha de FICHA (autor "(Let./Mús.)", "Tonalidade:", "Ritmo:"): não é letra
+// nem acorde — o Samuel mandou tirar da folha ("não faz diferença")
+const RE_FICHA = /^\s*\(?\s*let\.|^\s*tonalidade\s*:|^\s*ritmo\s*:/i;
 function marcarLinha(t, esc) {
   if (RE_ROTULO.test(t)) return '<span class="rot">' + esc + '</span>';
   if (RE_INTRO.test(t)) return '<span class="intro">' + esc + '</span>';
@@ -1087,6 +1093,7 @@ function desenharFolha(d) {
   let corpo = '';
   if (d.violao && d.violao.linhas && d.violao.linhas.length) {
     for (const l of d.violao.linhas) {
+      if (RE_FICHA.test(l.t || '')) continue;   // autor/tonalidade/ritmo: fora da folha
       const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], cifraDesloc, bemol)]);
       corpo += linhaDeAcordes(a) + marcarLinha(l.t, escaparCifra(l.t)) + '\n';
     }
