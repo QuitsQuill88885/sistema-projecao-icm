@@ -1159,6 +1159,47 @@ async function abrirCifra() {
   est.modoCifra = true; atualizarExtras();
   buscarCifra(s);
 }
+/* ---------- CIFRA NO TELÃO (#27, o ensaio do grupo) ----------
+   A folha vira páginas de acorde+letra no telão: o grupo inteiro lê junto,
+   sem celular na mão. As setas de sempre passam as páginas. A transposição
+   que estiver na folha vai junto (o que o operador vê é o que projeta). */
+const CIFRA_PARES_POR_PAG = 8;
+function projetarCifraTelao() {
+  if (!cifraDados || !cifraDados.violao || !cifraDados.violao.linhas) { toast('Abra uma cifra primeiro.'); return; }
+  const bemol = usaBemol(tomAgora());
+  const pares = [];
+  for (const l of cifraDados.violao.linhas) {
+    if (RE_FICHA.test(l.t || '')) continue;
+    let fila = '';
+    for (const par of (l.a || [])) {
+      const col = par[0], nome = transporAcorde(par[1], cifraDesloc, bemol);
+      if (fila.length && fila.length >= col) fila += '  ';
+      while (fila.length < col) fila += ' ';
+      fila += nome;
+    }
+    pares.push([fila, (l.t || '').replace(//g, '')]);
+  }
+  const pags = [];
+  for (let i = 0; i < pares.length; i += CIFRA_PARES_POR_PAG) pags.push(pares.slice(i, i + CIFRA_PARES_POR_PAG));
+  if (!pags.length) { toast('Esta cifra não tem linhas para projetar.'); return; }
+  const s = cifraLouvor;
+  est.live = { tipo: 'cifra', pags, p: 0, titulo: (s ? rotuloLouvor(s) : 'Cifra') + (tomAgora() ? ' — tom ' + tomAgora() : '') };
+  mostrarPagCifra();
+}
+function mostrarPagCifra() {
+  const lv = est.live;
+  projetar({ modo: 'cifra', fundo: FB.louvor2, titulo: lv.titulo,
+             pares: lv.pags[lv.p], pag: (lv.p + 1) + ' de ' + lv.pags.length,
+             transicao: true, fade: 240 });
+}
+function cifraPag(d) {
+  const lv = est.live;
+  if (!lv || lv.tipo !== 'cifra') return;
+  const n = lv.p + d;
+  if (n < 0 || n >= lv.pags.length) return;
+  lv.p = n; mostrarPagCifra();
+}
+
 function fecharCifra() {
   $('#cifra-ov').classList.add('oculto');
   fecharTons();
@@ -1709,6 +1750,7 @@ function proximo() {
   // próximo louvor, e com o cronômetro de oração na tela virava um versículo.
   const noAr = est.live && est.live.tipo;
   if (noAr === 'slide') { slideProximo(); return; }
+  if (noAr === 'cifra') { cifraPag(1); return; }        // ensaio: passa a página da cifra
   if (noAr === 'timer' || noAr === 'relogio' || noAr === 'texto' || noAr === 'fundo' || noAr === 'preto') return;
   if (est.setPos >= 0) {                      // navegando UM A UM pela LISTA (ordem que você montou)
     if (est.live && est.live.tipo === 'louvor') { louvorProximo(); return; }
@@ -1738,6 +1780,7 @@ function anterior() {
   }
   const noAr = est.live && est.live.tipo;      // o que está no ar manda (ver proximo())
   if (noAr === 'slide') { slideAnterior(); return; }
+  if (noAr === 'cifra') { cifraPag(-1); return; }
   if (noAr === 'timer' || noAr === 'relogio' || noAr === 'texto' || noAr === 'fundo' || noAr === 'preto') return;
   if (est.setPos >= 0) {
     // voltando pro louvor anterior, cai no ÚLTIMO slide dele — recomeçar do
@@ -2671,6 +2714,7 @@ function ligarEventos() {
   $('#btn-estilo').onclick = trocarEstilo;
   $('#busca-louvor').oninput = e => renderListaLouvores(e.target.value);
   $('#busca-livro').oninput = e => renderLivros(e.target.value);
+  $('#cifra-telao').onclick = projetarCifraTelao;
   // referência completa + Enter = projeta na hora ("ageu 2:9" ↵)
   $('#busca-livro').onkeydown = e => {
     if (e.key !== 'Enter') return;
