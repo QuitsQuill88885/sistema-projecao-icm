@@ -23,8 +23,15 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-conteudo = Tree('C:\\Users\\Emanuel\\Desktop\\Sistema\\Pacote completo\\Conteudo',
-                prefix='Conteudo')
+# Caminho RELATIVO ao .spec: a pasta do projeto já mudou de lugar uma vez
+# (Desktop\Sistema -> Desktop\Projetos AI\Sistema) e o caminho fixo aqui fez o
+# instalador completo falhar calado no meio da cadeia de build.
+import os as _os
+_raiz = _os.path.abspath(_os.path.join(SPECPATH, '..', '..'))
+_conteudo = _os.path.join(_raiz, 'Pacote completo', 'Conteudo')
+if not _os.path.isdir(_conteudo):
+    raise SystemExit('nao achei a pasta Conteudo em: %s' % _conteudo)
+conteudo = Tree(_conteudo, prefix='Conteudo')
 pyz = PYZ(a.pure)
 splash = Splash(
     'splash_instalador.png',

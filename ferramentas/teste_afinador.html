@@ -1,0 +1,145 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Banco de prova do afinador</title>
+<!-- Banco de prova do detector de afinação. NÃO usa microfone e NÃO precisa de
+     celular: gera o som aqui dentro (oscilador) e confere o que o afinador leu
+     contra o que foi tocado. Serve para provar o detector antes de levar para
+     o iPhone. Abrir por http://localhost:8765/ferramentas/teste_afinador.html -->
+<style>
+  body{font:14px/1.5 system-ui,sans-serif;background:#0a1424;color:#dbe6f5;margin:0;padding:18px}
+  h1{font-size:18px;margin:0 0 4px} p{color:#8fa7c8;margin:4px 0 14px}
+  table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+  th,td{padding:5px 8px;border-bottom:1px solid #1d2e4d;text-align:left;font-size:13px}
+  th{color:#8fa7c8;font-weight:600}
+  .ok{color:#3fbf72}.ruim{color:#e05a5a}.aviso{color:#e8b93c}
+  #resumo{margin:14px 0;padding:12px;border-radius:9px;background:#0c1830;border:1px solid #24365a}
+  button{background:#1d7a45;color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+</style>
+<h1>Banco de prova do afinador</h1>
+<p>Gera o som aqui mesmo e confere o que o detector leu. Sem microfone, sem celular.</p>
+<button id="ir">Rodar os testes</button>
+<div id="resumo"></div>
+<h2 style="font-size:15px;margin:18px 0 6px">A tela do afinador (montada aqui para conferir)</h2>
+<div id="tela" style="max-width:420px"></div>
+<table><thead><tr><th>Caso</th><th>Tocado</th><th>Lido</th><th>Erro (cents)</th><th>Veredito</th></tr></thead>
+<tbody id="corpo"></tbody></table>
+
+<script src="../afinador.js"></script>
+<script>
+const TAXA = 48000, N = 4096;
+const corpo = document.getElementById('corpo');
+let passou = 0, falhou = 0, avisos = 0;
+
+function linha(caso, tocado, lido, cents, veredito, classe) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + caso + '</td><td>' + (tocado ? tocado.toFixed(2) + ' Hz' : '—') +
+    '</td><td>' + (lido ? lido.toFixed(2) + ' Hz' : '<i>nada</i>') + '</td><td>' +
+    (cents === null ? '—' : (cents > 0 ? '+' : '') + cents.toFixed(1)) +
+    '</td><td class="' + classe + '">' + veredito + '</td>';
+  corpo.appendChild(tr);
+}
+
+// ---- gerador: onda com harmônicos (como corda de verdade) + ruído opcional
+function sintetiza(hz, {harmonicos = [1, .5, .3, .18, .1], ruido = 0, ganho = .5,
+                        taxa = TAXA, fase = 0} = {}) {
+  const b = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    let v = 0;
+    for (let h = 0; h < harmonicos.length; h++)
+      v += harmonicos[h] * Math.sin(2 * Math.PI * hz * (h + 1) * i / taxa + fase * (h + 1));
+    if (ruido) v += ruido * (Math.random() * 2 - 1);
+    b[i] = ganho * v / harmonicos.reduce((a, c) => a + c, 0);
+  }
+  return b;
+}
+
+function cents(lido, esperado) { return 1200 * Math.log2(lido / esperado); }
+
+function testa(caso, hz, opts, tolerancia) {
+  const taxa = (opts && opts.taxa) || TAXA;
+  const buf = sintetiza(hz, opts);
+  const r = Afinador.frequencia(buf, taxa);
+  if (!r.hz) { linha(caso, hz, 0, null, 'NÃO LEU', 'ruim'); falhou++; return; }
+  const c = cents(r.hz, hz);
+  const ok = Math.abs(c) <= tolerancia;
+  linha(caso, hz, r.hz, c, ok ? 'ok' : 'ERRO', ok ? 'ok' : 'ruim');
+  ok ? passou++ : falhou++;
+}
+
+function rodar() {
+  corpo.innerHTML = ''; passou = falhou = avisos = 0;
+  const midi = n => 440 * Math.pow(2, (n - 69) / 12);
+
+  // 1) as seis cordas do violão, som limpo
+  const violao = { 'Mi grave E2': 40, 'Lá A2': 45, 'Ré D3': 50, 'Sol G3': 55, 'Si B3': 59, 'Mi agudo E4': 64 };
+  for (const [nome, n] of Object.entries(violao)) testa('Violão ' + nome, midi(n), {}, 3);
+
+  // 2) baixo (as mais graves — o caso difícil)
+  for (const [nome, n] of Object.entries({ 'Mi E1': 28, 'Lá A1': 33, 'Ré D2': 38, 'Sol G2': 43 }))
+    testa('Baixo ' + nome, midi(n), {}, 5);
+
+  // 3) desafinado de propósito: o afinador tem que ACOMPANHAR o desvio
+  for (const d of [-30, -12, -5, 5, 12, 30])
+    testa('E2 desafinado ' + d + ' cents', midi(40) * Math.pow(2, d / 1200), {}, 3);
+
+  // 4) fundamental FRACA (harmônico mais forte) — a armadilha clássica
+  testa('E2 com fundamental fraca', midi(40), { harmonicos: [.15, 1, .8, .4, .2] }, 5);
+  testa('A2 com fundamental fraca', midi(45), { harmonicos: [.2, 1, .6, .3] }, 5);
+
+  // 5) com barulho de igreja por cima
+  testa('E2 com ruído leve', midi(40), { ruido: .05 }, 6);
+  testa('G3 com ruído médio', midi(55), { ruido: .15 }, 8);
+
+  // 6) sopro/voz: senoide pura, região aguda
+  testa('Nota pura A4 (440)', 440, { harmonicos: [1] }, 3);
+  testa('Nota pura C5', midi(72), { harmonicos: [1] }, 3);
+  testa('Nota pura E5 (violino)', midi(76), { harmonicos: [1] }, 4);
+
+  // 7) OITAVA: o erro clássico é ler o dobro ou a metade do período
+  testa('Oitava — só harmônicos pares (E2)', midi(40), { harmonicos: [1, 1, .1, .8, .05, .6] }, 6);
+  testa('Oitava — 2º harmônico dominante (A2)', midi(45), { harmonicos: [.3, 1, .3, .9] }, 6);
+  testa('Fase deslocada (E2)', midi(40), { fase: 1.1 }, 4);
+
+  // 8) o celular pode gravar a 44.100 Hz em vez de 48.000
+  for (const [nome, n] of Object.entries({ 'E2': 40, 'A2': 45, 'E4': 64 }))
+    testa('44.100 Hz — ' + nome, midi(n), { taxa: 44100 }, 4);
+  testa('44.100 Hz — Baixo E1', midi(28), { taxa: 44100 }, 6);
+
+  // 9) som fraco, logo acima do portão de silêncio
+  testa('E2 bem fraco (ganho .06)', midi(40), { ganho: .06 }, 4);
+  testa('A2 bem fraco (ganho .06)', midi(45), { ganho: .06 }, 4);
+
+  // 10) o que ele NÃO pode ler: silêncio e ruído puro (não pode chutar nota)
+  const silencio = new Float32Array(N);
+  let r = Afinador.frequencia(silencio, TAXA);
+  linha('Silêncio (não pode chutar)', 0, r.hz, null, r.hz ? 'CHUTOU' : 'ok', r.hz ? 'ruim' : 'ok');
+  r.hz ? falhou++ : passou++;
+
+  const so_ruido = new Float32Array(N);
+  for (let i = 0; i < N; i++) so_ruido[i] = (Math.random() * 2 - 1) * .5;
+  r = Afinador.frequencia(so_ruido, TAXA);
+  linha('Só ruído (não pode chutar)', 0, r.hz, null, r.hz ? 'chutou ' + r.hz.toFixed(0) + ' Hz' : 'ok',
+        r.hz ? 'aviso' : 'ok');
+  r.hz ? avisos++ : passou++;
+
+  // 8) a conta de nota/cents bate com a tabela?
+  const checa = [[440, 'A4'], [261.626, 'C4'], [82.407, 'E2'], [523.251, 'C5']];
+  for (const [hz, nome] of checa) {
+    const n = Afinador.nomeDe(Afinador.deHz(hz, 440));
+    const ok = n === nome;
+    linha('Nome da nota ' + hz + ' Hz', hz, hz, 0, ok ? 'ok (' + n + ')' : 'ERRO (deu ' + n + ')', ok ? 'ok' : 'ruim');
+    ok ? passou++ : falhou++;
+  }
+
+  document.getElementById('resumo').innerHTML =
+    '<b>' + passou + ' passaram</b> · <span class="ruim">' + falhou + ' falharam</span> · ' +
+    '<span class="aviso">' + avisos + ' avisos</span>';
+  window.__resultado = { passou, falhou, avisos };
+}
+document.getElementById('ir').onclick = rodar;
+addEventListener('load', () => {
+  rodar();
+  try { Afinador.montar(document.getElementById('tela')); }
+  catch (e) { document.getElementById('tela').textContent = 'a tela não montou: ' + e.message; }
+});
+</script>

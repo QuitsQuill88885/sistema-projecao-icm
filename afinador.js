@@ -39,10 +39,27 @@
     return NOMES[i] + (Math.floor(Math.round(midi) / 12) - 1);
   }
 
-  /* AUTOCORRELAÇÃO com interpolação parabólica.
-     Sem a parábola o resultado anda de degrau em degrau (a resolução seria a de
-     UMA amostra), e em corda grave isso dá erro de vários cents. Com ela, o
-     pico é estimado entre as amostras e o afinador para de tremer. */
+  // O que um instrumento de igreja produz. O piso vai a 30 Hz por causa do Mi
+  // grave do BAIXO (41,2 Hz): com o piso antigo de 55 Hz o baixista não
+  // conseguia afinar justamente a corda mais grave — o banco de prova pegou.
+  var HZ_MIN = 30, HZ_MAX = 1600;
+
+  /* AUTOCORRELAÇÃO NORMALIZADA, de janela FIXA, com interpolação parabólica.
+     Três decisões, todas medidas no banco de prova (ferramentas/teste_afinador.html):
+
+     - JANELA FIXA. A receita clássica compara b[0..n-i] consigo mesma, e a soma
+       encurta conforme o deslocamento cresce. Isso pende a favor dos
+       deslocamentos curtos e o afinador lê SEMPRE um pouco agudo (no banco, todo
+       erro dava para o mesmo lado, até +4,6 cents no Mi grave). Comparando
+       sempre o MESMO número de amostras o viés some.
+     - NORMALIZADA. Dividir pela energia das duas janelas devolve um número
+       entre -1 e 1 — um "quanto casou" comparável entre deslocamentos, que
+       serve de medida de confiança honesta.
+     - PRIMEIRO pico forte, não o maior. O maior pico pode ser o do dobro do
+       período (a oitava abaixo); o primeiro que chega perto dele é o certo.
+
+     Só percorre a faixa útil de deslocamento, então custa MENOS que a versão
+     anterior mesmo fazendo mais conta. */
   function frequencia(buf, taxa) {
     var n = buf.length, i, j;
 
@@ -52,43 +69,77 @@
     var rms = Math.sqrt(soma / n);
     if (rms < 0.01) return { hz: 0, rms: rms };      // silêncio: não chuta nada
 
-    // 2) o bloco inteiro entra na conta.
-    //    MEDIDO: havia aqui um passo que "aparava as pontas silenciosas", copiado
-    //    da receita clássica. Ele corta até a última amostra fraca da primeira
-    //    metade — e num som CONTÍNUO, que cruza o zero a cada meio ciclo, isso
-    //    cai bem no meio do bloco. De 2048 amostras sobravam 2, e o afinador
-    //    devolvia zero para todas as seis cordas do violão. O portão de silêncio
-    //    do passo 1 já faz o trabalho que aquilo prometia fazer.
     var b = buf;
 
-    // 3) a correlação propriamente dita
-    var c = new Float32Array(n);
-    for (i = 0; i < n; i++) {
-      var s = 0;
-      for (j = 0; j < n - i; j++) s += b[j] * b[j + i];
-      c[i] = s;
+    /* BUSCA GROSSA, no sinal reduzido a 1/4.
+       Varrer todos os deslocamentos no sinal cheio custava 15 ms por leitura —
+       quase um quadro inteiro de tela, e isso 60 vezes por segundo no celular
+       do músico. Procurar primeiro num sinal 4 vezes menor acha a vizinhança
+       do período por 1/16 do preço; depois só a vizinhança é refinada no sinal
+       cheio, e a precisão fica a mesma (o banco de prova confere). Somar 4
+       amostras de cada vez também já serve de filtro contra o agudo. */
+    var D = 4, m = (n / D) | 0;
+    var bd = new Float32Array(m);
+    for (i = 0; i < m; i++) {
+      var acc = 0;
+      for (j = 0; j < D; j++) acc += b[i * D + j];
+      bd[i] = acc / D;
     }
+    var taxaD = taxa / D;
+    var lagMinD = Math.max(2, Math.floor(taxaD / HZ_MAX));
+    var lagMaxD = Math.min(m - 128, Math.ceil(taxaD / HZ_MIN));
+    if (lagMaxD <= lagMinD) return { hz: 0, rms: rms };
 
-    // 4) pula o primeiro vale (correlação consigo mesma) e acha o maior pico
-    var d = 0;
-    while (d < n - 1 && c[d] > c[d + 1]) d++;
-    var max = -1, pos = -1;
-    for (i = d; i < n; i++) {
-      if (c[i] > max) { max = c[i]; pos = i; }
+    var casou = correlaciona(bd, lagMinD, lagMaxD, m - lagMaxD);
+    if (!casou || casou.maior < 0.45) return { hz: 0, rms: rms };
+
+    // BUSCA FINA no sinal cheio, só ao redor do que a grossa apontou
+    var centro = casou.pos * D;
+    var lagMin = Math.max(2, centro - 2 * D);
+    var lagMax = Math.min(n - 256, centro + 2 * D);
+    var fina = correlaciona(b, lagMin, lagMax, n - (lagMax + 1));
+    if (!fina) return { hz: 0, rms: rms };
+
+    var hz = taxa / fina.fino;
+    if (hz < HZ_MIN || hz > HZ_MAX) return { hz: 0, rms: rms };
+    return { hz: hz, rms: rms, casou: casou.maior };
+  }
+
+  /* Correlação normalizada de JANELA FIXA numa faixa de deslocamento, com a
+     parábola por cima do melhor ponto. Janela fixa (o mesmo número de amostras
+     em todo deslocamento) é o que tira o viés que fazia o afinador ler agudo. */
+  function correlaciona(b, lagMin, lagMax, W) {
+    var i, j;
+    if (W < 128 || lagMax <= lagMin) return null;
+    var e0 = 0;
+    for (j = 0; j < W; j++) e0 += b[j] * b[j];
+    if (!e0) return null;
+
+    var r = new Float32Array(lagMax - lagMin + 1), maior = -2, pos = -1;
+    for (i = lagMin; i <= lagMax; i++) {
+      var s = 0, e = 0, y;
+      for (j = 0; j < W; j++) {
+        y = b[j + i];
+        s += b[j] * y;
+        e += y * y;
+      }
+      var v = e > 0 ? s / Math.sqrt(e0 * e) : 0;
+      r[i - lagMin] = v;
+      if (v > maior) { maior = v; pos = i; }
     }
-    if (pos <= 0) return { hz: 0, rms: rms };
-
-    // 5) a parábola por cima dos três pontos ao redor do pico
-    var x0 = c[pos - 1] || c[pos], x1 = c[pos], x2 = c[pos + 1] || c[pos];
+    // o PRIMEIRO pico que chega a 90% do melhor — o maior pode ser o do dobro
+    // do período, e aí o afinador mostraria a oitava abaixo
+    var alvo = maior * 0.9;
+    for (i = lagMin + 1; i < lagMax; i++) {
+      var k = i - lagMin;
+      if (r[k] >= alvo && r[k] >= r[k - 1] && r[k] >= r[k + 1]) { pos = i; break; }
+    }
+    var k0 = pos - lagMin;
+    var x0 = k0 > 0 ? r[k0 - 1] : r[k0],
+        x1 = r[k0],
+        x2 = k0 + 1 < r.length ? r[k0 + 1] : r[k0];
     var a = (x0 + x2 - 2 * x1) / 2, bb = (x2 - x0) / 2;
-    var fino = a ? pos - bb / (2 * a) : pos;
-
-    var hz = taxa / fino;
-    // fora do que um instrumento de igreja produz: descarta em vez de mentir
-    if (hz < 55 || hz > 1600) return { hz: 0, rms: rms };
-    // confiança: pico fraco em relação à energia total é palpite, não leitura
-    if (max / c[0] < 0.35) return { hz: 0, rms: rms };
-    return { hz: hz, rms: rms };
+    return { pos: pos, maior: maior, fino: a ? pos - bb / (2 * a) : pos };
   }
 
   // ---- os instrumentos ---------------------------------------------------

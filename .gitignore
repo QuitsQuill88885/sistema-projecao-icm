@@ -52,3 +52,6 @@ desktop.ini
 .git_antigo_com_conteudo/
 dados/repeticoes.js
 dados/consertos_louvores.json
+
+# --- ferramenta de sessao do Claude Code (nao e do projeto) ---
+.claude/
