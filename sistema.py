@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.7"
+VERSAO = "2.7.8"
 PORTA = 8765
 
 def raiz():
@@ -295,6 +295,26 @@ def versao_mais_nova():
     return None
 
 
+def _mesmo_arquivo(resposta, parcial, feito, recuo):
+    """Os bytes que voltaram batem com os que já estão no disco?
+
+    Se batem, é o mesmo arquivo e a emenda é segura. Se não batem, saiu versão
+    nova enquanto o download dormia e o que está no disco não presta mais."""
+    veio = b""
+    while len(veio) < recuo:
+        p = resposta.read(recuo - len(veio))
+        if not p:
+            return False
+        veio += p
+    try:
+        with open(parcial, "rb") as f:
+            f.seek(feito - recuo)
+            nosso = f.read(recuo)
+    except OSError:
+        return False
+    return veio == nosso
+
+
 def baixar_retomando(url, destino, avisar, tentativas=10):
     """Baixa `url` para `destino` e RETOMA de onde parou quando a rede cai.
 
@@ -311,9 +331,17 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
 
     Se o servidor ignorar o Range (responde 200 no lugar de 206), recomeça do
     zero de propósito: um 200 traz o arquivo INTEIRO, e continuar gravando no
-    fim do que já existia corromperia o arquivo em silêncio."""
+    fim do que já existia corromperia o arquivo em silêncio.
+
+    E CONFERE SE O ARQUIVO É O MESMO antes de emendar: um download parado por
+    dias pode acordar depois de sair uma versão nova, e aí o servidor manda
+    alegremente os bytes do arquivo NOVO a partir do ponto pedido — começo de um
+    colado no fim do outro, tamanho final batendo, arquivo podre. O `If-Range`
+    existe para isso, mas MEDIDO: o servidor do GitHub o ignora. Então a
+    conferência é feita aqui, pedindo 64 KB a mais e comparando com o disco."""
     import urllib.error
     import urllib.request
+    CONFERE = 65536
     parcial = destino + ".parte"
     pasta = os.path.dirname(destino)
     if pasta and not os.path.isdir(pasta):
@@ -326,9 +354,10 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
     for tentativa in range(1, tentativas + 1):
         feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
         antes = feito
+        recuo = min(CONFERE, feito)      # bytes pedidos a mais, como prova
         cab = {"User-Agent": "Sistema"}
         if feito:
-            cab["Range"] = "bytes=%d-" % feito
+            cab["Range"] = "bytes=%d-" % (feito - recuo)
         try:
             req = urllib.request.Request(url, headers=cab)
             with urllib.request.urlopen(req, timeout=60) as r:
@@ -336,6 +365,13 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
                 faixa = r.headers.get("Content-Range") or ""
                 if feito and codigo == 206 and "/" in faixa:
                     total = int(faixa.rsplit("/", 1)[-1])
+                    if recuo and not _mesmo_arquivo(r, parcial, feito, recuo):
+                        try:
+                            os.remove(parcial)     # versão nova: o velho não serve
+                        except OSError:
+                            pass
+                        ultimo = "a versão mudou no meio do caminho"
+                        continue      # sem espera: não foi a rede que falhou
                     modo = "ab"
                 else:
                     feito = 0

@@ -260,6 +260,48 @@ def tamanho_curto(n):
 
 # ----------------------------------------------------------------- o download
 
+# Quanto do que já veio é reconferido contra o servidor antes de emendar.
+# 64 KB num download de 610 MB é 0,01% de tráfego a mais — e é o que separa
+# um instalador bom de um instalador corrompido em silêncio.
+CONFERE = 65536
+
+
+def mesmo_arquivo(resposta, parcial, feito, recuo):
+    """O que o servidor está mandando é a continuação DAQUELE arquivo mesmo?
+
+    O PERIGO, que é real e já esteve a caminho de acontecer na igreja: alguém
+    começa a baixar a versão de hoje, a internet cai, sai uma versão nova, e no
+    dia seguinte o programa retoma. O servidor responde 206 alegremente e manda
+    os bytes do arquivo NOVO a partir do ponto pedido. O resultado é o começo de
+    um arquivo colado no fim de outro — um .exe corrompido. E o pior: o tamanho
+    final BATE, então a conferência de tamanho não pega. O Windows depois diz só
+    "não é um aplicativo válido", na igreja, sem explicação.
+
+    O jeito certo seria o cabeçalho `If-Range`, que existe exatamente para isso.
+    MEDIDO: o servidor do GitHub IGNORA o If-Range — pedi com uma etiqueta
+    inventada e ele devolveu 206 do mesmo jeito. Então não dá para terceirizar
+    essa conferência: ela é feita aqui.
+
+    Como: em vez de pedir do byte N em diante, pedimos de N-64KB em diante e
+    conferimos esses 64 KB contra o que já está no disco. Se batem, é o mesmo
+    arquivo e a emenda é segura. Se não batem, o arquivo trocou e o que está no
+    disco não presta. Não custa uma viagem a mais à rede — os bytes vêm no
+    mesmo pedido."""
+    veio = b""
+    while len(veio) < recuo:
+        p = resposta.read(recuo - len(veio))
+        if not p:
+            return False              # nem os bytes de conferência chegaram
+        veio += p
+    try:
+        with open(parcial, "rb") as f:
+            f.seek(feito - recuo)
+            nosso = f.read(recuo)
+    except OSError:
+        return False
+    return veio == nosso
+
+
 def baixar(destino, progresso, url=URL, tentativas=10):
     """Baixa para `destino`, avisando o andamento, e RETOMA de onde parou.
 
@@ -292,9 +334,12 @@ def baixar(destino, progresso, url=URL, tentativas=10):
     for tentativa in range(1, tentativas + 1):
         feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
         antes = feito
+        # pedimos um pouco ANTES do fim do que já temos: esses bytes voltam
+        # como prova de que o arquivo lá é o mesmo daqui (ver mesmo_arquivo)
+        recuo = min(CONFERE, feito)
         cab = {"User-Agent": "Sistema-Instalador"}
         if feito:
-            cab["Range"] = "bytes=%d-" % feito
+            cab["Range"] = "bytes=%d-" % (feito - recuo)
         try:
             req = urllib.request.Request(url, headers=cab)
             with urllib.request.urlopen(req, timeout=60) as r:
@@ -302,6 +347,16 @@ def baixar(destino, progresso, url=URL, tentativas=10):
                 faixa = r.headers.get("Content-Range") or ""
                 if feito and codigo == 206 and "/" in faixa:
                     total = int(faixa.rsplit("/", 1)[-1])   # "bytes 100-999/1000"
+                    if recuo and not mesmo_arquivo(r, parcial, feito, recuo):
+                        # saiu versão nova enquanto este download estava parado.
+                        # O que está no disco não serve mais: fora com ele.
+                        try:
+                            os.remove(parcial)
+                        except OSError:
+                            pass
+                        progresso(3, "Saiu uma versão nova — recomeçando…")
+                        ultimo = "a versão mudou no meio do caminho"
+                        continue        # sem espera: não foi a rede que falhou
                     modo = "ab"                              # continua no fim
                 else:
                     feito = 0                                # servidor mandou tudo
