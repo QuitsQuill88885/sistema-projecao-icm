@@ -1,7 +1,14 @@
 <!doctype html><html lang="pt-br"><head>
 <meta charset="utf-8"><title>Projeção — ICM Iperó</title>
 <style>
-@font-face{font-family:'Bebas';src:url('fontes/bebas.otf');font-display:swap}
+/* font-display: BLOCK, não swap. Com `swap` o navegador pinta o título na
+   fonte de reserva do Windows NA HORA e só troca pela Bebas quando ela chega.
+   A Bebas é estreita e alta, e o tamanho do título é calibrado para ela; a
+   reserva (Arial) é larga e redonda, então o título aparecia gordo, gigante e
+   sem delicadeza — na parede, na frente da igreja. Com `block` o título espera
+   a fonte certa (fração de segundo, e só na primeira vez) em vez de mostrar a
+   errada. Um instante sem título é melhor que um título errado no telão. */
+@font-face{font-family:'Bebas';src:url('fontes/bebas.otf');font-display:block}
 /* AS CINCO FONTES DO SISTEMA
    ---------------------------------------------------------------------
    Tudo o que a projecao precisa vem DENTRO do pacote: o programa nao
@@ -493,8 +500,27 @@ addEventListener('keydown',e=>{
 });
 // tenta tela cheia ao abrir (herda o gesto do clique que abriu a janela)
 if(standalone){ addEventListener('load',()=>{ setTimeout(telaCheiaNoProjetor,200); }); }
-// re-ajusta o tamanho quando as fontes terminam de carregar e quando a tela muda de tamanho (F11, projetor)
-if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(ULT) aplicar(Object.assign({},ULT,{transicao:false})); });
+/* FONTE PRIMEIRO, MEDIDA DEPOIS.
+   O fit() mede o texto para achar o tamanho que cabe. Se ele medir enquanto a
+   Outfit ainda não chegou, mede com a fonte de reserva do Windows — que é mais
+   larga — e grava um tamanho errado: a letra sai ridícula e a linha quebra em
+   outro lugar. E some sozinho no dia seguinte, porque aí a fonte já está no
+   cache — foi por isso que o defeito parecia ir e voltar.
+   Reaparece TODA VEZ que o Sistema é instalado de novo: arquivo novo, cache
+   vazio, a fonte chega depois da primeira medida.
+   `document.fonts.ready` SOZINHO NÃO RESOLVE: com font-display:block a face só
+   começa a baixar quando algum texto a usa, então o ready pode resolver antes
+   disso, quando ainda não havia nada pendente. Aqui eu PEÇO as faces na mão e
+   só remeço depois que elas chegam de verdade. */
+const FACES = ['400 100px "Sistema A1"', 'italic 400 100px "Sistema A2"',
+               '700 100px "Sistema A3"', 'italic 700 100px "Sistema A4"',
+               '500 100px "Sistema A5"', '100px "Bebas"'];
+function remedir(){ if(ULT) aplicar(Object.assign({},ULT,{transicao:false})); }
+if(document.fonts){
+  Promise.all(FACES.map(f => document.fonts.load(f).catch(()=>null)))
+    .then(()=> document.fonts.ready).then(remedir).catch(()=>{});
+  if(document.fonts.ready) document.fonts.ready.then(remedir);
+}
 let rzT; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(ULT) aplicar(Object.assign({},ULT,{transicao:false})); },150); });
 if(window.opener) try{ window.opener.postMessage({tipo:'proj-pronta'},'*'); }catch(e){}
 // janela própria: avisa o controle pelo canal que já pode receber o conteúdo

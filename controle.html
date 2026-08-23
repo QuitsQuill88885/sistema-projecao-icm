@@ -119,9 +119,20 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .aba[data-aba="cifra"].cifra-aberta > .inst-caixa,
 .aba[data-aba="cifra"].cifra-aberta > .bt-fila,
 .aba[data-aba="cifra"].cifra-aberta > #aba-afn,
+.aba[data-aba="cifra"].cifra-aberta > #afn-barra,
 .aba[data-aba="cifra"].cifra-aberta > .busca,
 .aba[data-aba="cifra"].cifra-aberta > #cifra-agora,
 .aba[data-aba="cifra"].cifra-aberta > #lista-cifras{display:none}
+/* AFINADOR ABERTO: mesma regra da cifra, pelo mesmo motivo. Ele nascia
+   espremido ENTRE o botão "Afinador" e o "Procurar cifra de outro louvor…",
+   com a lista inteira embaixo — o Samuel abriu e não entendeu o que era aquilo
+   tudo em volta. Agora o afinador toma a tela e tem o seu "‹ voltar". */
+.aba[data-aba="cifra"].afn-aberto > .inst-caixa,
+.aba[data-aba="cifra"].afn-aberto > .bt-fila,
+.aba[data-aba="cifra"].afn-aberto > .busca,
+.aba[data-aba="cifra"].afn-aberto > #cifra-agora,
+.aba[data-aba="cifra"].afn-aberto > #lista-cifras,
+.aba[data-aba="cifra"].afn-aberto > .cifra-quadro{display:none}
 /* ---- INSTRUMENTO: quadradinhos, escolhidos uma vez e guardados ---- */
 .inst-caixa{padding:10px 2px 4px}
 .inst-tit{font-size:12.5px;color:#9db3d6;margin-bottom:9px}
@@ -135,13 +146,32 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .inst-trocar{background:none;border:none;color:#7f9ac0;font-size:11.5px;text-decoration:underline;
   padding:4px 2px;cursor:pointer}
 /* rolar sozinho: barra fina, gruda no topo junto com a cifra-topo */
-.auto-linha{position:sticky;top:52px;z-index:6;display:flex;align-items:center;gap:8px;
+/* O `top` sai da MEDIDA da barra de cima, não de um número chutado. Era 52px
+   fixo, mas a barra do louvor cresce: o nome quebra linha, e ela ainda carrega
+   o tom e o A−/A+. Quando ela passava de 52px, a barra da rolagem grudava
+   ATRÁS dela (z-index menor) e aparecia pela metade — pior no modo compacto,
+   que é baixinho e sumia quase todo. Quem mede é o medirTopo() lá embaixo. */
+.auto-linha{position:sticky;top:var(--topo-h,52px);z-index:6;display:flex;align-items:center;gap:8px;
   padding:7px 10px;background:#0d1a30;border:1px solid var(--borda);border-radius:9px;margin-top:6px}
 .auto-bt{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
   padding:7px 13px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .auto-bt.on{background:var(--verde);color:#fff;border-color:var(--verde)}
+.auto-bt svg{width:11px;height:11px;fill:currentColor;margin-right:5px;vertical-align:-1px}
 .auto-lbl{font-size:10px;color:#7f9ac0}
 .auto-linha input[type=range]{flex:1;min-width:60px}
+/* ENCOLHER A BARRA: na estante o que vale é a cifra, não o controle dela.
+   Encolhida, some a régua de velocidade e o rótulo do botão — fica só o
+   ▶/⏸ (ele PRECISA continuar ali para parar a rolagem sem reabrir nada) e a
+   setinha de voltar. A escolha fica guardada no aparelho. */
+.auto-min{background:none;border:none;color:#7f9ac0;padding:4px 2px;margin-left:auto;
+  display:flex;align-items:center;flex:0 0 auto;cursor:pointer}
+.auto-min svg{width:13px;height:13px;fill:currentColor;transition:transform .18s}
+.auto-linha.mini{padding:2px 8px;gap:6px;margin-top:3px}
+.auto-linha.mini .auto-lbl,.auto-linha.mini input[type=range]{display:none}
+.auto-linha.mini .auto-bt{font-size:0;padding:4px 9px}
+.auto-linha.mini .auto-bt svg{margin-right:0;width:11px;height:11px}
+.auto-linha.mini .auto-min{padding:2px}
+.auto-linha.mini .auto-min svg{transform:rotate(180deg)}
 /* ---- a cifra desenhada, no lugar do PDF ---- */
 /* SEM overflow proprio: dois containers rolaveis aninhados travam a rolagem no
    Safari do iPhone. Quem rola e' a pagina. */
@@ -162,6 +192,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 /* a estrutura do louvor, destacada: Coro / Introducao / repeticao (#38/#44) */
 .folha .rot{color:var(--ouro);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .folha .intro{color:#79c0ff;font-style:italic}
+/* crédito do autor: discreto, fora do peso da letra */
+.folha .cred{color:#6d84a6;font-size:.82em;font-style:italic;letter-spacing:.02em}
 .folha .rep{color:var(--ouro);font-style:italic}
 .folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
@@ -377,6 +409,10 @@ textarea.campo{line-height:1.4;resize:vertical}
          quando ele pede — quem só quer ler a cifra não carrega nada disso. -->
     <div class="bt-fila" style="margin:0 0 8px"><button class="bt" id="bt-afinador">
       <span style="font-weight:700">Afinador</span></button></div>
+    <div class="cifra-topo" id="afn-barra" hidden style="margin:0 0 8px">
+      <button class="cifra-volta" id="afn-volta" title="Voltar" aria-label="Voltar">‹</button>
+      <span class="cifra-nome">Afinador</span>
+    </div>
     <div class="aba-afn" id="aba-afn" hidden></div>
     <div class="busca"><input id="qc" placeholder="Procurar cifra de outro louvor…" autocomplete="off"></div>
     <div class="cifra-agora" id="cifra-agora"></div>
@@ -392,10 +428,11 @@ textarea.campo{line-height:1.4;resize:vertical}
            do instrumento. Fica na barra que gruda no topo, então continua ao
            alcance mesmo com a cifra rolada. -->
       <div class="auto-linha" id="auto-linha">
-        <button class="auto-bt" id="auto-bt" aria-label="Rolar sozinho">▶ Rolar</button>
+        <button class="auto-bt" id="auto-bt" aria-label="Rolar sozinho"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Rolar</button>
         <span class="auto-lbl">devagar</span>
         <input type="range" id="auto-vel" min="1" max="10" value="3" aria-label="Velocidade">
         <span class="auto-lbl">rápido</span>
+        <button class="auto-min" id="auto-min" title="Encolher a barra" aria-label="Encolher a barra"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14l5-5 5 5z"/></svg></button>
       </div>
       <div class="folha" id="folha"></div>
     
@@ -857,9 +894,28 @@ function escapar(t) {
 const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
 const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
 const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+/* O CRÉDITO DO AUTOR não é letra do louvor. Ele vem no alto da página do livro
+   ("(Let. J.J.M / Mús. I.A.M.)") e o leitor o empilhava junto com a letra, em
+   monoespaçada e do mesmo tamanho — o Samuel bateu o olho e achou que o nome
+   do cara tinha virado verso. São ~105 louvores assim nos dois bancos. Aqui só
+   muda a APARÊNCIA: o texto continua igual no banco, nada é apagado. */
+const RE_CRED_INICIO = /^\s*\(?\s*(let|letra|m[uú]s|m[uú]sica)\b[\.\:]?\s*\S/i;
+// exige TAMBÉM uma marca de crédito, senão um verso que comece com "MÚSICA DO
+// CÉU" viraria crédito e sumiria da folha. Marca = barra, parêntese, ou a
+// fórmula "letra e música de".
+function ehCredito(t) {
+  return RE_CRED_INICIO.test(t) &&
+         (/[\/)]/.test(t) || /^\s*\(/.test(t) || /letra\s+e\s+m[uú]sica/i.test(t));
+}
+/* Linha que é SÓ acorde mas que o OCR entregou como letra ("Aml" no lugar de
+   "Am"). São 3 casos no acervo inteiro — pouco, mas aparecia branco no meio da
+   folha, como se fosse verso. Pinta como acorde, que é o que ela é. */
+const RE_SO_ACORDE = /^\s*[A-G][#b]?(m|maj|M|min)?\d{0,2}(\([^)]*\))?(\/[A-G][#b]?)?[l|I1]?\s*$/;
 // ficha (autor/tonalidade/ritmo) fora da folha, por ordem do Samuel
 const RE_FICHA = /^\s*\(?\s*let\.|^\s*tonalidade\s*:|^\s*ritmo\s*:/i;
 function marcarLinha(t, esc) {
+  if (ehCredito(t)) return '<span class="cred">' + esc + '</span>';
+  if (RE_SO_ACORDE.test(t)) return '<span class="ac">' + esc + '</span>';
   if (RE_ROTULO.test(t)) return '<span class="rot">' + esc + '</span>';
   if (RE_INTRO.test(t)) return '<span class="intro">' + esc + '</span>';
   if (RE_REPETE.test(t)) return '<span class="rep">' + esc + '</span>';
@@ -992,8 +1048,15 @@ function desenharFolha(d) {
     const outros = [];
     // so entra tom que EXISTE: sem isto o cabecalho imprimia "C: null" quando
     // o caderno melodico nao declarou o tom daquele instrumento
-    for (const k in d.tons) if (k !== euToco && d.tons[k]) outros.push(k + ': ' + d.tons[k]);
-    if (outros.length) cab.push(outros.join(' · '));
+    /* Isto aqui é o tom do MESMO louvor para quem toca sopro (o sax tenor lê
+       num tom e sai noutro). Saía como "C: Em · Bb: F#m · Eb: Dbm" — códigos
+       de afinação, sem uma palavra explicando; o Samuel olhou e disse que "só
+       Deus sabe pra que serve". Agora vai com o nome do instrumento e uma
+       etiqueta dizendo o que é. */
+    const NOME = {}; QUEM.forEach(q => { NOME[q[0]] = q[1]; });
+    for (const k in d.tons) if (k !== euToco && d.tons[k])
+      outros.push((NOME[k] || k) + ' <b>' + d.tons[k] + '</b>');
+    if (outros.length) cab.push('o mesmo louvor em outros instrumentos: ' + outros.join(' · '));
   }
   // o seletor de nivel: so aparece quando a MESMA cifra existe nos dois
   // niveis. Se so existe num, a folha avisa de qual veio e pronto — nenhum
@@ -1061,10 +1124,12 @@ async function abrirCifra(s) {
   // A cifra SUBSTITUI a tela de escolha: sem isto o quadro aparecia amontoado
   // embaixo do seletor de instrumento, do afinador, da busca e da lista inteira
   // — a bagunça que o Samuel apontou. Agora fica só a folha e o "‹ voltar".
+  fecharAfinador();                 // e desliga o microfone, se estava ligado
   document.querySelector('.aba[data-aba="cifra"]').classList.add('cifra-aberta');
   $('#cifra-quadro').hidden = false;
   const m = document.querySelector('main'); if (m) m.scrollTop = 0;
   aplicarCf();
+  medirTopo();                      // a barra da rolagem precisa saber a altura da de cima
   buscarFolha(s);
 }
 $('#cifra-volta').onclick = () => {
@@ -1083,13 +1148,28 @@ $('#cifra-volta').onclick = () => {
 // senão em velocidade baixa o scrollTop (inteiro) nunca mudava.
 let autoOn = false, autoAcc = 0, autoTimer = null;
 const AUTO_MS = 40;                        // ~25 passos por segundo
+/* A VELOCIDADE é geométrica, não reta. Na régua reta de antes o degrau MAIS
+   LENTO já corria 15 px/s — uma linha da folha a cada dois segundos — e o
+   Samuel não conseguia acompanhar cantando: "o devagar ficou muito muito
+   rápido". Numa régua reta os dez degraus se amontoam todos no rápido.
+   Geométrica, cada degrau é ~40% mais veloz que o anterior: sobra controle
+   fino embaixo (4 px/s, uma linha a cada ~11 s) e o topo continua nos 90 px/s
+   que ele disse estar bom. */
+const AUTO_LENTO = 4, AUTO_RAPIDO = 90;    // pixels por segundo nas duas pontas
 function passoAuto() {
-  const v = +($('#auto-vel') && $('#auto-vel').value || 3);
-  return 0.25 + v * 0.35;                  // px por passo: de ~0,6 a ~3,75
+  const el = $('#auto-vel');
+  const v = Math.min(10, Math.max(1, +((el && el.value) || 3)));
+  const pxs = AUTO_LENTO * Math.pow(AUTO_RAPIDO / AUTO_LENTO, (v - 1) / 9);
+  return pxs * (AUTO_MS / 1000);           // px por passo
 }
+/* O botão era "▶ Rolar" com emoji. Emoji não é ícone: cada aparelho desenha o
+   seu (o iPhone pinta colorido), não acompanha a cor do botão e destoa do
+   resto do Sistema, que é todo desenhado. Agora é SVG, herda currentColor. */
+const IC_ROLA  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+const IC_PARA  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg>';
 function iniciarAuto() {
   autoOn = true; autoAcc = 0;
-  const b = $('#auto-bt'); if (b) { b.textContent = '⏸ Parar'; b.classList.add('on'); }
+  const b = $('#auto-bt'); if (b) { b.innerHTML = IC_PARA + 'Parar'; b.classList.add('on'); }
   clearInterval(autoTimer);
   autoTimer = setInterval(() => {
     const m = document.querySelector('main');
@@ -1100,9 +1180,39 @@ function iniciarAuto() {
 }
 function pararAuto() {
   autoOn = false; clearInterval(autoTimer); autoTimer = null;
-  const b = $('#auto-bt'); if (b) { b.textContent = '▶ Rolar'; b.classList.remove('on'); }
+  const b = $('#auto-bt'); if (b) { b.innerHTML = IC_ROLA + 'Rolar'; b.classList.remove('on'); }
 }
 $('#auto-bt').onclick = () => { autoOn ? pararAuto() : iniciarAuto(); };
+/* Mede a barra do louvor e diz à barra da rolagem onde ela deve grudar, para
+   uma não entrar por baixo da outra. Roda quando a cifra abre, quando o nome
+   muda de tamanho (ResizeObserver) e quando a tela vira. */
+function medirTopo() {
+  const t = $('#cifra-topo-linha'), q = $('#cifra-quadro');
+  if (!t || !q) return;
+  const h = Math.round(t.getBoundingClientRect().height);
+  if (h) q.style.setProperty('--topo-h', (h + 4) + 'px');   // +4 = um respiro
+}
+if (window.ResizeObserver) {
+  const t = $('#cifra-topo-linha');
+  if (t) new ResizeObserver(medirTopo).observe(t);
+}
+addEventListener('resize', medirTopo);
+addEventListener('orientationchange', () => setTimeout(medirTopo, 120));
+
+/* a cutucadinha: encolhe a barra da rolagem para sobrar tela para a cifra */
+function pintarMini(mini) {
+  const l = $('#auto-linha'), b = $('#auto-min');
+  if (!l) return;
+  l.classList.toggle('mini', mini);
+  if (b) { b.title = mini ? 'Mostrar a barra' : 'Encolher a barra';
+           b.setAttribute('aria-label', b.title); }
+}
+$('#auto-min').onclick = () => {
+  const mini = !$('#auto-linha').classList.contains('mini');
+  pintarMini(mini);
+  try { localStorage.setItem('cf_auto_mini', mini ? '1' : ''); } catch (e) {}
+};
+try { pintarMini(localStorage.getItem('cf_auto_mini') === '1'); } catch (e) {}
 // tocar na folha pausa (mas não quando ele arrasta para ler outra parte)
 $('#folha').addEventListener('click', () => { if (autoOn) pararAuto(); });
 
@@ -1152,11 +1262,26 @@ $('#qc').oninput = e => listarCifras(e.target.value);
    O microfone exige endereço seguro (https). Se este celular entrou pelo
    endereço comum, o botão leva para a segunda porta do Sistema — o aparelho
    pergunta uma vez se confia no certificado, e depois entra direto. */
-let afnPronto = false;
+let afnPronto = false, afnVivo = null;
+// O afinador TOMA A TELA, como a cifra. Fechar desliga o microfone: deixar o
+// microfone aberto atrás de outra tela come bateria e acende a bolinha do
+// iPhone sem motivo.
+function fecharAfinador() {
+  try { if (afnVivo && afnVivo.parar) afnVivo.parar(); } catch (e) {}
+  document.querySelector('.aba[data-aba="cifra"]').classList.remove('afn-aberto');
+  $('#afn-barra').hidden = true;
+  $('#aba-afn').hidden = true;
+}
 async function abrirAfinador() {
   const cx = $('#aba-afn');
+  pararAuto();                                   // a folha não rola por trás
+  $('#cifra-quadro').hidden = true;
+  document.querySelector('.aba[data-aba="cifra"]').classList.remove('cifra-aberta');
+  document.querySelector('.aba[data-aba="cifra"]').classList.add('afn-aberto');
+  $('#afn-barra').hidden = false;
   cx.hidden = false;
-  if (afnPronto) { cx.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const m = document.querySelector('main'); if (m) m.scrollTop = 0;
+  if (afnPronto) return;
   cx.innerHTML = '<div class="vazio">Preparando o afinador…</div>';
 
   // já estou no endereço seguro? então é só carregar e usar
@@ -1167,8 +1292,7 @@ async function abrirAfinador() {
         s.src = 'afinador.js'; s.onload = ok; s.onerror = no;
         document.head.appendChild(s);
       });
-      cx.innerHTML = ''; window.Afinador.montar(cx); afnPronto = true;
-      cx.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      cx.innerHTML = ''; afnVivo = window.Afinador.montar(cx); afnPronto = true;
     } catch (e) {
       cx.innerHTML = '<div class="vazio">Não consegui carregar o afinador.</div>';
     }
@@ -1198,6 +1322,7 @@ async function abrirAfinador() {
     'font-weight:700;font-size:13.5px">Abrir o afinador</a></div></div>';
 }
 $('#bt-afinador').onclick = abrirAfinador;
+$('#afn-volta').onclick = fecharAfinador;
 // entrou já pelo endereço seguro, direto no afinador
 if (location.hash === '#afinador') {
   addEventListener('load', () => {
