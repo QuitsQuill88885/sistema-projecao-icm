@@ -35,6 +35,8 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
+import urllib.error
 import urllib.request
 
 # O endereco "latest" do GitHub redireciona sozinho para a versao mais nova.
@@ -210,39 +212,89 @@ def tamanho_curto(n):
 
 # ----------------------------------------------------------------- o download
 
-def baixar(destino, progresso, url=URL):
-    """Baixa o instalador completo para `destino`, avisando o andamento.
+def baixar(destino, progresso, url=URL, tentativas=10):
+    """Baixa para `destino`, avisando o andamento, e RETOMA de onde parou.
 
-    Grava num arquivo .parte e só renomeia no fim. Assim uma queda de internet
-    no meio do caminho não deixa para trás um .exe pela metade, que o usuário
-    tentaria executar e daria erro sem explicação."""
+    Grava num arquivo .parte e só renomeia no fim: uma queda no meio do caminho
+    não deixa para trás um .exe pela metade, que o usuário tentaria executar e
+    daria erro sem explicação.
+
+    POR QUE RETOMAR (e não simplesmente recomeçar):
+    são ~673 MB entre o instalador e o conteúdo, e quem instala na igreja usa a
+    internet de lá ou o celular roteado — rede que oscila. Recomeçar do zero a
+    cada queda pode significar não terminar nunca. Aqui, o que já veio fica no
+    disco e o pedido seguinte usa o cabeçalho `Range: bytes=N-` para continuar
+    do byte N. O .parte não é apagado entre as tentativas: ele É a retomada.
+
+    Se o servidor ignorar o Range (responde 200 no lugar de 206), o download
+    recomeça do zero — é o certo, porque um 200 traz o arquivo inteiro e
+    continuar gravando no fim corromperia o que já estava lá."""
     parcial = destino + ".parte"
     pasta = os.path.dirname(destino)
     if pasta and not os.path.isdir(pasta):
         os.makedirs(pasta, exist_ok=True)
 
-    req = urllib.request.Request(url, headers={"User-Agent": "Sistema-Instalador"})
     progresso(2, "Procurando a versão mais nova…")
-    with urllib.request.urlopen(req, timeout=60) as r:
-        total = int(r.headers.get("Content-Length") or 0)
-        feito = 0
-        with open(parcial, "wb") as f:
-            while True:
-                pedaco = r.read(262144)
-                if not pedaco:
-                    break
-                f.write(pedaco)
-                feito += len(pedaco)
-                if total:
-                    pct = 3 + int(feito * 82.0 / total)
-                    progresso(min(85, pct), "Baixando… %s de %s"
-                              % (tamanho_curto(feito), tamanho_curto(total)))
-                else:
-                    progresso(40, "Baixando… %s" % tamanho_curto(feito))
+    total = 0
+    espera = 2
+    pronto = False
+    ultimo = "não consegui baixar"
 
-    if total and os.path.getsize(parcial) < total * 0.98:
-        os.remove(parcial)
-        raise RuntimeError("O download veio incompleto. Tente de novo.")
+    for tentativa in range(1, tentativas + 1):
+        feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        cab = {"User-Agent": "Sistema-Instalador"}
+        if feito:
+            cab["Range"] = "bytes=%d-" % feito
+        try:
+            req = urllib.request.Request(url, headers=cab)
+            with urllib.request.urlopen(req, timeout=60) as r:
+                codigo = getattr(r, "status", None) or r.getcode()
+                faixa = r.headers.get("Content-Range") or ""
+                if feito and codigo == 206 and "/" in faixa:
+                    total = int(faixa.rsplit("/", 1)[-1])   # "bytes 100-999/1000"
+                    modo = "ab"                              # continua no fim
+                else:
+                    feito = 0                                # servidor mandou tudo
+                    total = int(r.headers.get("Content-Length") or 0)
+                    modo = "wb"                              # começa de novo
+                with open(parcial, modo) as f:
+                    while True:
+                        pedaco = r.read(262144)
+                        if not pedaco:
+                            break
+                        f.write(pedaco)
+                        feito += len(pedaco)
+                        if total:
+                            pct = 3 + int(feito * 82.0 / total)
+                            progresso(min(85, pct), "Baixando… %s de %s"
+                                      % (tamanho_curto(feito), tamanho_curto(total)))
+                        else:
+                            progresso(40, "Baixando… %s" % tamanho_curto(feito))
+            # o fluxo acabou. Veio tudo?
+            if not total or os.path.getsize(parcial) >= total:
+                pronto = True
+                break
+            ultimo = "a conexão fechou antes do fim"
+        except urllib.error.HTTPError as e:
+            # 416 = pedi um pedaço que não existe: o .parte está maior que o
+            # arquivo (versão trocada no meio). Joga fora e recomeça limpo.
+            if e.code == 416 and os.path.exists(parcial):
+                os.remove(parcial)
+            ultimo = "o servidor respondeu %s" % e.code
+        except Exception as e:
+            ultimo = str(e) or e.__class__.__name__
+
+        if tentativa < tentativas:
+            ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+            pct = min(85, 3 + int(ja * 82.0 / total)) if total else 3
+            progresso(pct, "A internet oscilou. Continuando de onde parou "
+                           "(tentativa %d de %d)…" % (tentativa + 1, tentativas))
+            time.sleep(espera)
+            espera = min(30, espera * 2)      # não martelar a rede que já caiu
+
+    if not pronto:
+        raise RuntimeError("O download não terminou (%s). O que já veio ficou "
+                           "guardado: abrir de novo continua de onde parou." % ultimo)
 
     if os.path.exists(destino):
         os.remove(destino)
@@ -258,7 +310,12 @@ def baixar_e_extrair_conteudo(pasta_destino, progresso, de=30, ate=97):
     e' remapeado para a faixa [de..ate] da barra de quem chamou."""
     import tempfile
     import zipfile
-    zt = os.path.join(tempfile.mkdtemp(), ARQ_CONTEUDO)
+    # PASTA FIXA, não uma temporária nova a cada vez: é o que permite fechar o
+    # programa (ou ele cair) no meio dos 610 MB e, ao abrir de novo, continuar
+    # do ponto em que parou em vez de recomeçar. O .parte mora aqui.
+    guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+    os.makedirs(guarda, exist_ok=True)
+    zt = os.path.join(guarda, ARQ_CONTEUDO)
     faixa = max(1, ate - 3 - de)
     baixar(zt,
            lambda p, t: progresso(de + int(p * faixa / 85.0),

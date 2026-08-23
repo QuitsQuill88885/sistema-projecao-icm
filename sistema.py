@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.4"
+VERSAO = "2.7.5"
 PORTA = 8765
 
 def raiz():
@@ -289,6 +289,80 @@ def versao_mais_nova():
     return None
 
 
+def baixar_retomando(url, destino, avisar, tentativas=10):
+    """Baixa `url` para `destino` e RETOMA de onde parou quando a rede cai.
+
+    Quem instala na igreja usa a internet de lá ou o celular roteado, e são
+    ~610 MB no pacote de conteúdo. Recomeçar do zero a cada oscilação pode
+    significar não terminar nunca. O que já veio fica num `.parte` e o pedido
+    seguinte pede `Range: bytes=N-` para continuar do byte N. O `.parte` mora
+    ao lado do destino e NÃO é apagado entre as tentativas — ele é a retomada.
+
+    `avisar(feito, total, tentativa)` recebe o andamento; `tentativa` vem 0
+    enquanto está baixando e >0 quando está esperando para retomar.
+
+    Se o servidor ignorar o Range (responde 200 no lugar de 206), recomeça do
+    zero de propósito: um 200 traz o arquivo INTEIRO, e continuar gravando no
+    fim do que já existia corromperia o arquivo em silêncio."""
+    import urllib.error
+    import urllib.request
+    parcial = destino + ".parte"
+    pasta = os.path.dirname(destino)
+    if pasta and not os.path.isdir(pasta):
+        os.makedirs(pasta, exist_ok=True)
+    total = 0
+    espera = 2
+    ultimo = "rede indisponível"
+
+    for tentativa in range(1, tentativas + 1):
+        feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        cab = {"User-Agent": "Sistema"}
+        if feito:
+            cab["Range"] = "bytes=%d-" % feito
+        try:
+            req = urllib.request.Request(url, headers=cab)
+            with urllib.request.urlopen(req, timeout=60) as r:
+                codigo = getattr(r, "status", None) or r.getcode()
+                faixa = r.headers.get("Content-Range") or ""
+                if feito and codigo == 206 and "/" in faixa:
+                    total = int(faixa.rsplit("/", 1)[-1])
+                    modo = "ab"
+                else:
+                    feito = 0
+                    total = int(r.headers.get("Content-Length") or 0)
+                    modo = "wb"
+                with open(parcial, modo) as f:
+                    while True:
+                        peda = r.read(262144)
+                        if not peda:
+                            break
+                        f.write(peda)
+                        feito += len(peda)
+                        avisar(feito, total, 0)
+            if not total or os.path.getsize(parcial) >= total:
+                if os.path.exists(destino):
+                    os.remove(destino)
+                os.replace(parcial, destino)
+                return destino
+            ultimo = "a conexão fechou antes do fim"
+        except urllib.error.HTTPError as e:
+            # 416 = pedi um pedaço que não existe (o .parte ficou maior que o
+            # arquivo, porque a versão trocou no meio). Joga fora e recomeça.
+            if e.code == 416 and os.path.exists(parcial):
+                os.remove(parcial)
+            ultimo = "o servidor respondeu %s" % e.code
+        except Exception as e:
+            ultimo = str(e) or e.__class__.__name__
+
+        if tentativa < tentativas:
+            ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+            avisar(ja, total, tentativa + 1)
+            time.sleep(espera)
+            espera = min(30, espera * 2)      # não martelar a rede que já caiu
+
+    raise RuntimeError(ultimo)
+
+
 def _atualizar_thread():
     """Baixa o instalador mais novo e entrega a ele o serviço.
 
@@ -301,19 +375,21 @@ def _atualizar_thread():
         ATUALIZA.update({"pct": 3, "txt": "Baixando a versão nova…", "erro": ""})
         url = ("https://github.com/%s/%s/releases/latest/download/%s"
                % (DONO_GITHUB, REPO_GITHUB, ARQ_INSTALADOR))
-        alvo = os.path.join(tempfile.mkdtemp(), "Instalar o Sistema.exe")
-        req = urllib.request.Request(url, headers={"User-Agent": "Sistema"})
-        with urllib.request.urlopen(req, timeout=60) as r, open(alvo, "wb") as f:
-            total = int(r.headers.get("Content-Length") or 0)
-            feito = 0
-            while True:
-                peda = r.read(256 * 1024)
-                if not peda:
-                    break
-                f.write(peda)
-                feito += len(peda)
-                if total:
-                    ATUALIZA["pct"] = 3 + int(90.0 * feito / total)
+        # pasta FIXA (não uma temporária nova a cada vez): é o que deixa fechar
+        # o Sistema no meio e continuar o download depois, em vez de recomeçar
+        guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+        os.makedirs(guarda, exist_ok=True)
+        alvo = os.path.join(guarda, "Instalar o Sistema.exe")
+
+        def andamento(feito, total, tentativa):
+            if tentativa:
+                ATUALIZA["txt"] = ("A internet oscilou. Continuando de onde parou "
+                                   "(tentativa %d)…" % tentativa)
+            elif total:
+                ATUALIZA.update({"pct": 3 + int(90.0 * feito / total),
+                                 "txt": "Baixando a versão nova…"})
+
+        baixar_retomando(url, alvo, andamento)
         ATUALIZA.update({"pct": 96, "txt": "Instalando… o Sistema vai fechar e reabrir sozinho.",
                          "fim": True})
         # --reabrir: o instalador novo reabre o Sistema no fim. Um instalador
@@ -352,22 +428,24 @@ def _completar_thread():
     try:
         url = ("https://github.com/%s/%s/releases/latest/download/Conteudo.zip"
                % (DONO_GITHUB, REPO_GITHUB))
-        zt = os.path.join(tempfile.mkdtemp(), "Conteudo.zip")
-        req = urllib.request.Request(url, headers={"User-Agent": "Sistema"})
+        # pasta FIXA: são 610 MB. Fechar o Sistema no meio (ou ele cair) não
+        # pode custar o download inteiro de novo — o .parte espera aqui.
+        guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+        os.makedirs(guarda, exist_ok=True)
+        zt = os.path.join(guarda, "Conteudo.zip")
         COMPLETA.update({"pct": 1, "txt": "Baixando as animações e cifras…", "erro": ""})
-        with urllib.request.urlopen(req, timeout=60) as r, open(zt, "wb") as f:
-            total = int(r.headers.get("Content-Length") or 0)
-            feito = 0
-            while True:
-                peda = r.read(262144)
-                if not peda:
-                    break
-                f.write(peda)
-                feito += len(peda)
-                if total:
-                    COMPLETA.update({"pct": int(feito * 90.0 / total),
-                                     "txt": "Baixando… %d de %d MB"
-                                            % (feito // 1048576, total // 1048576)})
+
+        def andamento(feito, total, tentativa):
+            if tentativa:
+                COMPLETA["txt"] = ("A internet oscilou. Continuando de onde parou "
+                                   "(tentativa %d)… já vieram %d MB"
+                                   % (tentativa, feito // 1048576))
+            elif total:
+                COMPLETA.update({"pct": int(feito * 90.0 / total),
+                                 "txt": "Baixando… %d de %d MB"
+                                        % (feito // 1048576, total // 1048576)})
+
+        baixar_retomando(url, zt, andamento)
         COMPLETA.update({"pct": 93, "txt": "Guardando o conteúdo…"})
         with zipfile.ZipFile(zt) as z:
             z.extractall(DADOS_USUARIO)
