@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.6"
+VERSAO = "2.7.7"
 PORTA = 8765
 
 def raiz():
@@ -249,6 +249,12 @@ DONO_GITHUB = "QuitsQuill88885"
 REPO_GITHUB = "sistema-projecao-icm"
 ARQ_INSTALADOR = "Instalar-o-Sistema.exe"
 
+# Onde os downloads moram enquanto acontecem. PASTA FIXA — é o que deixa
+# fechar o Sistema no meio dos 610 MB e continuar depois, em vez de recomeçar.
+# Escrita UMA VEZ SÓ: este caminho já esteve copiado em três lugares deste
+# arquivo, e num quarto ele divergiu e quebrou a retomada na igreja.
+PASTA_BAIXANDO = os.path.join(__import__("tempfile").gettempdir(), "Sistema-baixando")
+
 # andamento das tarefas demoradas, para a tela ir perguntando
 ATUALIZA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
 EXPORTA = {"pct": 0, "txt": "", "erro": "", "fim": False, "rodando": False}
@@ -376,6 +382,65 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
     raise RuntimeError(ultimo)
 
 
+def limpar_baixados():
+    """Varre o que sobrou dos downloads e joga fora o que já cumpriu o serviço.
+
+    A atualização baixa o instalador (63 MB) para uma pasta temporária FIXA e
+    depois entrega o serviço a ele — mas o Sistema fecha no meio disso, então
+    não sobra ninguém para limpar. Sem esta varredura na abertura seguinte, o
+    arquivo fica no disco para sempre, e uma atualização por mês vira meio giga
+    de lixo num computador de igreja.
+
+    O `.parte` NUNCA é tocado: ele é um download pela metade esperando a rede
+    voltar, e apagá-lo desfaria a retomada. Só sai arquivo inteiro, e só se
+    estiver parado há mais de uma hora — assim uma limpeza não atropela um
+    download que outro programa nosso esteja fazendo agora."""
+    p = PASTA_BAIXANDO
+    if not os.path.isdir(p):
+        return
+    limite = time.time() - 3600
+
+    def mexido_em(caminho):
+        """A data mais recente do que há aí dentro.
+
+        A data da PASTA não serve: a pasta Conteudo nasce no começo da extração
+        e fica com a hora de agora, mesmo que tudo lá dentro seja de semanas
+        atrás. Perguntando aos arquivos, uma extração abandonada é reconhecida
+        como velha e sai; uma acontecendo agora se defende sozinha."""
+        if not os.path.isdir(caminho):
+            return os.path.getmtime(caminho)
+        recente = 0
+        for raiz, _sub, arqs in os.walk(caminho):
+            for a in arqs:
+                try:
+                    recente = max(recente, os.path.getmtime(os.path.join(raiz, a)))
+                except OSError:
+                    pass
+        return recente
+
+    try:
+        nomes = os.listdir(p)
+    except OSError:
+        return
+    for nome in nomes:
+        if nome.lower().endswith(".parte"):
+            continue
+        alvo = os.path.join(p, nome)
+        try:
+            if mexido_em(alvo) > limite:
+                continue
+            if os.path.isdir(alvo):
+                shutil.rmtree(alvo, ignore_errors=True)
+            else:
+                os.remove(alvo)
+        except OSError:
+            pass          # em uso agora: fica para a próxima abertura
+    try:
+        os.rmdir(p)
+    except OSError:
+        pass
+
+
 def _atualizar_thread():
     """Baixa o instalador mais novo e entrega a ele o serviço.
 
@@ -390,7 +455,7 @@ def _atualizar_thread():
                % (DONO_GITHUB, REPO_GITHUB, ARQ_INSTALADOR))
         # pasta FIXA (não uma temporária nova a cada vez): é o que deixa fechar
         # o Sistema no meio e continuar o download depois, em vez de recomeçar
-        guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+        guarda = PASTA_BAIXANDO
         os.makedirs(guarda, exist_ok=True)
         alvo = os.path.join(guarda, "Instalar o Sistema.exe")
 
@@ -443,9 +508,29 @@ def _completar_thread():
                % (DONO_GITHUB, REPO_GITHUB))
         # pasta FIXA: são 610 MB. Fechar o Sistema no meio (ou ele cair) não
         # pode custar o download inteiro de novo — o .parte espera aqui.
-        guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+        guarda = PASTA_BAIXANDO
         os.makedirs(guarda, exist_ok=True)
         zt = os.path.join(guarda, "Conteudo.zip")
+
+        # ESPAÇO ANTES, NÃO DEPOIS: são 610 MB de zip que viram 651 MB abertos,
+        # e o zip só sai do disco depois de aberto — pico de ~1,3 GB. Descobrir
+        # que não cabia DEPOIS de meia hora de download na internet do celular
+        # é a pior hora possível para dar essa notícia.
+        import ctypes
+        livre = ctypes.c_ulonglong(0)
+        try:
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                ctypes.c_wchar_p(guarda), ctypes.byref(livre), None, None)
+        except Exception:
+            livre.value = 0
+        precisa = 1400 * 1024 * 1024
+        if 0 < livre.value < precisa:
+            COMPLETA.update({"erro": "Não vai caber: são precisos 1,4 GB livres e há "
+                                     "só %d MB. Libere espaço e tente de novo — nada "
+                                     "foi mexido." % (livre.value // 1048576),
+                             "fim": True, "rodando": False})
+            return
+
         COMPLETA.update({"pct": 1, "txt": "Baixando as animações e cifras…", "erro": ""})
 
         def andamento(feito, total, tentativa, resta=0):
@@ -1325,6 +1410,9 @@ def fechar_splash():
 def main():
     marcar_splash(0.10)                        # Python de pé
     threading.Thread(target=_rastejar, daemon=True).start()
+    # a faxina do que a atualização anterior deixou para trás vai em segundo
+    # plano: mexe em disco e não pode atrasar a abertura nem um décimo
+    threading.Thread(target=limpar_baixados, daemon=True).start()
     os.makedirs(SAIDA, exist_ok=True)
     porta = PORTA
     while not porta_livre(porta) and porta < PORTA + 20:

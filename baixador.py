@@ -34,6 +34,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
@@ -51,6 +52,51 @@ ARQ_CONTEUDO = "Conteudo.zip"
 URL_CONTEUDO = "https://github.com/%s/%s/releases/latest/download/%s" % (DONO, REPO, ARQ_CONTEUDO)
 
 SEM_JANELA = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
+
+
+# A pasta onde o download mora enquanto acontece. ESCRITA UMA VEZ SÓ, aqui.
+# A versão anterior repetia este caminho em três lugares e um deles ficou para
+# trás usando `mkdtemp()`: o `.parte` nascia numa pasta nova a cada execução e
+# a retomada não valia para quem fecha e abre o programa — justamente quem está
+# numa rede ruim. Caminho repetido é caminho que um dia diverge.
+PASTA_BAIXANDO = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+
+
+def guarda():
+    """`PASTA_BAIXANDO`, garantidamente criada."""
+    os.makedirs(PASTA_BAIXANDO, exist_ok=True)
+    return PASTA_BAIXANDO
+
+
+def limpar_guarda():
+    """Joga fora o que sobrou do download depois que ele já cumpriu o serviço.
+
+    SEM ISTO sobram ~700 MB largados no disco para sempre: o instalador de
+    63 MB e a pasta Conteudo de 651 MB, que já foram copiados para dentro do
+    Sistema e não servem mais para nada. Num computador de igreja, com disco
+    pequeno, isso é a diferença entre caber a próxima atualização e não caber.
+
+    O QUE NUNCA É APAGADO: arquivo `.parte`. Ele É a retomada — um download
+    pela metade esperando a rede voltar. Apagar isso seria desfazer com uma mão
+    o que a outra fez na v2.7.5."""
+    p = PASTA_BAIXANDO
+    if not os.path.isdir(p):
+        return
+    for nome in os.listdir(p):
+        if nome.lower().endswith(".parte"):
+            continue
+        alvo = os.path.join(p, nome)
+        try:
+            if os.path.isdir(alvo):
+                shutil.rmtree(alvo, ignore_errors=True)
+            else:
+                os.remove(alvo)
+        except OSError:
+            pass          # arquivo em uso não derruba nada: some na próxima
+    try:
+        os.rmdir(p)       # só sai se ficou vazia — é o que queremos
+    except OSError:
+        pass
 
 
 # ----------------------------------------------------------------- utilidades
@@ -204,9 +250,11 @@ def pendrives():
 
 
 def tamanho_curto(n):
+    # vírgula decimal: quem lê é brasileiro, e "1.7 GB" na tela parece defeito
     for u in ("B", "KB", "MB", "GB"):
         if n < 1024 or u == "GB":
-            return ("%.0f %s" % (n, u)) if u != "GB" else ("%.1f GB" % n)
+            return ("%.0f %s" % (n, u)) if u != "GB" \
+                else ("%.1f GB" % n).replace(".", ",")
         n /= 1024.0
 
 
@@ -330,14 +378,11 @@ def baixar_e_extrair_conteudo(pasta_destino, progresso, de=30, ate=97):
 
     O zip tem as pastas animacoes/, cifras/ e melodias/ na raiz. O progresso
     e' remapeado para a faixa [de..ate] da barra de quem chamou."""
-    import tempfile
     import zipfile
     # PASTA FIXA, não uma temporária nova a cada vez: é o que permite fechar o
     # programa (ou ele cair) no meio dos 610 MB e, ao abrir de novo, continuar
     # do ponto em que parou em vez de recomeçar. O .parte mora aqui.
-    guarda = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
-    os.makedirs(guarda, exist_ok=True)
-    zt = os.path.join(guarda, ARQ_CONTEUDO)
+    zt = os.path.join(guarda(), ARQ_CONTEUDO)
     faixa = max(1, ate - 3 - de)
     baixar(zt,
            lambda p, t: progresso(de + int(p * faixa / 85.0),
@@ -634,19 +679,44 @@ class Api:
         Com `completo`, baixa também o Conteudo.zip e deixa a pasta Conteudo
         ao lado do instalador — ele copia tudo sozinho, como no pendrive."""
         def tarefa():
-            import tempfile
             self.modo = "instalar"
             # PASTA FIXA, não mkdtemp(): com uma pasta nova a cada execução o
             # .parte nascia noutro lugar e a retomada NÃO valia para quem fecha
             # e abre o programa — justamente o caso de quem está numa rede
             # ruim. Eu já tinha corrigido isto no Conteudo.zip e esqueci aqui.
-            pasta = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
-            os.makedirs(pasta, exist_ok=True)
+            pasta = guarda()
             alvo = os.path.join(pasta, ARQUIVO)
+
+            # O ESPAÇO SE CONFERE ANTES, NUNCA DEPOIS. Sem isto o programa
+            # baixava 640 MB pela internet do celular e só então descobria que
+            # não cabia — e morria com uma mensagem de erro do Windows que o
+            # operador não tem como entender. Perguntar primeiro custa nada.
+            # Medido nesta versão: instalador 63 MB + zip 610 MB + o mesmo
+            # conteúdo aberto 651 MB + programa instalado 114 MB. O pico é
+            # ~1,5 GB, porque o zip só é apagado depois de aberto.
+            precisa = (1700 if completo else 350) * 1024 * 1024
+            livre = espaco_livre(pasta)
+            if 0 <= livre < precisa:
+                raise RuntimeError(
+                    "Não vai caber neste computador.\n\n"
+                    "Para instalar o Sistema %s são precisos %s livres, e há "
+                    "só %s. Libere espaço (a Lixeira costuma ter bastante) e "
+                    "tente de novo."
+                    % ("completo" if completo else "essencial",
+                       tamanho_curto(precisa), tamanho_curto(livre)))
+
             if completo:
                 baixar(alvo, lambda p, t: self._p(int(p * 28 / 85.0), t))
                 baixar_e_extrair_conteudo(pasta, self._p, 28, 86)
             else:
+                # ESSENCIAL É ESSENCIAL. Se numa vez anterior alguém escolheu
+                # "completo", a pasta Conteudo ficou aqui — e o instalador
+                # instala o que achar do lado dele. Sem esta limpeza, pedir
+                # "essencial" instalaria 651 MB de animações caladamente, o
+                # oposto do que a pessoa clicou.
+                antigo = os.path.join(pasta, "Conteudo")
+                if os.path.isdir(antigo):
+                    shutil.rmtree(antigo, ignore_errors=True)
                 baixar(alvo, self._p)
             self._p(88, "Instalando o Sistema…")
             r = subprocess.run([alvo, "--silencioso"], capture_output=True,
@@ -657,6 +727,12 @@ class Api:
                     self.exe = linha.split(":", 1)[1].strip()
             if r.returncode != 0 or not self.exe:
                 raise RuntimeError("A instalação não terminou. " + saida.strip()[-180:])
+            # Deu certo: o instalador e a pasta Conteudo já foram copiados para
+            # dentro do Sistema e viraram peso morto (~700 MB). Some com eles.
+            # Só depois do sucesso — se a instalação falhou, o que foi baixado
+            # fica, para a próxima tentativa não recomeçar da estaca zero.
+            self._p(99, "Guardando as coisas no lugar…")
+            limpar_guarda()
             self._p(100, "Pronto!")
             self.caminho = self.exe
             self.msg = ("Tudo pronto. O <b>Sistema</b> já está na sua Área de "

@@ -193,6 +193,23 @@ def guardar_instalador():
         copia = os.path.join(destino, os.path.basename(atual))
         if os.path.abspath(copia).lower() != atual.lower():
             shutil.copy2(atual, copia)
+
+        # UM INSTALADOR, NÃO UMA COLEÇÃO. A cópia é gravada com o nome do
+        # arquivo de origem, e esse nome já mudou uma vez ("Instalar o
+        # Sistema.exe" virou "Instalar-o-Sistema.exe"): o antigo não foi
+        # substituído, ficou do lado. Deu 120 MB parados aqui, e a exportação
+        # para o pendrive tem de adivinhar qual dos dois é o de verdade —
+        # ela escolhe pela data, e data de arquivo copiado é coisa frágil.
+        # Guardando um só, não há o que adivinhar nem o que acumular.
+        for velho in os.listdir(destino):
+            if not velho.lower().endswith(".exe"):
+                continue
+            p = os.path.join(destino, velho)
+            if os.path.abspath(p).lower() != os.path.abspath(copia).lower():
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
         return copia
     except Exception:
         return ""
