@@ -184,8 +184,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
    cabem nem encolhendo). overflow-y:hidden de propósito: com ele a rolagem
    VERTICAL continua sendo a da página, e não se formam dois roladores no mesmo
    sentido — que é o que trava no Safari do iPhone. */
+/* --enc é o encolhimento do MODO COMPACTO (a setinha da barra de rolagem).
+   Ele multiplica o tamanho que o músico escolheu no A+/A− em vez de substituir:
+   assim compactar e voltar devolve exatamente a letra que ele tinha, e o valor
+   guardado no aparelho continua sendo a escolha DELE, não a encolhida. */
 .folha pre{font-family:ui-monospace,Consolas,"Courier New",monospace;
-  font-size:var(--cf,13px);line-height:1.45;color:#e7edf7;margin:0;white-space:pre;
+  font-size:calc(var(--cf,13px) * var(--enc,1));line-height:1.45;color:#e7edf7;
+  margin:0;white-space:pre;
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 .folha .ac{color:var(--ouro);font-weight:700}
 .folha .no{color:#79c0ff;font-weight:700}
@@ -1201,11 +1206,19 @@ addEventListener('orientationchange', () => setTimeout(medirTopo, 120));
 
 /* a cutucadinha: encolhe a barra da rolagem para sobrar tela para a cifra */
 function pintarMini(mini) {
-  const l = $('#auto-linha'), b = $('#auto-min');
+  const l = $('#auto-linha'), b = $('#auto-min'), f = $('#folha');
   if (!l) return;
   l.classList.toggle('mini', mini);
-  if (b) { b.title = mini ? 'Mostrar a barra' : 'Encolher a barra';
+  /* COMPACTAR ENCOLHE A LETRA JUNTO. Encolher só a barra ganhava 21px — pouco
+     para o que ele quer, que é ver mais cifra de uma vez. Com a letra a 88% do
+     tamanho escolhido, cabem ~2 linhas a mais por tela, e a rolagem precisa
+     correr menos. Não mexe no A+/A−: quando ele volta ao normal, a letra volta
+     exatamente ao que era. */
+  if (f) f.style.setProperty('--enc', mini ? '.88' : '1');
+  if (b) { b.title = mini ? 'Mostrar a barra e a letra normal'
+                          : 'Encolher a barra e a letra (cabe mais cifra)';
            b.setAttribute('aria-label', b.title); }
+  if (typeof ajustarLargura === 'function') ajustarLargura();
 }
 $('#auto-min').onclick = () => {
   const mini = !$('#auto-linha').classList.contains('mini');
@@ -1246,7 +1259,12 @@ function ajustarLargura() {
   // linhas em 37.014, a pior com 85 colunas — NÃO encolhe: fica no tamanho que
   // ele pediu e a folha desliza de lado. Encolher tudo e mesmo assim cortar
   // seria o pior dos dois mundos.
-  if (menor >= 10) f.style.setProperty('--cf', menor + 'px');
+  // o piso é de 10px NA TELA. Com o modo compacto ligado, o que se vê é
+  // --cf x --enc, então o piso do --cf sobe na mesma proporção — senão a
+  // promessa de "nunca abaixo de 10px" virava 8,8px sem ninguém perceber.
+  const enc = parseFloat(getComputedStyle(f).getPropertyValue('--enc')) || 1;
+  const piso = Math.ceil(10 / enc);
+  if (menor >= piso) f.style.setProperty('--cf', menor + 'px');
 }
 addEventListener('resize', ajustarLargura);   // virou o celular de lado
 $('#cf-mais').onclick = () => { cf = Math.min(26, cf + 1); aplicarCf(); };

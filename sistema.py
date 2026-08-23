@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.5"
+VERSAO = "2.7.6"
 PORTA = 8765
 
 def raiz():
@@ -298,8 +298,10 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
     seguinte pede `Range: bytes=N-` para continuar do byte N. O `.parte` mora
     ao lado do destino e NÃO é apagado entre as tentativas — ele é a retomada.
 
-    `avisar(feito, total, tentativa)` recebe o andamento; `tentativa` vem 0
-    enquanto está baixando e >0 quando está esperando para retomar.
+    `avisar(feito, total, tentativa, resta)` recebe o andamento; `tentativa`
+    vem 0 enquanto está baixando e >0 quando está esperando para retomar, e
+    `resta` são os segundos que faltam para a próxima tentativa (conta
+    regressiva, para a tela nunca parecer travada).
 
     Se o servidor ignorar o Range (responde 200 no lugar de 206), recomeça do
     zero de propósito: um 200 traz o arquivo INTEIRO, e continuar gravando no
@@ -313,9 +315,11 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
     total = 0
     espera = 2
     ultimo = "rede indisponível"
+    secas = 0            # tentativas seguidas que não trouxeram nenhum byte
 
     for tentativa in range(1, tentativas + 1):
         feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        antes = feito
         cab = {"User-Agent": "Sistema"}
         if feito:
             cab["Range"] = "bytes=%d-" % feito
@@ -338,7 +342,7 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
                             break
                         f.write(peda)
                         feito += len(peda)
-                        avisar(feito, total, 0)
+                        avisar(feito, total, 0, 0)
             if not total or os.path.getsize(parcial) >= total:
                 if os.path.exists(destino):
                     os.remove(destino)
@@ -354,10 +358,19 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
         except Exception as e:
             ultimo = str(e) or e.__class__.__name__
 
+        ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        # tentar de novo perdoa INTERRUPÇÃO, não perdoa AUSÊNCIA: se não veio
+        # um byte em três tentativas, a rede não está entregando e insistir só
+        # deixa a tela parada por minutos em vez de dizer o que houve
+        secas = 0 if ja > antes else secas + 1
+        if secas >= 3:
+            ultimo = ("a internet não está entregando o arquivo "
+                      "(nenhum byte chegou em 3 tentativas)")
+            break
         if tentativa < tentativas:
-            ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
-            avisar(ja, total, tentativa + 1)
-            time.sleep(espera)
+            for resta in range(espera, 0, -1):   # conta regressiva visível
+                avisar(ja, total, tentativa + 1, resta)
+                time.sleep(1)
             espera = min(30, espera * 2)      # não martelar a rede que já caiu
 
     raise RuntimeError(ultimo)
@@ -381,10 +394,10 @@ def _atualizar_thread():
         os.makedirs(guarda, exist_ok=True)
         alvo = os.path.join(guarda, "Instalar o Sistema.exe")
 
-        def andamento(feito, total, tentativa):
+        def andamento(feito, total, tentativa, resta=0):
             if tentativa:
-                ATUALIZA["txt"] = ("A internet oscilou. Continuando de onde parou "
-                                   "(tentativa %d)…" % tentativa)
+                ATUALIZA["txt"] = ("A internet oscilou. Tento de novo em %ds "
+                                   "(tentativa %d)…" % (resta, tentativa))
             elif total:
                 ATUALIZA.update({"pct": 3 + int(90.0 * feito / total),
                                  "txt": "Baixando a versão nova…"})
@@ -435,11 +448,11 @@ def _completar_thread():
         zt = os.path.join(guarda, "Conteudo.zip")
         COMPLETA.update({"pct": 1, "txt": "Baixando as animações e cifras…", "erro": ""})
 
-        def andamento(feito, total, tentativa):
+        def andamento(feito, total, tentativa, resta=0):
             if tentativa:
-                COMPLETA["txt"] = ("A internet oscilou. Continuando de onde parou "
-                                   "(tentativa %d)… já vieram %d MB"
-                                   % (tentativa, feito // 1048576))
+                COMPLETA["txt"] = ("A internet oscilou. Tento de novo em %ds "
+                                   "(tentativa %d) — já vieram %d MB"
+                                   % (resta, tentativa, feito // 1048576))
             elif total:
                 COMPLETA.update({"pct": int(feito * 90.0 / total),
                                  "txt": "Baixando… %d de %d MB"

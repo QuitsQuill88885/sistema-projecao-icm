@@ -239,9 +239,11 @@ def baixar(destino, progresso, url=URL, tentativas=10):
     espera = 2
     pronto = False
     ultimo = "não consegui baixar"
+    secas = 0            # tentativas seguidas que não trouxeram NENHUM byte
 
     for tentativa in range(1, tentativas + 1):
         feito = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        antes = feito
         cab = {"User-Agent": "Sistema-Instalador"}
         if feito:
             cab["Range"] = "bytes=%d-" % feito
@@ -284,17 +286,37 @@ def baixar(destino, progresso, url=URL, tentativas=10):
         except Exception as e:
             ultimo = str(e) or e.__class__.__name__
 
+        ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
+        # TENTAR DE NOVO PERDOA INTERRUPÇÃO, NÃO PERDOA AUSÊNCIA.
+        # Se a tentativa não trouxe UM BYTE sequer, a rede não está oscilando:
+        # ela não está entregando (sem internet, GitHub bloqueado, DNS morto).
+        # Insistir 10 vezes ali vira 13 minutos de tela parada — foi o que o
+        # Samuel viu na igreja, e antes disso o programa falhava em 1 minuto
+        # com uma mensagem clara. Progresso zera o contador; três secas seguidas
+        # e eu paro e digo o que houve.
+        secas = 0 if ja > antes else secas + 1
+        if secas >= 3:
+            ultimo = ("a internet não está entregando o arquivo (nenhum byte "
+                      "chegou em 3 tentativas)")
+            break
+
         if tentativa < tentativas:
-            ja = os.path.getsize(parcial) if os.path.exists(parcial) else 0
             pct = min(85, 3 + int(ja * 82.0 / total)) if total else 3
-            progresso(pct, "A internet oscilou. Continuando de onde parou "
-                           "(tentativa %d de %d)…" % (tentativa + 1, tentativas))
-            time.sleep(espera)
+            # CONTA REGRESSIVA VISÍVEL: durante a espera a tela mostrava sempre
+            # a mesma frase e parecia travada. Agora ela anda a cada segundo.
+            for resta in range(espera, 0, -1):
+                progresso(pct, "A internet oscilou. Tento de novo em %ds "
+                               "(tentativa %d de %d)%s…"
+                               % (resta, tentativa + 1, tentativas,
+                                  " — já vieram %s" % tamanho_curto(ja) if ja else ""))
+                time.sleep(1)
             espera = min(30, espera * 2)      # não martelar a rede que já caiu
 
     if not pronto:
-        raise RuntimeError("O download não terminou (%s). O que já veio ficou "
-                           "guardado: abrir de novo continua de onde parou." % ultimo)
+        raise RuntimeError("Não consegui baixar: %s.\n\nConfira se este "
+                           "computador abre a internet (tente abrir um site no "
+                           "navegador). O que já veio ficou guardado — abrir de "
+                           "novo continua de onde parou." % ultimo)
 
     if os.path.exists(destino):
         os.remove(destino)
@@ -614,7 +636,12 @@ class Api:
         def tarefa():
             import tempfile
             self.modo = "instalar"
-            pasta = tempfile.mkdtemp()
+            # PASTA FIXA, não mkdtemp(): com uma pasta nova a cada execução o
+            # .parte nascia noutro lugar e a retomada NÃO valia para quem fecha
+            # e abre o programa — justamente o caso de quem está numa rede
+            # ruim. Eu já tinha corrigido isto no Conteudo.zip e esqueci aqui.
+            pasta = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
+            os.makedirs(pasta, exist_ok=True)
             alvo = os.path.join(pasta, ARQUIVO)
             if completo:
                 baixar(alvo, lambda p, t: self._p(int(p * 28 / 85.0), t))
