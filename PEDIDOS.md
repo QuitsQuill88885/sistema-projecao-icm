@@ -176,6 +176,12 @@ falsos. Os que sobraram, todos corrigidos:
       culto: clamor, dedicação, glorificação etc. O culto sempre começa por um
       louvor de clamor. (ele ia continuar a explicação — confirmar a lista completa)
 
+- [ ] **A página de reset / "voltar às configurações de fábrica" está bagunçada.**
+      Pedido dele em 22/08/2026: são várias opções soltas, sem organização —
+      refazer a tela inteira, deixar bonita e clara (o que cada reset apaga, e
+      o que NÃO se perde). NÃO é urgente; ele mesmo disse "é só pra anotar,
+      a gente faz outro dia".
+
 ### Decisões já tomadas (para não reabrir)
 - Identificação de coletânea: **agrupada por cabeçalho** na busca por NÚMERO;
   ranqueada por proximidade na busca por TEXTO. Sem sigla para decorar.
