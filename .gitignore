@@ -55,3 +55,4 @@ dados/consertos_louvores.json
 
 # --- ferramenta de sessao do Claude Code (nao e do projeto) ---
 .claude/
+conteudo_leve/

@@ -540,7 +540,7 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
   <div class="tela oculto" id="t2">
     <p class="sub">Onde você quer guardar o instalador completo?</p>
     <div class="quadros" id="quadros"></div>
-    <p class="dica">O arquivo completo tem <b>58 MB</b> e roda em qualquer
+    <p class="dica">O arquivo completo tem <b>62 MB</b> e roda em qualquer
        computador <b>sem internet nenhuma</b>. É o que levar para a igreja.</p>
     <button class="voltar" onclick="ir(1)">voltar</button>
   </div>
@@ -551,13 +551,14 @@ button{font-family:inherit;border:none;cursor:pointer;color:#fff}
     <p class="sub">Qual Sistema você quer?</p>
     <div class="cartoes">
       <button class="cartao" onclick="escolhido(true)">
-        <span class="ic" data-ic="estrela"></span><b>Completo — uns 640 MB para baixar</b>
+        <span class="ic" data-ic="estrela"></span><b>Completo — uns 500 MB para baixar</b>
         <small>Com as animações das CIAS, as cifras e os cadernos de melodia.
                É o do computador da igreja.</small></button>
       <button class="cartao" onclick="escolhido(false)">
-        <span class="ic" data-ic="pena"></span><b>Essencial — 58 MB</b>
-        <small>Louvores, Bíblia e fundos. As animações e cifras podem ser
-               baixadas depois, por dentro do próprio Sistema.</small></button>
+        <span class="ic" data-ic="pena"></span><b>Essencial — 62 MB</b>
+        <small>Louvores, Bíblia, fundos, <b>cifras e melodias</b>. Só as
+               animações das CIAS ficam para baixar depois, por dentro do
+               próprio Sistema.</small></button>
     </div>
     <button class="voltar" onclick="ir(1)">voltar</button>
   </div>
@@ -746,10 +747,11 @@ class Api:
             # baixava 640 MB pela internet do celular e só então descobria que
             # não cabia — e morria com uma mensagem de erro do Windows que o
             # operador não tem como entender. Perguntar primeiro custa nada.
-            # Medido nesta versão: instalador 63 MB + zip 610 MB + o mesmo
-            # conteúdo aberto 651 MB + programa instalado 114 MB. O pico é
-            # ~1,5 GB, porque o zip só é apagado depois de aberto.
-            precisa = (1700 if completo else 350) * 1024 * 1024
+            # Medido nesta versão: instalador 74 MB + zip 488 MB + o mesmo
+            # conteúdo aberto 496 MB + programa instalado 125 MB. O pico é
+            # ~1,2 GB, porque o zip só é apagado depois de aberto. (Encolheu:
+            # as cifras saíram do zip e foram para dentro do instalador.)
+            precisa = (1400 if completo else 400) * 1024 * 1024
             livre = espaco_livre(pasta)
             if 0 <= livre < precisa:
                 raise RuntimeError(

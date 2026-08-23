@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.8"
+VERSAO = "2.7.9"
 PORTA = 8765
 
 def raiz():
@@ -548,10 +548,11 @@ def _completar_thread():
         os.makedirs(guarda, exist_ok=True)
         zt = os.path.join(guarda, "Conteudo.zip")
 
-        # ESPAÇO ANTES, NÃO DEPOIS: são 610 MB de zip que viram 651 MB abertos,
-        # e o zip só sai do disco depois de aberto — pico de ~1,3 GB. Descobrir
+        # ESPAÇO ANTES, NÃO DEPOIS: são 488 MB de zip que viram 496 MB abertos,
+        # e o zip só sai do disco depois de aberto — pico de ~1 GB. Descobrir
         # que não cabia DEPOIS de meia hora de download na internet do celular
-        # é a pior hora possível para dar essa notícia.
+        # é a pior hora possível para dar essa notícia. (Era 1,3 GB quando as
+        # cifras vinham aqui; agora elas vêm dentro do instalador.)
         import ctypes
         livre = ctypes.c_ulonglong(0)
         try:
@@ -559,15 +560,15 @@ def _completar_thread():
                 ctypes.c_wchar_p(guarda), ctypes.byref(livre), None, None)
         except Exception:
             livre.value = 0
-        precisa = 1400 * 1024 * 1024
+        precisa = 1100 * 1024 * 1024
         if 0 < livre.value < precisa:
-            COMPLETA.update({"erro": "Não vai caber: são precisos 1,4 GB livres e há "
+            COMPLETA.update({"erro": "Não vai caber: são precisos 1,1 GB livres e há "
                                      "só %d MB. Libere espaço e tente de novo — nada "
                                      "foi mexido." % (livre.value // 1048576),
                              "fim": True, "rodando": False})
             return
 
-        COMPLETA.update({"pct": 1, "txt": "Baixando as animações e cifras…", "erro": ""})
+        COMPLETA.update({"pct": 1, "txt": "Baixando as animações das CIAS…", "erro": ""})
 
         def andamento(feito, total, tentativa, resta=0):
             if tentativa:
@@ -588,7 +589,7 @@ def _completar_thread():
         except OSError:
             pass
         _CATALOGO["dados"] = None      # o catálogo do músico renasce com as melodias
-        COMPLETA.update({"pct": 100, "txt": "Pronto! Animações, cifras e melodias instaladas.",
+        COMPLETA.update({"pct": 100, "txt": "Pronto! As animações das CIAS estão instaladas.",
                          "fim": True, "rodando": False})
     except Exception:
         COMPLETA.update({"erro": "Não consegui baixar. Confira a internet e tente de "

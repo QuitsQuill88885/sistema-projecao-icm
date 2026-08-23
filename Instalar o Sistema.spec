@@ -1,7 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('build_inst/programa', 'programa'), ('icones.js', '.'), ('sistema.ico', '.')]
+# conteudo_leve = cifras + melodias (11 MB de JSON). Vao DENTRO do
+# instalador de proposito: sao dados pequenos, e sem eles quem instala na
+# igreja fica sem acorde ate' baixar meio giga. O peso de verdade (as 488
+# MB de animacoes das CIAS) e' que continua fora, no Conteudo.zip.
+datas = [('build_inst/programa', 'programa'), ('icones.js', '.'),
+         ('sistema.ico', '.'), ('conteudo_leve', 'conteudo_leve')]
 binaries = []
 hiddenimports = ['win32com.client']
 

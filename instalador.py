@@ -124,6 +124,9 @@ def instalar(progresso):
             limpar_atalhos_antigos(pasta, menos=novo)   # nada de dois ícones do Sistema
             atalho(novo, exe)
 
+    progresso(83, "Instalando as cifras e as melodias…")
+    copiar_conteudo_leve(progresso)
+
     progresso(85, "Instalando o conteúdo…")
     copiar_conteudo_extra(progresso)
 
@@ -137,6 +140,45 @@ def instalar(progresso):
     time.sleep(0.4)
     progresso(100, "Pronto!")
     return exe
+
+
+def copiar_conteudo_leve(progresso=None):
+    """Instala as CIFRAS e as MELODIAS, que viajam DENTRO deste instalador.
+
+    POR QUE ELAS ENTRARAM AQUI (pedido do Samuel, e ele estava certo):
+    a gente tratava "conteúdo pesado" como um bloco só — animações, cifras e
+    melodias juntas, 651 MB, tudo no pacote de fora. Mas medindo:
+
+        animações das CIAS .... 488 MB   (é este o peso, e só este)
+        cifras ................ 102 MB → dos quais 100 MB eram três PDFs
+                                          que NENHUMA tela do programa abre
+        melodias .............. 5 MB
+
+    Tirando os PDFs, cifras e melodias somam **11 MB de puro dado JSON**. Isso
+    cabe folgado dentro do instalador. O resultado é que quem instala na igreja
+    pelo instalador médio já chega com os acordes e as melodias funcionando, sem
+    depender de baixar meio giga numa internet de celular. Só as animações das
+    CIAS ficam para o "Completar o Sistema".
+
+    NÃO apaga nada do que já existe: copia por cima arquivo a arquivo. Os
+    backups datados que o operador tenha na pasta continuam onde estão."""
+    fonte = os.path.join(origem(), "conteudo_leve")
+    if not os.path.isdir(fonte):
+        return 0
+    copiados = 0
+    for raiz, _sub, arquivos in os.walk(fonte):
+        rel = os.path.relpath(raiz, fonte)
+        alvo = os.path.join(DADOS, rel) if rel != "." else DADOS
+        os.makedirs(alvo, exist_ok=True)
+        for a in arquivos:
+            try:
+                shutil.copy2(os.path.join(raiz, a), os.path.join(alvo, a))
+                copiados += 1
+                if progresso and copiados % 80 == 0:
+                    progresso(83, "Instalando as cifras e as melodias… (%d)" % copiados)
+            except Exception:
+                pass      # um arquivo de cifra que falhe não derruba a instalação
+    return copiados
 
 
 def copiar_conteudo_extra(progresso=None):
