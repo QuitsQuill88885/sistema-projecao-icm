@@ -298,6 +298,17 @@ footer{background:linear-gradient(180deg,#131f33,#0e1830);border-top:1px solid v
 .extras button{flex:1;padding:9px 0;border-radius:9px;background:var(--painel2);font-size:11.5px;font-weight:600}
 .extras button:active{background:#26375a}
 .extras .frio.on{background:var(--ouro);color:#1a1a1a}
+/* O A−, o tamanho e o A+ formam UM grupo, e o olho precisa ver isso: eles
+   ficam colados e dividem entre si o espaço de um botão e meio. Os dois de
+   letra são quadrados (o dedo acerta), e o do meio é o mostrador — por isso
+   ele é que ganha a folga. Sem agrupar, cinco botões soltos numa tela de
+   celular viram cinco tirinhas onde não se acerta nenhuma. */
+.extras .grupo-tam{flex:1.5;display:flex;gap:2px;min-width:0}
+.extras .grupo-tam button{flex:none;width:38px;border-radius:9px 2px 2px 9px}
+.extras .grupo-tam button:last-child{border-radius:2px 9px 9px 2px}
+.extras .grupo-tam .tam{flex:1;min-width:0;border-radius:2px;font-size:11px;
+  color:var(--suave);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.extras .grupo-tam .tam.on{color:var(--ouro)}
 .off{position:fixed;inset:0;background:#0b1526f2;display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:14px;z-index:20;padding:30px;text-align:center}
 .off.oculto{display:none}
@@ -522,8 +533,15 @@ textarea.campo{line-height:1.4;resize:vertical}
   <div class="extras">
     <button id="espera">Tela de espera</button>
     <button class="frio" id="frio">Congelar</button>
-    <button id="menor">A−</button>
-    <button id="maior">A+</button>
+    <!-- O RÓTULO DO TAMANHO, que só existia no computador. Sem ele o operador
+         tocava o A+ e não via nada mudar: 8% numa prévia de dois centímetros é
+         invisível, e a conclusão era "não funciona". Ele também é BOTÃO —
+         toca e volta ao padrão, como no computador. -->
+    <span class="grupo-tam">
+      <button id="menor">A−</button>
+      <button id="tam" class="tam">Padrão</button>
+      <button id="maior">A+</button>
+    </span>
   </div>
 </footer>
 
@@ -608,6 +626,12 @@ async function ouvir() {
     // por ~2,5s depois do toque, o botão manda em si mesmo: o estado que chega
     // ainda é anterior ao comando e faria o botão piscar de volta
     if (Date.now() - congelandoAgora > 2500) $('#frio').classList.toggle('on', !!e.congelado);
+    // mesmo trato para o tamanho da letra: por ~2,5s depois do meu toque o
+    // rótulo daqui manda, porque o estado que chega ainda é de antes do
+    // comando. Passado esse tempo, quem manda é o computador — assim o celular
+    // acompanha também quando quem mexeu no A+ foi quem está no teclado.
+    if (typeof e.escala === 'number' && Date.now() - escalaMinha > 2500
+        && Math.abs(e.escala - escala) > 0.001) { escala = e.escala; pintarTam(); }
     // PRESERVA o 'mini': este className é reescrito a cada 900ms, e antes ele
     // apagava o recolhimento que o operador tinha feito com o dedo — a prévia
     // voltava sozinha logo depois de ele mandar recolher.
@@ -1963,8 +1987,33 @@ $('#frio').onclick   = () => {
   congelandoAgora = Date.now();
   enviar('freeze', {on});
 };
-$('#maior').onclick  = () => enviar('mais');
-$('#menor').onclick  = () => enviar('menos');
+/* ---------- A− / tamanho / A+ ----------
+   A RESPOSTA TEM QUE SER NA HORA. O caminho até o telão é longo: o comando
+   espera até 600ms para o computador buscar, mais 1000ms até ele publicar o
+   estado, mais a leitura daqui — até 2,5 segundos de silêncio. É o mesmo mal
+   que fazia o Congelar piscar, e a cura é a mesma: o rótulo anda AGORA, com a
+   conta feita aqui, e o estado do computador confirma logo em seguida.
+
+   Sem isso o operador toca, não vê nada, toca de novo achando que não pegou —
+   e foi exatamente essa a impressão de que "o A+/A− do celular não funciona". */
+let escala = 1;              // o que acredito que está valendo
+let escalaMinha = 0;         // quando fui eu que mexi (para não brigar com o PC)
+
+function pintarTam() {
+  const b = $('#tam'); if (!b) return;
+  const padrao = Math.abs(escala - 1) < 0.02;
+  b.textContent = padrao ? 'Padrão' : (escala > 1 ? '+' : '') + Math.round((escala - 1) * 100) + '%';
+  b.classList.toggle('on', !padrao);      // fora do padrão fica dourado, como no PC
+}
+function mexerTam(f) {
+  // os mesmos limites do computador: nem sumir, nem estourar a tela
+  escala = Math.min(2.5, Math.max(0.5, escala * f));
+  escalaMinha = Date.now();
+  pintarTam();
+}
+$('#maior').onclick = () => { mexerTam(1.08);     enviar('mais'); };
+$('#menor').onclick = () => { mexerTam(1 / 1.08); enviar('menos'); };
+$('#tam').onclick   = () => { escala = 1; escalaMinha = Date.now(); pintarTam(); enviar('tampadrao'); };
 </script>
 
 

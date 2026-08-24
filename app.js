@@ -1864,12 +1864,19 @@ function tamPadrao() {
   else if (l.tipo === 'texto') est.escalaTexto = 1; else return;
   reprojetarAtual();
 }
+// O tamanho que vale AGORA, conforme o que está no ar. Uma função só, porque
+// quem pergunta é o rótulo do computador E o celular — e as duas respostas
+// precisam ser a mesma, senão o operador vê um número aqui e outro ali.
+function escalaAtual() {
+  const l = est.live;
+  if (l && l.tipo === 'louvor') return est.escalaLouvor;
+  if (l && (l.tipo === 'biblia' || l.tipo === 'bibmulti')) return est.escalaVers;
+  if (l && l.tipo === 'texto') return est.escalaTexto;
+  return 1;                        // nada aplicável: é "Padrão", não um traço solto
+}
 function atualizarTamLabel() {
-  const el = $('#tam-label'); if (!el) return; const l = est.live; let s;
-  if (l && l.tipo === 'louvor') s = est.escalaLouvor;
-  else if (l && (l.tipo === 'biblia' || l.tipo === 'bibmulti')) s = est.escalaVers;
-  else if (l && l.tipo === 'texto') s = est.escalaTexto;
-  else s = 1;                                    // nada aplicável: mostra "Padrão", não um traço solto
+  const el = $('#tam-label'); if (!el) return;
+  const s = escalaAtual();
   el.textContent = Math.abs(s - 1) < 0.02 ? 'Padrão' : (s > 1 ? '+' : '') + Math.round((s - 1) * 100) + '%';
 }
 
@@ -2835,7 +2842,10 @@ function ligarEventos() {
   });
   // comandos vindos do telão (setas apertadas lá) — usados pelas duas formas de projetar
   window.__cmdProj = cmd => ({ prox: proximo, ant: anterior, descanso: descanso, preto: preto,
-    freeze: toggleFreeze, mais: () => ajustarTam(+0.3), menos: () => ajustarTam(-0.3) }[cmd] || (() => {}))();
+    freeze: toggleFreeze, mais: () => ajustarTam(+0.3), menos: () => ajustarTam(-0.3),
+    // o celular também precisa do "voltar ao padrão": errar a mão no A+ e não
+    // ter como desfazer de uma vez é o que faz o operador desistir do recurso
+    tampadrao: tamPadrao }[cmd] || (() => {}))();
   ligarControleCelular();
   // vigia da janela do telão: se ela foi fechada, o painel PRECISA parar de dizer
   // "ao vivo" — senão o operador (e o celular) acham que está projetando sem telão
@@ -2984,6 +2994,13 @@ function ligarControleCelular() {
         // posição do que está no ar — o celular usa para acender o item certo
         // mesmo quando quem avançou foi o computador ou a Lista de Projeção
         louvor: est.louvorIdx, slide: est.louvorSlide, slidepp: est.slidePos,
+        // O TAMANHO DA LETRA VAI PARA O CELULAR. No computador existe o rótulo
+        // "Padrão / +8%" ao lado do A−/A+, e foi justamente o A+/A− que o
+        // primeiro operador da igreja descobriu sozinho e mais gostou. No
+        // celular não havia rótulo nenhum: ele tocava, a mudança de 8% era
+        // invisível na prévia de dois centímetros, e a conclusão óbvia era
+        // "não funciona". Agora o celular mostra o mesmo número.
+        escala: escalaAtual(),
         // a Lista de Projeção vai inteira pro celular: o grupo de louvor precisa
         // VER o que está montado e poder acrescentar, sem pedir pro operador
         fila: est.fila.map(x => ({ tipo: x.tipo, rotulo: x.tipo === 'louvor' ? x.rotulo : x.ref, on: x.on === true })),
