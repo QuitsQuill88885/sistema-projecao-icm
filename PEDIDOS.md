@@ -279,3 +279,22 @@ Investigado, **nada alterado no acervo**. O detalhe completo está no
       ("só troca se a quantidade de acordes válidos aumentou").
 - [ ] **Falta o PDF de origem do Nível 1** — só existem os 3 (Nível II,
       Cifras 2025, Avulsos 2024) em `Pacote completo\PDFs originais`.
+
+### 30/08/2026 — reextração: três descobertas que mudam o jogo
+Trabalho completo em `Conhecimento\cifras_refazer\reextracao_2026-08-30\LEIA-ME.md`.
+- [x] **O PDF do Nível 1 existe** — `Coletanea Cifrada 2018 Nivel I.pdf`, 398
+      páginas, texto limpo, em `C:\Users\Emanuel\Downloads`. Nunca esteve na
+      pasta do projeto; era o que faltava para metade do acervo.
+- [x] **O Nível II que usávamos é o pior que existe** — é escaneado, a camada de
+      texto é o próprio OCR sujo. Em Downloads há a edição DIGITAL
+      (`Coletanea cifrada Nivel 2 - ICM.pdf`), que sai limpa.
+- [x] **O tracinho separador EXISTE na fonte, como caractere `|`** — e marca
+      onde cada acorde entra. Medido: em **3.865 linhas (47,8%) do Nível 2 a
+      contagem de `|` bate exatamente com a de acordes** → posição EXATA, sem
+      interpolação. É a separação de nota que ele pediu de volta.
+- [x] **Segundo erro achado:** a largura do caractere era fixa em 0,52 para
+      todos os livros; medida dá 0,4877 / 0,4717 / **0,6368**. No Avulsos são
+      22% de erro — ~4 caracteres fora numa linha de 20.
+- [ ] **Falta:** leitura própria por livro (Nível 2 pelos `|`; Nível 1 pulando a
+      linha de solfejo), a fusão com o banco, e OCR na placa para a Coletânea
+      2011, que é imagem pura.
