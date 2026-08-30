@@ -257,3 +257,19 @@ Investigado, **nada alterado no acervo**. O detalhe completo está no
 - **O tracinho separador nunca existiu no nosso sistema** (conferido no git):
   é o da coletânea impressa. Dá para fazer com marca de largura zero, mas só
   DEPOIS do alinhamento — senão aponta o lugar errado com precisão.
+
+### 30/08/2026 — conserto do alinhamento: 186 linhas feitas, e a parede
+- [x] **186 linhas consertadas** (133 Nível 2 + 53 Nível 1), 247 acordes de
+      volta para cima da letra, **sem perder nenhum acorde**. Fonte: os
+      `refeito_*.json`, que já existiam e são o único lugar onde texto e coluna
+      nasceram juntos; o casamento é por `difflib`, caractere a caractere.
+      Ainda **não publicado** — vai junto do próximo release.
+- [ ] **Os outros 8.857 quebrados exigem REEXTRAIR os PDFs.** Medido: 4.007 são
+      de louvores que não estão nos refeitos, e 4.850 têm no banco acordes que
+      nem pertencem àquela linha (é o próprio defeito). Adotar o refeito inteiro
+      chegaria a 9% e **apagaria 732 acordes para ganhar 243** — recusado.
+- [ ] **O critério "quem tem mais acordes vence" está em DOIS lugares** e
+      precisa cair nos dois: `melhor_a()` e o `juntar()` do `cifras_python.py`
+      ("só troca se a quantidade de acordes válidos aumentou").
+- [ ] **Falta o PDF de origem do Nível 1** — só existem os 3 (Nível II,
+      Cifras 2025, Avulsos 2024) em `Pacote completo\PDFs originais`.
