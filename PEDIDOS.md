@@ -241,3 +241,19 @@ de tudo que eu tenho falado, você vai ficar maluco"*.
       **Ele mesmo cancelou** ("a ideia foi horrível, desconsidere") depois que
       levantei que a letra é conteúdo da igreja e repositório público a deixaria
       indexada no Google. Fica o registro para não reabrir por engano.
+
+### 30/08/2026, 4h — diagnóstico das notas flutuando (tarefa programada)
+Investigado, **nada alterado no acervo**. O detalhe completo está no
+`CONTINUA-AQUI.md`; o resumo:
+- **Medido:** 11.823 acordes (13,2%) do Nível 2 e 5.884 (8,1%) do Nível 1 caem
+  **depois do fim da letra** — e essa conta só pega os óbvios.
+- **Causa achada:** `Conhecimento\cifras_refazer\cifras_python.py` (~linha 480)
+  guarda o **texto de uma leitura** e as **colunas de outra**, escolhendo pelo
+  critério "quem tem MAIS acordes vence". Coluna só vale junto do texto em que
+  foi medida.
+- **Conserto:** `t` e `a` andam sempre em par; desempate pela confiança/caixa do
+  OCR, não pela contagem. As caixas já estão em `leitura_ouro/` — **não precisa
+  de GPU nem de reprocessar PDF**.
+- **O tracinho separador nunca existiu no nosso sistema** (conferido no git):
+  é o da coletânea impressa. Dá para fazer com marca de largura zero, mas só
+  DEPOIS do alinhamento — senão aponta o lugar errado com precisão.
