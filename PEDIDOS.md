@@ -298,3 +298,14 @@ Trabalho completo em `Conhecimento\cifras_refazer\reextracao_2026-08-30\LEIA-ME.
 - [ ] **Falta:** leitura própria por livro (Nível 2 pelos `|`; Nível 1 pulando a
       linha de solfejo), a fusão com o banco, e OCR na placa para a Coletânea
       2011, que é imagem pura.
+
+### 30/08/2026 — o tracinho é informação musical (explicação dele)
+- [x] **Medida a leitura nova do Nível 2 sob o critério certo:** dos 36.138
+      acordes, os **22.394 COM tracinho caem em cima da letra em 99,5%** dos
+      casos (105 erros). Os 13.744 sem tracinho são **notas de transição** —
+      para essas, cair no vão é o certo, não é defeito.
+- [ ] **Guardar as colunas dos tracinhos** na linha (campo `m`), para a folha
+      desenhar a separação de nota. É o pedido dele, e agora tem de onde tirar.
+- [ ] **Distinguir na tela** acorde do ritmo × acorde de transição.
+- [ ] **Ler as últimas páginas do livro**, que descrevem os ritmos (Básico,
+      Valseado…). Ele disse que os tracinhos existem em função desses ritmos.
