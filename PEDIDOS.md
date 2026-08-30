@@ -259,11 +259,17 @@ Investigado, **nada alterado no acervo**. O detalhe completo está no
   DEPOIS do alinhamento — senão aponta o lugar errado com precisão.
 
 ### 30/08/2026 — conserto do alinhamento: 186 linhas feitas, e a parede
-- [x] **186 linhas consertadas** (133 Nível 2 + 53 Nível 1), 247 acordes de
-      volta para cima da letra, **sem perder nenhum acorde**. Fonte: os
+- [x] **1.558 linhas consertadas** em três rodadas (186 + 1.083 + 289),
+      **3.351 acordes** de volta para cima da sílaba certa. Fonte: os
       `refeito_*.json`, que já existiam e são o único lugar onde texto e coluna
-      nasceram juntos; o casamento é por `difflib`, caractere a caractere.
-      Ainda **não publicado** — vai junto do próximo release.
+      nasceram juntos; o casamento é por `difflib`, caractere a caractere,
+      **tudo local, sem rede**. Nenhum acorde perdido (89.326 e 72.716 seguem
+      iguais) e nenhuma notação alterada — foi conserto de POSIÇÃO.
+      Fora da letra: `11.823 → 11.617` e `5.884 → 5.815`.
+      A melhor prova de que o método está certo: **3.411 das 4.494 linhas
+      casadas já estavam no lugar** — ele concorda com o banco onde o banco
+      acerta, e só mexe onde há divergência real (mais de 2 caracteres).
+      Ainda **não publicado** — precisa de release para chegar na igreja.
 - [ ] **Os outros 8.857 quebrados exigem REEXTRAIR os PDFs.** Medido: 4.007 são
       de louvores que não estão nos refeitos, e 4.850 têm no banco acordes que
       nem pertencem àquela linha (é o próprio defeito). Adotar o refeito inteiro
