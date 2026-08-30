@@ -58,7 +58,15 @@ nav button.on{background:var(--painel2);color:var(--ouro)}
 /* SEM respiro em cima: com padding-top, sobrava uma faixa de 10px ACIMA da
    caixa de busca grudada, e os itens passavam por ali aparecendo cortados.
    O respiro foi para dentro da própria caixa. */
-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px;
+  /* A CAIXA DE BUSCA FICA GRUDADA NO TOPO e, para o navegador, aquele espaço
+     está livre. Então "leve este item até a vista" encostava o item no topo
+     ZERO — ou seja, ATRÁS do campo de busca, cortado ao meio. Era o que o
+     Samuel via como "a busca encavala a lista". Declarando a faixa ocupada,
+     todo scrollIntoView desta tela para ANTES dela, sozinho. O valor real é
+     medido no ar por medirBusca() — este aqui é só o piso de segurança para o
+     caso de a medida ainda não ter acontecido. */
+  scroll-padding-top:64px}
 /* A caixa gruda no topo, mas sem fundo em cima e sem ficar acima dos cabeçalhos
    ela deixava a lista aparecer POR TRÁS — item cortado ao meio, atrás do campo. */
 .busca{position:sticky;top:0;background:var(--fundo);padding:10px 0 8px;z-index:6}
@@ -1215,6 +1223,24 @@ $('#auto-bt').onclick = () => { autoOn ? pararAuto() : iniciarAuto(); };
 /* Mede a barra do louvor e diz à barra da rolagem onde ela deve grudar, para
    uma não entrar por baixo da outra. Roda quando a cifra abre, quando o nome
    muda de tamanho (ResizeObserver) e quando a tela vira. */
+/* A altura REAL da caixa de busca, que é quanto do topo está ocupado.
+   Medida em vez de escrita à mão: ela muda com o tamanho de letra do aparelho
+   e com a barra do sistema do celular, e um número fixo aqui erraria em metade
+   dos telefones — justo o defeito que se quer consertar. */
+function medirBusca() {
+  const b = document.querySelector('.aba[data-aba="louvor"] .busca');
+  const m = document.querySelector('main');
+  if (!b || !m) return;
+  const h = Math.round(b.getBoundingClientRect().height);
+  if (h) m.style.scrollPaddingTop = (h + 6) + 'px';       // +6 = um respiro
+}
+addEventListener('load', medirBusca);
+addEventListener('orientationchange', () => setTimeout(medirBusca, 250));
+if (window.ResizeObserver) {
+  const b = document.querySelector('.aba[data-aba="louvor"] .busca');
+  if (b) new ResizeObserver(medirBusca).observe(b);
+}
+
 function medirTopo() {
   const t = $('#cifra-topo-linha'), q = $('#cifra-quadro');
   if (!t || !q) return;

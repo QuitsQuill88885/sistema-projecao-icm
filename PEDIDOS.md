@@ -191,3 +191,53 @@ falsos. Os que sobraram, todos corrigidos:
   https://github.com/QuitsQuill88885/sistema-projecao-icm
 - Fonte Futura: fica no pacote que ele distribui (decisão dele). Não vai para
   o repositório público.
+
+---
+
+## 🎸 PEDIDOS DE 30/08/2026 — CIFRAS (anotado com ele falando; nada começado)
+
+Ele pediu explicitamente para eu **registrar tudo em MD**, porque a conversa é
+longa e um dia o chat vai ter de ser trocado: *"se você não montar um histórico
+de tudo que eu tenho falado, você vai ficar maluco"*.
+
+- [ ] **As notas flutuam no lugar errado.** A posição do acorde sobre a sílaba
+      está saindo torta em bastante louvor. É o defeito mais grave da cifra
+      hoje — o instrumentista lê a nota em cima da sílaba errada. (A coluna
+      vem do OCR, no campo `a: [[coluna, acorde], ...]`.)
+- [ ] **RESTAURAR o traço separador de nota.** Existia e sumiu: um tracinho
+      **bem delicado** no meio das letras, mostrando exatamente onde a nota
+      troca. Palavras dele: *"não fica ridículo, mostra exatamente onde troca
+      nota"*. Ele quer de volta.
+- [ ] **Mapear os louvores pelos vídeos do YouTube**, do jeito que são
+      realmente cantados e tocados lá. Motivo concreto: **"Tenho uma Candeia"
+      (CIA 143)** está tão mal escrito na cifra que ele, com a coletânea
+      oficial original 100% na frente, acha feio tocar como está escrito.
+      *"Nosso sistema vai ficar melhor do que as próprias coletâneas."*
+- [ ] **Introduções.** Ele vai mandar as introduções de alguns louvores.
+- [ ] **Enarmonia maluca.** Tem cifra com um monte de bemol/sustenido sem
+      necessidade ("aquela bolinha maluca lá, nada a ver"). Ele vai mandando as
+      correções para notas mais coerentes, louvor a louvor.
+
+### ✅ Feito nesta rodada (v2.8.0)
+- [x] Acordes impossíveis corrigidos: `F#0 C0 B0 F0` (o **grau** foi escaneado
+      como ZERO — provado pela vizinhança: `B°→E7→Am`, `F#°→G`), `D71→D7`,
+      `A18→A`, `A1→A`, `Bmm→Bm`. Mais 227 normalizações de `º` (ordinal) para
+      `°` (grau), que conviviam no mesmo acervo.
+- [x] **A+ / A− pelo celular** (era o item aberto lá de cima) — agora com o
+      mostrador de tamanho que só existia no computador.
+- [x] **Caixa de busca do celular encavalando a lista** — resolvido com
+      `scroll-padding-top` medido no ar, não chutado.
+
+### Buscador solto (fora do programa) — pedido de 30/08/2026
+- [x] **Buscador dos 2.459 louvores como página única**, com a MESMA engine do
+      Sistema (número por igualdade, busca pelo som, trecho da letra). Existe em
+      duas formas: artifact publicado (link fixo) e **arquivo `louvores.html` de
+      1,6 MB que roda OFFLINE** — ele salva em Arquivos no iPhone e abre no
+      Safari, sem internet e sem Claude. Palavras dele: *"é ouro puro"*.
+- [ ] **O mesmo, para as CIFRAS.** Ele pediu na sequência: um buscador de cifras
+      que dê para baixar e abrir no iPhone. *"Ajuda de um jeito que você não tem
+      ideia."* Mesmo molde do de louvores: um HTML sozinho, sem servidor.
+- [ ] Ideia dele que ficou de fora: publicar o buscador no GitHub Pages.
+      **Ele mesmo cancelou** ("a ideia foi horrível, desconsidere") depois que
+      levantei que a letra é conteúdo da igreja e repositório público a deixaria
+      indexada no Google. Fica o registro para não reabrir por engano.

@@ -4,7 +4,7 @@ Sobe o servidor local, converte PowerPoint/PDF em slides e abre o app em janela 
 Feito para rodar como .EXE em Windows, sem internet."""
 import http.server, socketserver, threading, webbrowser, subprocess, os, sys, json, shutil, glob, time, socket, re, io
 
-VERSAO = "2.7.9"
+VERSAO = "2.8.0"
 PORTA = 8765
 
 def raiz():
@@ -26,6 +26,10 @@ SAIDA = os.path.join(DADOS_USUARIO, "slides_importados")   # apresentações con
 # O celular manda comandos; a tela do Sistema vem buscar. Tudo dentro da rede local,
 # sem internet e sem nada sair do lugar.
 COMANDOS = []          # fila de comandos vindos do celular
+# Quando a tela do Sistema veio buscar comandos pela última vez. Ela busca a
+# cada 600ms; se passou muito disso, ela não está acordada — ver o vigia
+# `acordar_janela()`, lá embaixo, e a medição que o obrigou a existir.
+BUSCA = {"t": 0.0}
 # "ts" já nasce carimbado: sem isso o celular que estivesse aberto acusava
 # "O computador parou de responder" durante toda a subida do Sistema
 ESTADO = {"agora": "Pronto.", "projetando": False, "congelado": False, "ts": time.time()}
@@ -416,6 +420,75 @@ def baixar_retomando(url, destino, avisar, tentativas=10):
             espera = min(30, espera * 2)      # não martelar a rede que já caiu
 
     raise RuntimeError(ultimo)
+
+
+def acordar_janela():
+    """Vigia: se o celular mandou e a tela do Sistema está dormindo, acorda ela.
+
+    O DEFEITO, medido nesta máquina com o programa de verdade (não em aba de
+    navegador): com a janela do Sistema MINIMIZADA, os comandos do celular
+    ficavam parados na fila **57 segundos**. Com ela só atrás de outra janela,
+    obedecia em 1s — o problema é a minimização.
+
+    A causa é o motor de tela (o mesmo do Edge/Chrome): janela minimizada é
+    considerada invisível, e ele suspende os temporizadores da página. Quem
+    busca os comandos do celular é um temporizador. O operador na igreja
+    minimiza o Sistema depois de abrir o telão, pega o celular, e nada responde.
+
+    TENTEI PRIMEIRO pelas bandeiras do Chromium
+    (`--disable-background-timer-throttling` e as irmãs, via
+    WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS). **PARA ESTE CASO NÃO RESOLVEM** —
+    medido: 53 a 57 segundos com elas ligadas, igualzinho a sem. A suspensão de
+    janela minimizada acontece num nível que essas bandeiras não alcançam.
+    Elas SEGUEM no `main()`, mas servindo ao outro caso — janela apenas COBERTA
+    por outra, onde funcionam. São dois estrangulamentos diferentes e cada um
+    tem o seu remédio: coberta, bandeira resolve; minimizada, este vigia.
+
+    O que funciona é isto: **o Python não é estrangulado**. Este vigia é uma
+    linha de Python comum, roda sempre, e quando vê comando parado com a tela
+    dormindo, desminimiza a janela — o que acorda a página, que então drena a
+    fila sozinha. Não interfere no telão: quem projeta é a OUTRA janela.
+
+    Só age quando há comando ESPERANDO e a tela está muda há mais de 3s (ela
+    busca a cada 600ms). Com folga de 10s entre uma restauração e outra, para
+    nunca ficar pulando na cara de quem está no computador.
+
+    E DESMINIMIZA PELO WINDOWS, não pelo `restore()` do pywebview: aquele só
+    vale se chamado de dentro da thread da interface, e desta aqui ele não faz
+    nada — medido, a janela continuava minimizada e o defeito seguia igual.
+    O `ShowWindow` do Windows pode ser chamado de qualquer thread."""
+    if os.name != "nt":
+        return                       # o defeito é do motor de tela no Windows
+    import ctypes
+    u32 = ctypes.windll.user32
+    # OS TIPOS PRECISAM SER DECLARADOS. Sem isto o ctypes trata o retorno do
+    # FindWindowW como inteiro de 32 bits, e no Windows 64 bits o identificador
+    # da janela é de 64 — vinha truncado, virava lixo, e o ShowWindow não achava
+    # nada. Silenciosamente: nenhum erro, só não funcionava.
+    u32.FindWindowW.restype = ctypes.c_void_p
+    u32.FindWindowW.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p]
+    u32.IsIconic.restype = ctypes.c_bool
+    u32.IsIconic.argtypes = [ctypes.c_void_p]
+    u32.ShowWindow.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    titulo = "Sistema v" + VERSAO
+    ultima = [0.0]
+    while True:
+        time.sleep(1.0)
+        try:
+            if not COMANDOS:
+                continue
+            agora = time.time()
+            if agora - BUSCA["t"] < 3.0:      # a tela está acordada, tudo bem
+                continue
+            if agora - ultima[0] < 10.0:      # já acordei há pouco; espera
+                continue
+            h = u32.FindWindowW(None, titulo)
+            if not h or not u32.IsIconic(h):  # só mexe se estiver MINIMIZADA
+                continue
+            ultima[0] = agora
+            u32.ShowWindow(h, 9)              # 9 = SW_RESTORE
+        except Exception:
+            pass          # janela fechada no meio: sem drama
 
 
 def limpar_baixados():
@@ -976,6 +1049,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.path.startswith("/api/comandos"):        # a tela do Sistema vem buscar o que o celular mandou
             with TRAVA:
                 fila, COMANDOS[:] = list(COMANDOS), []
+                BUSCA["t"] = time.time()     # marca que a tela está acordada
             return self._json({"ok": True, "comandos": fila})
         if self.path.startswith("/api/tela"):            # a prévia: o que está no telão agora
             # O celular manda ?n= com o número do quadro que ele já tem. Se for o
@@ -1473,6 +1547,20 @@ def main():
     try:
         if os.environ.get("SISTEMA_NAVEGADOR") == "1":
             raise RuntimeError("modo navegador escolhido")
+
+        # SÃO DOIS ESTRANGULAMENTOS DIFERENTES, e cada um pede um remédio.
+        # (1) Janela COBERTA por outra: o motor de tela a considera escondida e,
+        #     depois de alguns minutos, deixa os temporizadores acordarem uma
+        #     vez por MINUTO. Quem busca os comandos do celular é um
+        #     temporizador. Estas bandeiras desligam isso. A da occlusion é a
+        #     que impede o Windows de declarar a janela "tapada".
+        # (2) Janela MINIMIZADA: aí a suspensão é mais funda e bandeira nenhuma
+        #     alcança (medido — ver acordar_janela, que é o remédio desse caso).
+        os.environ.setdefault("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+                              "--disable-background-timer-throttling "
+                              "--disable-backgrounding-occluded-windows "
+                              "--disable-renderer-backgrounding "
+                              "--disable-features=CalculateNativeWinOcclusion")
         import webview
         marcar_splash(0.55)                    # componente de janela carregado
         ponte = Ponte()
@@ -1489,6 +1577,10 @@ def main():
             width=larg, height=alt, min_size=(940, 600),
             x=prin["x"] + (prin["w"] - larg) // 2, y=prin["y"] + (prin["h"] - alt) // 2,
             background_color="#0b1526", js_api=ponte)
+        # o vigia que desminimiza a janela quando o celular fala e a tela está
+        # dormindo. Ele acha a janela pelo TÍTULO, no Windows — não precisa
+        # deste objeto aqui (ver acordar_janela).
+        threading.Thread(target=acordar_janela, daemon=True).start()
         por_icone(titulo)
         # Fechou o controle, fecha o telão junto. Quem fecha o Sistema está
         # encerrando o culto — deixar a janela da projeção órfã na tela do
