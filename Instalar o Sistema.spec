@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_all
 # igreja fica sem acorde ate' baixar meio giga. O peso de verdade (as 488
 # MB de animacoes das CIAS) e' que continua fora, no Conteudo.zip.
 datas = [('build_inst/programa', 'programa'), ('icones.js', '.'),
-         ('sistema.ico', '.'), ('conteudo_leve', 'conteudo_leve')]
+         ('sistema.ico', '.'), ('conteudo_leve', 'conteudo_leve'), ('cacert.pem', '.')]
 binaries = []
 hiddenimports = ['win32com.client']
 

@@ -14,7 +14,15 @@
 # --- conteúdo da igreja (NUNCA subir) ---
 dados/louvores.js
 dados/biblia.js
-dados/*_backup_*.js
+# O PADRAO ANTIGO ERA `dados/*_backup_*.js` e DEIXOU VAZAR.
+# Ele exige underline DOS DOIS LADOS de "backup", entao
+# `dados/louvores_backup2.js` e `louvores_backup3.js` escaparam — e subiram
+# para o repositorio publico na v1.9.0 com o banco de louvores inteiro dentro
+# (1,9 MB cada). O mesmo furo ja tinha acontecido com as cifras. Agora o
+# padrao pega QUALQUER coisa com "backup" ou "antes" no nome:
+dados/*backup*
+dados/*antes*
+*.antes_*
 fundos/
 animacoes/
 cifras/

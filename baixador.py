@@ -62,6 +62,93 @@ SEM_JANELA = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
 PASTA_BAIXANDO = os.path.join(tempfile.gettempdir(), "Sistema-baixando")
 
 
+# ---------------------------------------------------------------------------
+# PROVAR QUEM E' O GITHUB
+#
+# O DEFEITO, contado pelo Samuel em 30/08/2026: no computador da IGREJA, tanto
+# "Atualizar" quanto "Completar o Sistema" diziam que **nao conseguiam se
+# conectar com a internet** - e no mesmo computador o NAVEGADOR baixava o
+# instalador do site do GitHub sem reclamar.
+#
+# A causa: o programa compilado nao levava certificado nenhum dentro dele.
+# Sem `cacert.pem`, o Python cai no deposito de certificados do WINDOWS. Nesta
+# maquina, que e' velha de guerra, esse deposito tem dezenas de certificados e
+# tudo funciona. O computador da igreja e' **maquina do zero**: o Windows
+# comeca com o deposito quase vazio e vai buscando os certificados-raiz sob
+# demanda - busca que falha justamente em rede fraca, tipo hotspot de celular.
+# O `urlopen` levantava erro de certificado, o `except Exception` engolia, e
+# sobrava a frase generica sobre internet, que mandou ele procurar no lugar
+# errado.
+#
+# Navegador nao sofre disso porque Chrome e Edge carregam os proprios
+# certificados-raiz. Por isso baixar pelo site funcionava e o botao nao.
+#
+# Agora os certificados VIAJAM DENTRO do programa e sao usados explicitamente.
+# O Sistema deixa de depender do que a maquina tem instalado.
+def _pacote_de_certificados():
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    p = os.path.join(base, "cacert.pem")
+    if os.path.exists(p):
+        return p
+    try:                                  # rodando do codigo-fonte, sem empacotar
+        import certifi
+        return certifi.where()
+    except Exception:
+        return None
+
+
+_CTX_SSL = None
+
+
+def contexto_ssl():
+    """O contexto TLS que todo download do Sistema usa. Montado uma vez so.
+
+    SOMA as duas fontes de confianca, em vez de escolher uma:
+      - o `cacert.pem` que viaja dentro do programa (resolve a maquina nova,
+        de deposito vazio, que era o caso da igreja);
+      - o deposito do proprio Windows (resolve a rede que inspeciona o trafego
+        e assina com um certificado PROPRIO - escola, empresa, alguns
+        provedores. Esse certificado so' existe na maquina, nunca no cacert.pem,
+        e ficar so' com o pacote nosso QUEBRARIA onde hoje funciona).
+    Somando, nenhum dos dois mundos fica de fora.
+    """
+    global _CTX_SSL
+    if _CTX_SSL is None:
+        import ssl
+        _CTX_SSL = ssl.create_default_context()
+        ca = _pacote_de_certificados()
+        if ca:
+            try:
+                _CTX_SSL.load_verify_locations(cafile=ca)
+            except Exception:
+                pass
+        try:
+            _CTX_SSL.load_default_certs()      # o que a maquina ja' confia
+        except Exception:
+            pass
+    return _CTX_SSL
+
+
+def explicar_falha_de_rede(e):
+    """Diz A VERDADE sobre por que o download nao foi.
+
+    Antes, qualquer tropeco virava "confira a internet" - e foi essa frase que
+    fez o Samuel procurar defeito na rede da igreja quando o problema era
+    certificado. Erro que nao se explica custa culto.
+    """
+    import ssl as _ssl
+    if isinstance(e, _ssl.SSLCertVerificationError) or "CERTIFICATE" in str(e).upper():
+        return ("Este computador nao conseguiu conferir a identidade do GitHub. "
+                "Nao e' a sua internet. Baixe o instalador pelo navegador, no "
+                "site do Sistema, e rode por cima - funciona igual.")
+    if isinstance(e, TimeoutError) or "timed out" in str(e).lower():
+        return ("A internet esta muito lenta e o download expirou. Da' para "
+                "tentar de novo: o que ja' baixou nao se perde.")
+    return ("Nao consegui falar com o GitHub. Confira a internet e tente de "
+            "novo - nada foi mexido.")
+
+
+
 def guarda():
     """`PASTA_BAIXANDO`, garantidamente criada."""
     os.makedirs(PASTA_BAIXANDO, exist_ok=True)
@@ -342,7 +429,7 @@ def baixar(destino, progresso, url=URL, tentativas=10):
             cab["Range"] = "bytes=%d-" % (feito - recuo)
         try:
             req = urllib.request.Request(url, headers=cab)
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with urllib.request.urlopen(req, timeout=60, context=contexto_ssl()) as r:
                 codigo = getattr(r, "status", None) or r.getcode()
                 faixa = r.headers.get("Content-Range") or ""
                 if feito and codigo == 206 and "/" in faixa:

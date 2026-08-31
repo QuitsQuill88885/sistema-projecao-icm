@@ -1,7 +1,29 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('dados', 'dados'), ('fundos', 'fundos'), ('fontes', 'fontes')]
+datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes')]
+
+# A PASTA dados VAI ARQUIVO POR ARQUIVO, NUNCA INTEIRA.
+# Em 31/08/2026 descobri 44 MB de backups meus (louvores_backup_*, *_antes_*)
+# dentro do .exe: o instalador pequeno pesava 62 MB e 44 deles eram lixo que eu
+# mesmo tinha deixado na pasta. Ja' tinha acontecido igual com as cifras. Pegar
+# a pasta INTEIRA e' que abre essa porta - agora so' entra o que esta' na lista,
+# e backup novo nao consegue mais pegar carona. Leveza e' lei nesta casa.
+import os as _os
+_DADOS = ['biblia.js', 'consertos_louvores.json', 'fundos.js', 'galeria.js',
+          'louvores.js', 'repeticoes.js', 'sugestoes.js', 'temas.js',
+          'tipologia.js']
+for _nome in _DADOS:
+    _cam = _os.path.join(SPECPATH, 'dados', _nome)
+    if not _os.path.isfile(_cam):
+        raise SystemExit('falta o arquivo de dados: %s' % _cam)
+    datas.append((_cam, 'dados'))
+_sobra = sorted(f for f in _os.listdir(_os.path.join(SPECPATH, 'dados'))
+                if f not in _DADOS and not f.startswith('.'))
+if _sobra:
+    print('AVISO: dados/ tem arquivo fora da lista, NAO entra no programa: %s'
+          % ', '.join(_sobra))
+
 binaries = []
 hiddenimports = ['win32com.client', 'tkinter', 'qrcode', 'webview', 'webview.platforms.edgechromium',
                  # a porta segura (https) do afinador: o Sistema emite o proprio

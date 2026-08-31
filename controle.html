@@ -211,14 +211,6 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .folha .cab{color:#7f9ac0;font-size:11.5px;margin:0 0 10px;line-height:1.5}
 .folha .cab b{color:var(--ouro)}
 .cifra-zoom{display:flex;gap:6px;align-items:center}
-/* o seletor de nivel: a MESMA cifra em dois niveis (1 = acordes simples,
-   2 = completos com baixo e extensoes). So aparece quando o louvor existe
-   nos dois bancos. */
-.niv-cx{display:inline-flex;gap:0;margin:0 0 10px;border:1px solid var(--borda);
-  border-radius:8px;overflow:hidden}
-.niv-cx button{background:#101d33;border:0;color:#7f9ac0;padding:6px 12px;
-  font-size:12px;cursor:pointer}
-.niv-cx button.on{background:#16233c;color:var(--ouro);font-weight:700}
 /* o seletor de tom: dois botoes e o tom no meio, como o musico ja conhece */
 .tom-cx{display:flex;gap:4px;align-items:center;margin-left:auto}
 .tom-btn{background:#16233c;border:1px solid var(--ouro);color:var(--ouro);border-radius:8px;
@@ -258,14 +250,40 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
    abaixo do que cabe na tela e o recurso simplesmente não existia.
    sticky e NÃO fixed: dentro do <main>, que tem -webkit-overflow-scrolling,
    o Safari do iPhone rebaixa position:fixed para absolute e isto sumiria. */
-.rodape-vers{position:sticky;bottom:0;z-index:4;margin-top:10px;box-shadow:0 -6px 12px #0a142699}
+.rodape-vers{position:sticky;bottom:0;z-index:4;margin-top:10px;box-shadow:0 -6px 12px #0a142699;
+  max-height:52vh;display:flex;flex-direction:column}
 /* o texto do versículo, pra ele conferir ANTES de jogar no telão */
+/* TETO NA LEITURA. Ela nascia sem limite: um toque num versiculo longo
+   (Salmos, Isaias) enchia o rodape, e como o rodape e' sticky no pe' da tela
+   ele subia por cima da GRADE DE NUMEROS. O operador projetava um versiculo e
+   perdia a area de escolher os outros - "cobria toda a area de selecao e nao
+   podia escolher mais textos". Agora a leitura tem altura maxima e rola dentro
+   de si mesma; a grade continua alcancavel. */
 .leitura{padding:11px 13px;background:#101d33;border-left:3px solid var(--ouro);
-         border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5}
+         border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5;
+         max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .leitura b{color:var(--ouro)}
 .sug-cel{margin-top:10px}
 .sug-cel .sug-cab{font-size:11px;color:#6f86a8;letter-spacing:.5px;text-transform:uppercase;padding:0 4px 5px}
 .sug-cel .item{cursor:pointer}
+/* ---- CELULAR DEITADO ----------------------------------------------------
+   De pe', a tela e' alta e estreita: grade em cima, leitura embaixo. Deitado,
+   a mesma pilha ficava ridicula - a grade sobrava de lado e a leitura roubava
+   a altura, que e' justamente o que falta. Deitado, a leitura sai do pe' da
+   tela e vai para o LADO da grade, cada uma com a sua rolagem. */
+@media (orientation:landscape) and (max-height:560px){
+  /* #passo-vers guarda o cabecalho, a grade (#grade-vers) e o rodape da
+     leitura. Deitado ele vira duas colunas: numeros a esquerda, leitura a
+     direita. O cabecalho ocupa a linha inteira em cima. */
+  #passo-vers{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  #passo-vers > .sec-vers{flex:0 0 100%}
+  #grade-vers{flex:1 1 52%;min-width:0;max-height:74vh;overflow-y:auto}
+  .rodape-vers{position:static;flex:1 1 40%;max-height:74vh;overflow-y:auto;margin-top:0;
+    box-shadow:none}
+  .leitura{max-height:none}
+  nav button{padding:7px 10px;font-size:12.5px}
+}
+
 /* ---- marcar vários versículos e projetar numa tela só (como no computador) ---- */
 .sec-vers{display:flex;align-items:center;gap:8px;margin:14px 0 7px}
 .sec-vers .sec{margin:0;flex:1}
@@ -806,13 +824,10 @@ function pintarFila(e) {
    Independente de propósito. O instrumentista repete um coro, volta um refrão
    ou procura outro louvor, e NADA disso mexe no telão — ele não pode ficar na
    mão de quem passa os slides. O que a projeção mostra aparece só como pista. */
-let CIFRAS = {}, CIFRAS1 = {}, MELODIAS = {}, MELODIAS1 = {}, INSTRUMENTOS = [];
+let CIFRAS = {}, MELODIAS = {}, MELODIAS1 = {}, INSTRUMENTOS = [];
 
 /* O NIVEL da cifra fica gravado no aparelho, como o instrumento: quem toca
    pelo Nivel 1 (acordes simples) não quer escolher de novo a cada louvor. */
-let nivelCifra = '2';
-try { nivelCifra = localStorage.getItem('nivel_cifra') || '2'; } catch (e) {}
-function gravarNivel(v) { try { localStorage.setItem('nivel_cifra', v); } catch (e) {} }
 const chaveLouvor = s => (s.num || '') + '|' + s.titulo + '|' +
   ((s.slides[0] && s.slides[0].linhas[0]) || '');
 /* espaços repetidos recolhidos, IGUAL ao _simples do sistema.py e ao
@@ -838,7 +853,7 @@ const QUEM = [
 ];
 
 fetch('/api/musico').then(r => r.json()).then(r => {
-  CIFRAS = r.violao || {}; CIFRAS1 = r.violao1 || {};
+  CIFRAS = r.violao || {};
   MELODIAS = r.melodia || {}; MELODIAS1 = r.melodia1 || {};
   INSTRUMENTOS = r.instrumentos || [];
   if (Object.keys(CIFRAS).length || Object.keys(MELODIAS).length) {
@@ -875,13 +890,10 @@ function pintarInstrumentos() {
 
 function temMaterial(s) {
   if (euToco === 'violao') {
-    // o louvor "tem cifra" se existe em QUALQUER um dos dois niveis; o tom
-    // mostrado na lista e' o do nivel escolhido, se ele tiver
+    // uma coletanea so' desde 31/08/2026: o tom vem direto dela
     const k = chaveLouvor(s);
-    const t2 = CIFRAS[k], t1 = CIFRAS1[k];
-    if (t2 === undefined && t1 === undefined) return null;
-    const t = (nivelCifra === '1' && t1 !== undefined) ? t1
-              : (t2 !== undefined ? t2 : t1);
+    const t = CIFRAS[k];
+    if (t === undefined) return null;
     return { tom: t };
   }
   /* primeiro pelo título; se a Melódica batizou o louvor de outro jeito
@@ -1095,17 +1107,7 @@ function desenharFolha(d) {
       outros.push((NOME[k] || k) + ' <b>' + d.tons[k] + '</b>');
     if (outros.length) cab.push('o mesmo louvor em outros instrumentos: ' + outros.join(' · '));
   }
-  // o seletor de nivel: so aparece quando a MESMA cifra existe nos dois
-  // niveis. Se so existe num, a folha avisa de qual veio e pronto — nenhum
-  // louvor fica sem cifra por causa da escolha.
-  let niv = '';
-  if (euToco === 'violao' && d.niveis && d.niveis.length > 1) {
-    niv = '<div class="niv-cx">' +
-          '<button data-n="1" class="' + (d.nivel === '1' ? 'on' : '') + '">Nível 1 · simples</button>' +
-          '<button data-n="2" class="' + (d.nivel === '2' ? 'on' : '') + '">Nível 2 · completo</button></div>';
-  } else if (euToco === 'violao' && d.nivel && d.nivel !== nivelCifra) {
-    cab.push('este louvor só tem cifra no Nível ' + d.nivel);
-  }
+  // O seletor "Nível 1 / Nível 2" SAIU em 31/08/2026: é uma coletânea só.
   let corpo = '';
   if (euToco === 'violao' && d.violao) {
     for (const l of d.violao.linhas) {
@@ -1121,14 +1123,8 @@ function desenharFolha(d) {
   } else {
     corpo = 'Este louvor não tem material para o seu instrumento.';
   }
-  f.innerHTML = niv + (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
+  f.innerHTML = (cab.length ? '<p class="cab">' + cab.join('  —  ') + '</p>' : '') +
                 '<pre>' + corpo + '</pre>';
-  f.querySelectorAll('.niv-cx button').forEach(b => b.onclick = () => {
-    if (b.dataset.n === nivelCifra && d.nivel === nivelCifra) return;
-    nivelCifra = b.dataset.n; gravarNivel(nivelCifra);
-    // trocar de nivel NAO e' trocar de louvor: o transporte (desloc) fica
-    if (louvorCifra) buscarFolha(louvorCifra);
-  });
   f.scrollTop = 0;
   aplicarCf();          // cifra nova, largura nova: reajusta antes de ele ler
   pintarTom();
@@ -1140,13 +1136,13 @@ function desenharFolha(d) {
    tem 2 KB, menos do que trafega no barramento de um carro. E o dono quer o
    contrario: ver a cifra E o telao ao mesmo tempo, para saber o que a
    congregacao esta lendo enquanto ele toca. */
-let louvorCifra = null;   // o louvor aberto na folha — e' por ele que o seletor de nivel rebusca
+let louvorCifra = null;   // o louvor aberto na folha
 async function buscarFolha(s) {
   louvorCifra = s;
   const em = euToco === 'violao' ? 'C' : euToco;
   try {
     const d = await fetch('/api/cifra/' + encodeURIComponent(chaveLouvor(s)) +
-                          '?em=' + em + '&nivel=' + nivelCifra).then(r => r.json());
+                          '?em=' + em).then(r => r.json());
     if (louvorCifra !== s) return;  // ja abriu outro louvor: esta resposta nao vale mais
     desenharFolha(d);
   } catch (e) {
@@ -1715,8 +1711,14 @@ function passoBiblia(voltando) {
     c.innerHTML = '';
     // a dica e o botão mudam conforme o modo, por isso não são texto fixo
     const cab = document.createElement('div'); cab.className = 'sec-vers';
+    // O botao "Marcar varios" SAIU. Ele criava um modo a' parte, e era o modo
+    // que atrapalhava: o Samuel tocava num versiculo, o texto tomava a tela e
+    // ele nao conseguia escolher mais nada. No celular vale agora a mesma regra
+    // do computador - um toque projeta, DOIS TOQUES guardam na lista. O botao
+    // fica escondido (hidden) em vez de removido para nao quebrar o resto do
+    // arquivo, que ainda fala com ele.
     cab.innerHTML = '<span class="sec" id="vers-dica"></span>' +
-                    '<button class="btn-juntar" id="btn-juntar"></button>';
+                    '<button class="btn-juntar" id="btn-juntar" hidden></button>';
     c.appendChild(cab);
     const g = document.createElement('div'); g.className = 'grid'; g.id = 'grade-vers';
     const versos = BIBLIA.livros[livroSel][capSel - 1] || {};

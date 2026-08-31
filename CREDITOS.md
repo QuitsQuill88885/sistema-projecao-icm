@@ -77,6 +77,31 @@ e `animacoes/` pelo seu próprio conteúdo. As fontes podem ficar — são livre
 
 ---
 
+## Quem ajudou a fazer
+
+O Sistema foi escrito por uma pessoa só, mas não foi pensado por uma pessoa só.
+Estas ideias vieram de gente da igreja, e é justo que os nomes fiquem aqui.
+
+**Alexandre — o "Xande"**, instrumentista. Foi uma conversa com ele que virou a
+chave da coletânea única. Samuel contou que ia levar para o Sistema os acordes
+que o Xande anotou à mão na própria apostila, e ele ficou acanhado: *"são notas
+que eu mudei, simplificada"*. A resposta foi que é **exatamente isso**: o
+Sistema existe para guardar as correções que os instrumentistas fazem na
+prática — a igreja inteira já canta o louvor daquele jeito corrigido há muito
+tempo, e isso nunca voltava para o papel. As correções dele vão para o Sistema
+e passam adiante.
+
+**Kevin**, o operador. Foi o primeiro a operar o Sistema num culto de verdade,
+sem ter experiência com computador — e foi por causa dele que o controle pelo
+celular deixou de ser conveniência e virou a peça central.
+
+**Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
+é dele.
+
+**Emanuel**, irmão do Samuel, também contribuiu com ideia no começo do projeto.
+
+---
+
 ## Como citar
 
 > **Sistema** — projeção para igrejas, de Samuel Mariano Ribeiro.

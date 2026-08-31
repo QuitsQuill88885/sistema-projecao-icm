@@ -7,7 +7,9 @@
 # a janela e o motor do Edge.
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('icones.js', '.')]
+# os certificados-raiz viajam DENTRO do programa: sem eles, no Windows
+# novo da igreja o download falhava dizendo que era a internet
+datas = [('icones.js', '.'), ('cacert.pem', '.')]
 binaries = []
 hiddenimports = ['webview', 'webview.platforms.edgechromium']
 tmp_ret = collect_all('webview')

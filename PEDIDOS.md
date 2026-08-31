@@ -309,3 +309,265 @@ Trabalho completo em `Conhecimento\cifras_refazer\reextracao_2026-08-30\LEIA-ME.
 - [ ] **Distinguir na tela** acorde do ritmo × acorde de transição.
 - [ ] **Ler as últimas páginas do livro**, que descrevem os ritmos (Básico,
       Valseado…). Ele disse que os tracinhos existem em função desses ritmos.
+
+---
+
+# 🔴 30/08/2026 — DEPOIS DO PRIMEIRO CULTO DE DOMINGO
+
+Marco: primeira vez usado de verdade num **culto evangelístico de domingo**,
+igreja cheia, ele passando louvor do banco dos instrumentistas com o violão na
+mão, e o operador impressionado. **Mas o culto foi um MIX de Sistema +
+Glorifica**, e por um motivo só: **um louvor novo, muito tocado ali, não existia
+no acervo.**
+
+> A lição que fica: cobertura do acervo não é "mais conteúdo", é
+> **confiabilidade**. Um louvor faltando derruba a confiança no culto inteiro.
+
+## 1. ACERVO COMPLETO DE LOUVORES — a falha mais cara
+- [ ] Varrer a internet atrás de **todo louvor da Maranata**: os novos (mesmo
+      fora das fontes que temos), os antigos, e o que estiver associado à
+      Maranata no YouTube. Objetivo dele: *"não podemos deixar falhar"*.
+- [ ] **Fonte de verdade a definir com ele** — ver a pergunta no fim.
+
+## 2. PALAVRA NO CELULAR — falha "gravíssima" (palavra dele)
+- [ ] Marcar mais de um versículo é inutilizável: ao tocar, **o texto projetado
+      cobre a tela toda**, tapa a área de seleção, e não dá para escolher mais
+      nada. O painel de leitura (`.rodape-vers`) é `sticky` e cresce sem teto.
+- [ ] O certo é **repetir no celular o modelo do computador**: um toque projeta,
+      **dois toques guardam na lista** (`app.js:1419` faz exatamente isso).
+      O duplo-toque até existe no celular, mas está enterrado atrás do modo
+      "✓ Marcar vários", que é o que atrapalha. **Tirar o modo, ficar com o
+      duplo-toque.**
+
+## 3. CELULAR NA HORIZONTAL
+- [ ] Deitando o celular fica "tudo errado, tudo estranho". Ele quer que ao
+      virar, o layout **se reorganize** para aproveitar a tela larga — mais
+      informação lado a lado, não a mesma coluna esticada.
+
+## 4. CIFRAS — acaba o Nível 1 / Nível 2
+Decisão dele: **não vai mais existir "básico 1" e "básico 2" no nosso sistema.**
+- [ ] Vai haver **UMA coletânea só**, o *"suco do suco"*: a simplicidade e
+      eficiência do básico 1 **com alguns arranjos elegantes bem postos** do
+      básico 2. Notas com sentido, nem pobre nem cheia à toa.
+- [ ] A base é a **correção prática dos instrumentistas**. Ele tem a coletânea
+      de um **instrumentista veterano**, cheia de modificações à mão, e vai
+      mandando fotos louvor a louvor (escritas por cima — vai dar trabalho ler).
+- [ ] Consequência: o seletor N1/N2 sai da tela.
+
+## 5. ESTRUTURA DE REPETIÇÃO DOS LOUVORES
+- [ ] Não está sendo respeitada. Quando o livro traz *1ª estrofe, coro, 2ª
+      estrofe, 3ª estrofe*, o que se canta é
+      **estrofe → coro → estrofe → coro → estrofe → coro → coro final**.
+      Hoje alguns louvores saem na ordem crua do livro.
+
+## 6. Já feito nesta rodada
+- [x] Os dois louvores que faltavam (ELE É O LEÃO DA TRIBO DE JUDÁ e
+      TODO-PODEROSO ÉS) entraram, com cifra, na **v2.8.1** — publicada e com as
+      4 URLs conferidas em 206. Ele não chegou a instalar na igreja.
+
+## 7. ATUALIZADOR NÃO FUNCIONA — é o que trava tudo o resto
+Relato dele (30/08): *"não identifica a atualização automaticamente… você clica,
+ele fala 'ah, estou baixando zero bytes'… não bate o pacote completo… não fala
+nem que você está com a melhor versão"*. **Foi por isso que ele não conseguiu
+atualizar na igreja.**
+- [ ] Já conferido aqui: `versao_mais_nova()` **funciona** — rodei contra o
+      GitHub e leu `2.8.1` certinho. O defeito está depois disso.
+- [ ] Suspeita a investigar: quando ele testou, o instalado era 2.8.0 e o
+      release TAMBÉM era 2.8.0 → `tem=false`, e nesse caminho a tela só mostra
+      o selo dourado se `/api/conteudo` disser que não falta nada. Se faltar
+      conteúdo, ela não diz nada — parece "não identifica".
+- [ ] "Baixando 0 bytes": ver `_atualizar_thread` + `baixar_retomando`.
+      Hipótese: `.parte` velho e completo em `%TEMP%\Sistema-baixando` faz pedir
+      um trecho que não existe mais. (Na máquina dele agora não há `.parte`.)
+
+## 8. VERSÍCULO PROJETADO SAI ERRADO
+- [ ] Mesmo marcando **um só**, o telão mostrava outros junto (*"aparecia o
+      primeiro e o sétimo"*). Ele acredita que passar para o modelo do
+      computador já resolve — provavelmente é sobra do `escolhidos`/`juntosNoAr`
+      do modo "Marcar vários".
+
+## 9. LISTA ÚNICA: louvores + versículos
+- [ ] Juntar a listinha de versículos com a Lista de Projeção **de maneira
+      elegante**. (Já estava no PEDIDOS antigo; ele reforçou hoje.)
+
+## 10. CIFRA NO CELULAR ESTÁ APERTADA
+- [ ] Falta espaço para o instrumentista operar. O **botão de reduzir tem de
+      compactar de verdade o que está em cima** — inclusive encolher a prévia do
+      telão, que é o que mais rouba altura.
+
+## 11. CELULAR: falta o aviso do PRÓXIMO CULTO
+- [ ] A tela de projetar coisas no celular está **confusa de informação**, e
+      **não tem o cartaz do próximo culto** — ele foi projetar hoje e não achou.
+      No computador existe.
+
+## ✅ BOA NOTÍCIA que ele fez questão de contar
+O operador relatou um **erro grave na 2.7.5** (não conseguia passar o louvor).
+Ele **tentou reproduzir na 2.8.0 e não conseguiu** — *"foi tentar induzir o erro
+e não deu certo"*. O defeito nunca foi descrito direito, mas está resolvido.
+
+---
+
+## DECISÕES DELE — 30/08/2026 (não reabrir sem ele mandar)
+
+**1. Acervo: VARRER TUDO, o mais amplo possível.** Sites de cifra, YouTube,
+tudo que tiver cara de Maranata. Eu levantei o risco (letra errada indo pro
+telão) e ele escolheu assim mesmo — a falta de louvor já custou um culto.
+**Como fica seguro sem estreitar o pedido:** cada louvor carrega a ORIGEM e um
+grau de confiança. O que veio de fonte oficial entra limpo; o que veio de
+varredura entra marcado, e a marca aparece para o operador. Louvor duvidoso
+tem de ser visivelmente duvidoso, nunca silenciosamente errado.
+
+**2. Coletânea única: NASCE DA FUSÃO DOS DOIS.** Cruzar Nível 1 e Nível 2
+louvor a louvor, montar a mistura automaticamente, e ele revisa por cima com a
+coletânea do instrumentista veterano.
+
+**3. Ordem de ataque: (1) atualizador, (2) ACERVO DE LOUVORES, (3) celular,
+(4) cifras.** O acervo na frente porque foi a falha que obrigou o mix com o
+Glorifica.
+
+### Correção do diagnóstico do atualizador (ele contou depois)
+**Instalar por cima FUNCIONA e funciona bem.** Ele baixou o instalador pequeno
+do site do GitHub, rodou por cima da versão antiga, e o programa **reconheceu
+como atualização e atualizou com perfeição**. Palavras dele: *"isso foi o seu
+maior acerto até agora"*. Então o defeito é **só no botão de atualizar de
+dentro do programa** — o caminho manual está de pé e é a saída segura.
+
+### O que já está feito no celular (não publicado)
+- Painel de leitura com teto: parou de cobrir a grade de versículos.
+- Botão "Marcar vários" escondido; vale o **duplo toque**, como no computador.
+- Layout deitado: grade e leitura lado a lado.
+
+## 12. A VISÃO DA COLETÂNEA ÚNICA (palavras dele, 30/08)
+> *"Não é pra reduzir a quantidade de notas, inclusive traz até mais do que a
+> base comum, mas de forma elegante, de forma perfeita. Tanto o iniciante
+> quanto o veterano vão olhar as MESMAS notas e vão se alegrar."*
+
+- o **veterano** vê profundidade para tocar o louvor todo;
+- o **iniciante** entende **quais notas pode tocar e quais pode pular**;
+- público: *"instrumentistas do povo"*, não o grupo do presbitério onde
+  *"não tem uma nota que não seja diminuta e sustenida com baixo em bemol"*.
+
+**A ligação que resolve isso sem inventar régua:** o tracinho `|` do livro JÁ é
+essa distinção — com tracinho = dentro do ritmo (o que o iniciante toca); sem
+tracinho, no vão = transição (o que ele pode pular, e o veterano toca). Guardar
+o tracinho e mostrá-lo na folha entrega a visão dele de graça.
+
+**Por que há correção manual:** *"o louvor tocado presencialmente é muito
+melhor, porque essas falhas são corrigidas a todo momento em todas as igrejas."*
+A coletânea impressa tem erro de concepção — ele apontou um na foto do 218
+MARANATA: a folha põe um acorde, tira o F# no Sol, põe outra nota e segue.
+
+---
+
+# 📍 ESTADO DO PLANO — 30/08/2026, fim da noite
+
+Ordem escolhida por ele: **(1) atualizador · (2) ACERVO · (3) celular · (4) cifras**
+
+| # | item | estado |
+|---|---|---|
+| 1 | **Atualizador** | **CONSERTADO**, falta compilar e testar |
+| 2 | **Acervo de louvores** | **EM ANDAMENTO** — fontes achadas, extração começando |
+| 3 | Celular | parcial: painel da Palavra, duplo toque e tela deitada feitos |
+| 4 | Cifras / coletânea única | não começado |
+
+## 1. ATUALIZADOR — causa achada e provada
+**Não era a internet da igreja.** O programa compilado não levava certificado
+nenhum; sem `cacert.pem` o Python cai no depósito do Windows, que numa **máquina
+do zero** começa quase vazio. Reproduzi aqui com depósito vazio: falhou com
+`CERTIFICATE_VERIFY_FAILED`; com o pacote dentro do programa, passou.
+- `cacert.pem` viaja dentro dos três executáveis; **soma** com o depósito do
+  Windows (senão quebraria em rede que assina o próprio tráfego).
+- O check de versão subiu de 8s para 15s (hotspot é lento).
+- **O programa acerta o relógio sozinho**: pega a hora certa por NTP (ou pelo
+  cabeçalho `Date` de uma página HTTP simples — nenhum dos dois usa
+  certificado), e se estiver fora por mais de um dia, acerta e **tenta baixar de
+  novo**. Mexer no relógio exige administrador, então ele pede permissão uma vez.
+- Mensagens sem jargão: relógio errado → fala de DATA E HORA; rede que assina o
+  tráfego → *"a internet deste lugar não deixa o programa baixar sozinho…
+  baixe pelo site e instale por cima"*.
+- **Instalar por cima FUNCIONA** e é a saída manual boa (descoberta dele).
+
+## 2. ACERVO — as três fontes, todas melhores que varrer a internet
+1. **PDFs já no disco desde agosto**: **523 títulos** que o Sistema não tem —
+   **424 do Avulsos 2024**, 86 do Cifras 2025, 53 dos dois níveis.
+   (Script `faltantes.py`. Cuidado: título vem CORTADO pela quebra de linha do
+   PDF; comparar título inteiro dava 332 faltantes e quase todos eram mentira.
+   Casa por começo de título, mínimo 12 caracteres.)
+2. **Drive oficial do Departamento de Louvor** (`drivelouvor`, pasta "Material
+   para ensaio", link que ele mandou). Baixados 4 decks oficiais de projeção.
+   A integração do Drive só enxerga o que foi compartilhado direto — não entra
+   em subpasta. Baixar por base64 estoura o contexto; **usar o navegador com
+   `https://drive.google.com/uc?export=download&id=…`**, que vai direto ao disco.
+3. **`Downloads\PROJEÇÃO R.MS POWER POINT` — 2,2 GB, 587 PowerPoints**:
+   `COLETÂNEA IGREJAS 2025` e `LOUVORES AVULSOS 2025` (o acervo do Sistema é de
+   **2018**), mais as CIAS **uma por arquivo, com animação**, em 4:3 e 16:9, e a
+   Bíblia em slides.
+
+### 🔁 DECISÃO A REVER COM ELE
+De manhã ele escolheu **"varrer tudo, o mais amplo possível"** (YouTube, sites
+de cifra) porque não havia fonte confiável. **Agora há fonte oficial de sobra.**
+Proposta: montar o acervo a partir do oficial e só depois procurar fora.
+
+## LIÇÃO QUE SE REPETIU DUAS VEZES HOJE
+Eu disse que só tinha 16 transcrições de doutrina — havia **23 PDFs** em
+`Downloads feitos pelo usuário` desde 15/08, que eu não tinha olhado. E quase
+saí varrendo a internet atrás de louvor que estava a dois cliques daqui.
+**Olhar o disco ANTES de olhar para fora.**
+
+## GRAFIA DOS ACORDES — decidido em 30/08/2026 (não reabrir)
+**A sétima maior é sempre `7M`** (`G7M`), como o Cifra Club escreve. Era a
+maioria (658 de 937) e é a mais fácil de entender — critério dele: *"quanto
+mais fácil de entender for pra todo mundo, melhor"*.
+Aplicado: `maj7`, `7+`, `M7` e `(maj7)` → **`7M`**; `dim` → `°`; `aug` → `+`;
+`º` → `°`. **295 acordes trocados, 162.103 no total antes e depois.**
+⚠️ `M` maiúsculo e `m` minúsculo são acordes DIFERENTES (`GM7` é maior, `Gm7`
+é menor). O conserto tem teste que conta os menores antes e depois — ele
+disparou uma vez, e o defeito era do próprio teste, que lia o "m" de `maj7`
+como menor.
+
+## DE ONDE VEIO A COLETÂNEA ÚNICA
+Da conversa do Samuel com o **Xande (Alexandre)**, instrumentista. Ver
+`CREDITOS.md` → "Quem ajudou a fazer", e a memória
+`project_sistema_coparticipantes`.
+
+---
+
+## 31/08/2026 — ACERVO: 113 louvores novos APLICADOS
+Da **Coletânea Cifrada 2025-2026 (a azul)**, com letra, cifra, tom e introdução.
+Entraram como **Avulsos 2026**, com a numeração do próprio livro.
+`louvores.js` 2.461 → **2.574** · cifras 2.236 → **2.349** (nos três lugares).
+Decidido medindo: dos 524 títulos do Avulsos 2018 a azul só tem 52, então ela
+**não substitui** o acervo antigo — os dois convivem.
+
+Cinco defeitos pegos ANTES de gravar (todos iriam ao telão da igreja):
+nome de autor virando verso (o louvor 5 tem TRÊS linhas de crédito); linha de
+acorde com "BIS" no fim virando letra; hífen de alinhamento (`MI-NHA`); o
+espaçamento do livro (`À     MI-NHA VOZ`); e pedaços de acorde partidos pelo
+PDF (`AUG`, `SUS`, `#7`) virando verso.
+
+## MÉTODO NOVO: a ordem cantada sai do VÍDEO
+**Funciona, testado** em "O Senhor da ceifa está chamando" (canal oficial).
+Os vídeos da ICM não mostram slides: a letra vem **queimada no rodapé**. Então
+o certo é olhar SÓ A FAIXA DE BAIXO e ler com OCR.
+Resultado: o coro (*"Fala Deus! Fala Deus! / Toca-me com brasas do altar…"*)
+apareceu **4 vezes**, sempre inteiro — a estrutura estrofe→coro→estrofe→coro
+que o livro não escreve.
+- `yt-dlp` **com `player_client: android`** (o padrão dá 403)
+- `OpenCV` para achar a troca de legenda · `RapidOCR` (sem torch) para ler
+- roda no Python 3.14, **sem Python paralelo e sem ffmpeg**
+- ⚠️ o OCR erra quando pega o quadro na transição: pegar o quadro do MEIO do
+  trecho, e **cruzar com a letra que já temos** — o OCR serve para saber a
+  ORDEM, não para copiar a letra.
+
+## PEDIDOS DELE — 31/08, madrugada
+- [ ] **Aplicar o método do vídeo em massa**, principalmente nos **corinhos e
+      louvores de criança (CIAS)** — é onde o problema de repetição mais dói.
+      Caçar os links no YouTube.
+- [ ] **TENHO UMA CANDEIA (CIA 143)** — *"é difícil entender até a cifra"*.
+      Corrigir a cifra **com base no vídeo**, porque a repetição é estranha:
+      *"toca rápido, para, toca rápido, para"*.
+- [ ] **LOUVOR 483 (CHEGOU O TEMPO DE PENSAR)** — muda de ritmo no meio
+      (Básico → Guarânia → Básico → Guarânia). É complexo e *"dá umas travadas"*.
+- [ ] Falta o nome de mais um louvor difícil tocado em 30/08 — ele vai mandar.
+- [x] **MARANATA (218)** foi projetado no culto de 30/08 e **funcionou
+      perfeitamente** — depois de bastante trabalho nele.
