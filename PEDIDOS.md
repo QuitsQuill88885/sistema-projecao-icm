@@ -152,23 +152,23 @@ falsos. Os que sobraram, todos corrigidos:
 ## 📌 PEDIDOS ABERTOS — registro para não se perder
 
 ### Bugs que você apontou e ainda NÃO estão resolvidos
-- [ ] **Busca do CELULAR não está ranqueada.** Corrigi só no computador. Procurar
+- [x] **Busca do CELULAR não está ranqueada.** Corrigi só no computador. Procurar
       "Resplandece" no celular ainda traz louvores da letra antes do próprio
       "RESPLANDECE, Ó JERUSALÉM". Mesma regra do computador: título igual >
       título que começa > título que contém > palavras soltas no título > letra.
       Ignorar acento E pontuação ("resplandece jerusalem" acha "RESPLANDECE, Ó JERUSALÉM").
-- [ ] **A+ / A− pelo celular não funciona.**
+- [x] **A+ / A− pelo celular não funciona.**
 - [ ] **Caixa de busca do celular encavala a lista** (item cortado atrás do campo).
-- [ ] **Lista de Projeção no celular** — VER a lista e ADICIONAR louvores/versículos.
+- [x] **Lista de Projeção no celular** — VER a lista e ADICIONAR louvores/versículos.
       Palavras dele: é mais importante que controlar a projeção, porque o grupo
       de louvor precisa montar o que vai ser projetado.
       (comandos addlouvor / tirardalista / irpara já existem no computador)
 
 ### Ideias novas, ainda não começadas
-- [ ] **Histórico e painel de louvores.** Guardar o que foi projetado em cada
+- [x] **Histórico e painel de louvores.** Guardar o que foi projetado em cada
       culto, com o TEMPO que cada louvor ficou no ar. Painel mostrando: mais
       cantados, mais tempo projetados, escolhidos por período (mês, últimos meses).
-- [ ] **Ligação Bíblia ↔ louvor.** Ao abrir uma passagem, sugerir louvores cuja
+- [x] **Ligação Bíblia ↔ louvor.** Ao abrir uma passagem, sugerir louvores cuja
       MENSAGEM combina. Exemplos dele: Isaías 60:1 ("levanta-te, resplandece")
       → "Resplandece, ó Jerusalém"; Neemias (reconstrução) → louvor de obra e
       reconstrução. É análise do conteúdo da letra, não busca por palavra.
@@ -602,3 +602,19 @@ Ele: *"vai resolvendo todas as pendências durante a noite. É importante."*
 - **#1 acervo** — as três coletâneas já entraram. Varrer a internet continua sem
   ser necessário.
 - Ele ainda deve o **nome de mais um louvor difícil** tocado em 30/08.
+
+## 01/09 — CINCO ITENS ANTIGOS QUE JÁ ESTAVAM PRONTOS
+
+A lista estava desatualizada. Conferi um por um, no código e rodando:
+
+| item | como conferi |
+|---|---|
+| Busca do celular não ranqueada | `pontuar()` do `controle.html:1568` é **idêntica** à `pontuarLouvor()` do computador |
+| A+/A− pelo celular | `#tam`, `pintarTam()`, `escalaMinha` — existe e sincroniza com o PC |
+| Lista de Projeção no celular | a aba **Lista** existe, com `addlouvor` e o ✕ para tirar |
+| Histórico e painel de louvores | `/api/historico`, `abrirNoAr()`, `pintarPainel()` |
+| Ligação Bíblia → louvor | testado com os exemplos DELE: **Isaías 60:1 → "DISPÕE-TE, RESPLANDECE" e "RESPLANDECE, Ó JERUSALÉM"**; Neemias 2:17 → "HINO DE JERUSALÉM"; Salmos 23:1 → "MEU BOM PASTOR" |
+
+**Continuam abertos de verdade:** as categorias do culto (clamor, dedicação,
+glorificação — ele ia continuar a lista e não continuou) e a tela de reset
+bagunçada, que ele mesmo disse não ser urgente.

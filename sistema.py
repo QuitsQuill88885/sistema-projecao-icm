@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.8.5"
+VERSAO = "2.8.6"
 
 PORTA = 8765
 
@@ -156,15 +156,65 @@ def qr_base64(texto):
 
     """Código para o celular apontar a câmera e entrar direto."""
 
+    # ESCREVO O PNG NA MAO, sem Pillow. O `qrcode.make()` devolve imagem do
+
+    # PIL, e por isso o Pillow inteiro (13 MB) viajava dentro do programa - para
+
+    # desenhar um quadriculado preto e branco.
+
+    #
+
+    # Um QR e' uma matriz de quadradinhos: `get_matrix()` da' os True/False, e um
+
+    # PNG em tons de cinza sem filtro e' cabecalho + zlib + CRC. Conferido pixel
+
+    # a pixel contra o Pillow: sai IDENTICO, e menor (613 contra 770 bytes).
+
+    #
+
+    # (Fiz antes em SVG, que tambem dispensa o PIL, e medi: 13 KB contra 770
+
+    # bytes. Nao adianta trocar um peso por outro.)
+
     try:
 
-        import qrcode, io, base64
+        import base64, struct, zlib
 
-        img = qrcode.make(texto, box_size=7, border=2)
+        import qrcode
 
-        buf = io.BytesIO(); img.save(buf, format="PNG")
+        lado = 7
 
-        return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+        q = qrcode.QRCode(box_size=1, border=2)
+
+        q.add_data(texto); q.make(fit=True)
+
+        m = q.get_matrix()
+
+        larg = len(m) * lado
+
+        cru = b""
+
+        for linha in m:
+
+            px = bytes(0 if c else 255 for c in linha for _ in range(lado))
+
+            cru += (b"\x00" + px) * lado         # \x00 = linha sem filtro
+
+        def bloco(tipo, dados):
+
+            return (struct.pack(">I", len(dados)) + tipo + dados
+
+                    + struct.pack(">I", zlib.crc32(tipo + dados) & 0xffffffff))
+
+        png = (b"\x89PNG\r\n\x1a\n"
+
+               + bloco(b"IHDR", struct.pack(">IIBBBBB", larg, larg, 8, 0, 0, 0, 0))
+
+               + bloco(b"IDAT", zlib.compress(cru, 9))
+
+               + bloco(b"IEND", b""))
+
+        return "data:image/png;base64," + base64.b64encode(png).decode()
 
     except Exception:
 
@@ -3029,23 +3079,43 @@ def escolher_arquivo():
 
     """Abre a janelinha do Windows para o operador escolher o arquivo."""
 
-    import tkinter as tk
+    # A JANELA NATIVA DO WINDOWS, nao o tkinter. O tkinter entrava aqui so' para
 
-    from tkinter import filedialog
+    # esta janelinha e arrastava 8 MB de Tcl/Tk para dentro do programa. O
 
-    r = tk.Tk(); r.withdraw(); r.attributes("-topmost", True)
+    # pywin32 ja' viaja junto (e' ele que converte o PowerPoint), e a janela que
 
-    cam = filedialog.askopenfilename(
+    # ele abre e' a que o operador ja' conhece de todo programa do Windows.
 
-        title="Escolha a apresentação",
+    import win32con
 
-        filetypes=[("Apresentações e PDF", "*.pptx *.ppt *.ppsx *.pps *.odp *.pdf"),
+    import win32gui
 
-                   ("Imagens", "*.png *.jpg *.jpeg"), ("Todos os arquivos", "*.*")])
+    filtro = ("Apresentações e PDF\0*.pptx;*.ppt;*.ppsx;*.pps;*.odp;*.pdf\0"
 
-    r.destroy()
+              "Imagens\0*.png;*.jpg;*.jpeg\0"
 
-    return cam
+              "Todos os arquivos\0*.*\0")
+
+    try:
+
+        cam, _, _ = win32gui.GetOpenFileNameW(
+
+            InitialDir=os.path.expanduser("~"),
+
+            Title="Escolha a apresentação",
+
+            Filter=filtro,
+
+            Flags=(win32con.OFN_EXPLORER | win32con.OFN_FILEMUSTEXIST
+
+                   | win32con.OFN_HIDEREADONLY))
+
+        return cam or ""
+
+    except Exception:
+
+        return ""            # fechou a janela sem escolher
 
 
 

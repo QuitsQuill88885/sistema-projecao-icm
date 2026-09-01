@@ -1,4 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os as _os_spec
 from PyInstaller.utils.hooks import collect_all
 
 datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes')]
@@ -25,7 +26,9 @@ if _sobra:
           % ', '.join(_sobra))
 
 binaries = []
-hiddenimports = ['win32com.client', 'tkinter', 'qrcode', 'webview', 'webview.platforms.edgechromium',
+# 'tkinter' SAIU: entrava só pela janela de escolher arquivo e trazia
+# 8 MB de Tcl/Tk. Agora a janela é a nativa do Windows, pelo pywin32.
+hiddenimports = ['win32com.client', 'qrcode', 'webview', 'webview.platforms.edgechromium',
                  # a porta segura (https) do afinador: o Sistema emite o proprio
                  # certificado, entao a biblioteca precisa viajar dentro do programa
                  'cryptography', 'cryptography.hazmat.backends.openssl', 'cryptography.x509']
@@ -43,10 +46,26 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     # nunca engordar o instalador por acidente: o PDF quem abre e o navegador
-    excludes=['pymupdf', 'fitz', 'numpy', 'matplotlib', 'scipy', 'pandas'],
+    excludes=['PIL', 'Pillow', 'tkinter', '_tkinter',
+              'pymupdf', 'fitz', 'numpy', 'matplotlib', 'scipy', 'pandas'],
     noarchive=False,
     optimize=0,
 )
+# TCL/TK: 8 MB que NAO DA PARA TIRAR, e ja tentei.
+# Depois que a janela de escolher arquivo virou a nativa do Windows, nada mais
+# importa tkinter - conferido: `_tkinter.pyd` NAO entra no programa. Mesmo
+# assim tcl86t.dll, tk86t.dll, _tcl_data e _tk_data continuam vindo.
+#
+# NAO SAO ORFAOS, e nao adianta filtrar a.binaries/a.datas (tentei: nao muda
+# nada). Eles vem do **Splash** logo abaixo: a tela de carregamento do
+# PyInstaller e desenhada em Tk. Sao o preco da barrinha dourada que aparece
+# enquanto o Sistema abre - e o Sistema demora alguns segundos para subir
+# (acha porta livre, libera no firewall, gera o certificado do afinador),
+# entao a barrinha nao e enfeite: e o que diz ao operador que esta abrindo.
+#
+# Se um dia valer trocar 8 MB pela tela de carregamento, e so tirar o Splash
+# daqui, do EXE() e do COLLECT(). E decisao do Samuel, nao minha.
+
 pyz = PYZ(a.pure)
 splash = Splash(
     'splash.png',
