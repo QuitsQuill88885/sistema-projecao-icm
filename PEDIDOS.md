@@ -234,7 +234,7 @@ de tudo que eu tenho falado, você vai ficar maluco"*.
       duas formas: artifact publicado (link fixo) e **arquivo `louvores.html` de
       1,6 MB que roda OFFLINE** — ele salva em Arquivos no iPhone e abre no
       Safari, sem internet e sem Claude. Palavras dele: *"é ouro puro"*.
-- [ ] **O mesmo, para as CIFRAS.** Ele pediu na sequência: um buscador de cifras
+- [x] **O mesmo, para as CIFRAS.** Ele pediu na sequência: um buscador de cifras
       que dê para baixar e abrir no iPhone. *"Ajuda de um jeito que você não tem
       ideia."* Mesmo molde do de louvores: um HTML sozinho, sem servidor.
 - [ ] Ideia dele que ficou de fora: publicar o buscador no GitHub Pages.
