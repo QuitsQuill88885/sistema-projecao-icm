@@ -1400,7 +1400,11 @@ function selecionarCap(c, elDom) {
       projetarVerso(est.livro, c, v);
       devolverPosicaoNaFila({ livro: est.livro, cap: c, v });
     };
-    b.ondblclick = () => { adicionarLista({ tipo: 'verso', ref: est.livro + ' ' + c + ':' + v, livro: est.livro, cap: c, v, on: true }); }; // 2 cliques = GUARDA
+    // 2 cliques = GUARDA na Lista, DESMARCADO. Entrava com on:true e isso
+    // ligava sozinho o "aparecer juntos" (reprojetarVista, logo abaixo): ele
+    // guardava o 1º e o 7º para usar depois e os dois iam grudados pro telão.
+    // Quem junta é o ✓ da Lista, quando ELE quiser.
+    b.ondblclick = () => { adicionarLista({ tipo: 'verso', ref: est.livro + ' ' + c + ':' + v, livro: est.livro, cap: c, v, on: false }); };
     g.appendChild(b);
   });
   $('#tit-vers').textContent = est.livro + ' ' + c + ' — 1 clique projeta · 2 cliques guarda na lista';
@@ -1465,7 +1469,7 @@ function adicionarLista(item) {
 function guardarVerso() {
   if (!est.bibPos) { toast('Projete um versículo antes de guardá-lo.'); return; }
   const { livro, cap, v } = est.bibPos;
-  adicionarLista({ tipo: 'verso', ref: livro + ' ' + cap + ':' + v, livro, cap, v, on: true });
+  adicionarLista({ tipo: 'verso', ref: livro + ' ' + cap + ':' + v, livro, cap, v, on: false });
 }
 function limparLista() { est.fila = []; est.setPos = -1; est.vistaFim = null; est.juntos = false; renderFila(); }
 function versoTexto(x) { return (BIBLIA.livros[x.livro] && BIBLIA.livros[x.livro][x.cap - 1] && BIBLIA.livros[x.livro][x.cap - 1][x.v]) || ''; }
@@ -1578,24 +1582,26 @@ function renderFila() {
   if (!est.fila.length) {
     cont.innerHTML = '<div class="vazio">Dê dois cliques em um louvor ou versículo para montar a lista.</div>';
   } else est.fila.forEach((it, i, arr) => {
-    const antes = arr[i - 1];
-    if (!antes || antes.tipo !== it.tipo) {          // separa visualmente louvores de versículos
-      const t = document.createElement('div'); t.className = 'fila-grupo';
-      t.textContent = it.tipo === 'louvor' ? 'Louvores' : 'Versículos';
-      cont.appendChild(t);
-    }
+    // SEM CABEÇALHO DE GRUPO. A lista é a ORDEM DO CULTO: o que vale nela é a
+    // sequência. O cabeçalho entrava a cada troca de tipo e picava a ordem em
+    // pedaços quando louvor e versículo se alternam — que é o caso normal.
+    // O tipo continua óbvio: louvor leva ♪ e vem em azul, versículo vem em ouro
+    // no formato "Livro cap:ver".
     const chkOn = it.on === true;                                   // marcado = entra na projeção "Juntos"
     const naVista = est.setPos >= 0 && i >= est.setPos && i <= vFim; // realça o item atual da navegação
     // Já cantado: item do MESMO grupo que ficou para trás. No meio do culto o
     // operador precisa bater o olho e saber o que já passou e o que falta —
     // senão ele não sabe onde parou nem qual é o próximo. Voltar desfaz a marca.
-    const atualNaFila = est.setPos >= 0 ? est.fila[est.setPos] : null;
-    const jaFoi = !!atualNaFila && it.tipo === atualNaFila.tipo && i < est.setPos;
+    // JÁ PASSOU = está antes do que está no ar. Antes eu exigia ser do MESMO
+    // TIPO — sobra da separação em grupos —, e por isso um versículo lá em cima
+    // nunca esmaecia depois de lido, numa lista misturada.
+    const jaFoi = est.setPos >= 0 && i < est.setPos;
     const d = document.createElement('div');
     d.className = 'fila-item' + (naVista ? ' atual' : '') + (jaFoi ? ' ja-foi' : '') + (chkOn ? ' agrupado' : '');
     const rot = it.tipo === 'louvor' ? it.rotulo : it.ref;
     const chk = it.tipo === 'verso' ? '<span class="chk' + (chkOn ? ' on' : '') + '" title="Marcado = entra na projeção Juntos">' + (chkOn ? '✓' : '') + '</span>' : '';
-    d.innerHTML = chk + '<span class="rot" style="color:' + (it.tipo === 'louvor' ? '#bfe6ff' : '#f5d76e') + '">' +
+    d.innerHTML = chk + '<span class="fila-num">' + (i + 1) + '</span>' +
+      '<span class="rot" style="color:' + (it.tipo === 'louvor' ? '#bfe6ff' : '#f5d76e') + '">' +
       (it.tipo === 'louvor' ? '♪ ' : '') + rot + '</span>' +
       '<span class="fila-btns"><button class="fb up" title="Subir">▲</button>' +
       '<button class="fb dn" title="Descer">▼</button><button class="fb x" title="Remover">✕</button></span>';
@@ -2858,14 +2864,13 @@ function executarDoCelular(c) {
     case 'verso':   est.setPos = -1; projetarVerso(c.livro, c.cap, c.v);
                     devolverPosicaoNaFila(c); break;   // mesmo cuidado do computador
     case 'slidepp': projetarSlide(c.i); break;
-    // toque longo no versículo pelo celular: guarda na lista já marcado. Com dois
-    // ou mais marcados, reprojetarVista (dentro de adicionarLista) manda juntos.
-    // Entra MARCADO, que é o sentido de "segure para juntar". O risco de o ✓
-    // ressuscitar os versículos mais tarde morreu na raiz: reprojetarVista agora
-    // só age com versículo no ar (adicionarLista já cuida de não duplicar).
+    // Duplo-toque (ou toque longo) no celular: guarda na Lista, DESMARCADO.
+    // Entrava marcado — "segure para juntar" — e era essa a falha que ele
+    // chamou de gravíssima: guardar dois versículos os projetava grudados
+    // sozinho. Juntar continua possível pelo ✓ da Lista, no computador.
     case 'guardar':
       adicionarLista({ tipo: 'verso', ref: c.livro + ' ' + c.cap + ':' + c.v,
-                       livro: c.livro, cap: c.cap, v: c.v, on: true });
+                       livro: c.livro, cap: c.cap, v: c.v, on: false });
       break;
     // o celular manda um louvor pra Lista sem projetar nada — é como o grupo de
     // louvor monta a ordem do culto de onde estiver
@@ -2975,6 +2980,15 @@ function ligarControleCelular() {
         estilo: est.estilo, espera: esperaAtual(), fundos,
         tipo: est.live && est.live.tipo,
         timer: { rot: est.timerRotulo, fim: est.timerFim, parado: est.timerParadoMs },
+        // OS AVISOS VÃO PRONTOS PARA O CELULAR. Quatro deles (Próximo culto,
+        // Cultos da semana, Ceia, Vigília) são CALCULADOS da agenda da igreja,
+        // que só existe aqui — por isso o celular nunca os teve, e ele foi
+        // projetar no culto e não achou o "próximo culto". Calculo aqui e mando
+        // prontos: uma lista só, sem risco de as duas telas desencontrarem.
+        avisos: (() => { try {
+          return modelosAviso().map(m => { const a = m.faz();
+            return { n: m.nome, t: a.titulo, c: a.corpo }; });
+        } catch (e) { return []; } })(),
         // posição do que está no ar — o celular usa para acender o item certo
         // mesmo quando quem avançou foi o computador ou a Lista de Projeção
         louvor: est.louvorIdx, slide: est.louvorSlide, slidepp: est.slidePos,

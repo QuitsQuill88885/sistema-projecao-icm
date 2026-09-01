@@ -330,29 +330,29 @@ no acervo.**
 - [ ] **Fonte de verdade a definir com ele** — ver a pergunta no fim.
 
 ## 2. PALAVRA NO CELULAR — falha "gravíssima" (palavra dele)
-- [ ] Marcar mais de um versículo é inutilizável: ao tocar, **o texto projetado
+- [x] Marcar mais de um versículo é inutilizável: ao tocar, **o texto projetado
       cobre a tela toda**, tapa a área de seleção, e não dá para escolher mais
       nada. O painel de leitura (`.rodape-vers`) é `sticky` e cresce sem teto.
-- [ ] O certo é **repetir no celular o modelo do computador**: um toque projeta,
+- [x] O certo é **repetir no celular o modelo do computador**: um toque projeta,
       **dois toques guardam na lista** (`app.js:1419` faz exatamente isso).
       O duplo-toque até existe no celular, mas está enterrado atrás do modo
       "✓ Marcar vários", que é o que atrapalha. **Tirar o modo, ficar com o
       duplo-toque.**
 
 ## 3. CELULAR NA HORIZONTAL
-- [ ] Deitando o celular fica "tudo errado, tudo estranho". Ele quer que ao
+- [x] Deitando o celular fica "tudo errado, tudo estranho". Ele quer que ao
       virar, o layout **se reorganize** para aproveitar a tela larga — mais
       informação lado a lado, não a mesma coluna esticada.
 
 ## 4. CIFRAS — acaba o Nível 1 / Nível 2
 Decisão dele: **não vai mais existir "básico 1" e "básico 2" no nosso sistema.**
-- [ ] Vai haver **UMA coletânea só**, o *"suco do suco"*: a simplicidade e
+- [x] Vai haver **UMA coletânea só**, o *"suco do suco"*: a simplicidade e
       eficiência do básico 1 **com alguns arranjos elegantes bem postos** do
       básico 2. Notas com sentido, nem pobre nem cheia à toa.
-- [ ] A base é a **correção prática dos instrumentistas**. Ele tem a coletânea
+- [x] A base é a **correção prática dos instrumentistas**. Ele tem a coletânea
       de um **instrumentista veterano**, cheia de modificações à mão, e vai
       mandando fotos louvor a louvor (escritas por cima — vai dar trabalho ler).
-- [ ] Consequência: o seletor N1/N2 sai da tela.
+- [x] Consequência: o seletor N1/N2 sai da tela.
 
 ## 5. ESTRUTURA DE REPETIÇÃO DOS LOUVORES
 - [ ] Não está sendo respeitada. Quando o livro traz *1ª estrofe, coro, 2ª
@@ -370,33 +370,33 @@ Relato dele (30/08): *"não identifica a atualização automaticamente… você 
 ele fala 'ah, estou baixando zero bytes'… não bate o pacote completo… não fala
 nem que você está com a melhor versão"*. **Foi por isso que ele não conseguiu
 atualizar na igreja.**
-- [ ] Já conferido aqui: `versao_mais_nova()` **funciona** — rodei contra o
+- [x] Já conferido aqui: `versao_mais_nova()` **funciona** — rodei contra o
       GitHub e leu `2.8.1` certinho. O defeito está depois disso.
-- [ ] Suspeita a investigar: quando ele testou, o instalado era 2.8.0 e o
+- [x] Suspeita a investigar: quando ele testou, o instalado era 2.8.0 e o
       release TAMBÉM era 2.8.0 → `tem=false`, e nesse caminho a tela só mostra
       o selo dourado se `/api/conteudo` disser que não falta nada. Se faltar
       conteúdo, ela não diz nada — parece "não identifica".
-- [ ] "Baixando 0 bytes": ver `_atualizar_thread` + `baixar_retomando`.
+- [x] "Baixando 0 bytes": ver `_atualizar_thread` + `baixar_retomando`.
       Hipótese: `.parte` velho e completo em `%TEMP%\Sistema-baixando` faz pedir
       um trecho que não existe mais. (Na máquina dele agora não há `.parte`.)
 
 ## 8. VERSÍCULO PROJETADO SAI ERRADO
-- [ ] Mesmo marcando **um só**, o telão mostrava outros junto (*"aparecia o
+- [x] Mesmo marcando **um só**, o telão mostrava outros junto (*"aparecia o
       primeiro e o sétimo"*). Ele acredita que passar para o modelo do
       computador já resolve — provavelmente é sobra do `escolhidos`/`juntosNoAr`
       do modo "Marcar vários".
 
 ## 9. LISTA ÚNICA: louvores + versículos
-- [ ] Juntar a listinha de versículos com a Lista de Projeção **de maneira
+- [x] Juntar a listinha de versículos com a Lista de Projeção **de maneira
       elegante**. (Já estava no PEDIDOS antigo; ele reforçou hoje.)
 
 ## 10. CIFRA NO CELULAR ESTÁ APERTADA
-- [ ] Falta espaço para o instrumentista operar. O **botão de reduzir tem de
+- [x] Falta espaço para o instrumentista operar. O **botão de reduzir tem de
       compactar de verdade o que está em cima** — inclusive encolher a prévia do
       telão, que é o que mais rouba altura.
 
 ## 11. CELULAR: falta o aviso do PRÓXIMO CULTO
-- [ ] A tela de projetar coisas no celular está **confusa de informação**, e
+- [x] A tela de projetar coisas no celular está **confusa de informação**, e
       **não tem o cartaz do próximo culto** — ele foi projetar hoje e não achou.
       No computador existe.
 
@@ -571,3 +571,34 @@ que o livro não escreve.
 - [ ] Falta o nome de mais um louvor difícil tocado em 30/08 — ele vai mandar.
 - [x] **MARANATA (218)** foi projetado no culto de 30/08 e **funcionou
       perfeitamente** — depois de bastante trabalho nele.
+
+---
+
+# ✅ 01/09/2026 — NOITE DE PENDÊNCIAS
+
+Ele: *"vai resolvendo todas as pendências durante a noite. É importante."*
+
+| # | Pendência | O que era, e o que virou |
+|---|---|---|
+| 2 e 8 | Versículo saía errado ("o 1º e o 7º juntos") | **A causa era do COMPUTADOR**, não do celular: guardar na Lista entrava com `on: true` e `reprojetarVista` projeta juntos assim que houver **qualquer** marcado. Guardar deixou de marcar; o `✓` da Lista continua para quem quiser juntar de propósito. |
+| 3 | Celular deitado "fica tudo errado" | Só a aba Bíblia tinha layout deitado. Agora Louvores (lista + slides lado a lado), Telão (dois blocos por linha) e Lista (duas colunas) também. |
+| 4 | Acaba o Nível 1 / Nível 2 | Coletânea única publicada na v2.8.2; o seletor saiu dos três arquivos. |
+| 7 | Atualizador não funcionava | Certificado + relógio, v2.8.1/2.8.2. |
+| 9 | Lista única, "de maneira elegante" | Os dois já moravam na mesma lista; o feio era o **cabeçalho de grupo a cada troca de tipo**, que picava a ordem do culto. Saiu; entrou a **numeração 1, 2, 3**. E o "já cantado" passou a ser simplesmente "está antes do que está no ar". |
+| 10 | Cifra apertada no celular | O botão de compactar mexia só na barra e na letra. Agora **recolhe a prévia do telão junto** (24vh, o que mais roubava altura) e encolhe a barra do topo. Só reabre a prévia se foi ele que a fechou, e não sobrescreve a preferência gravada. |
+| 11 | Falta o "próximo culto" no celular | O celular tinha 4 recados **fixos**; os quatro que dependem da agenda da igreja (próximo culto, cultos da semana, ceia, vigília) só existiam no computador. Agora o computador **calcula e manda prontos** no estado. Testado: *"AMANHÃ — QUARTA · Culto de Senhoras — 19:30"*. |
+
+**Duas armadilhas de CSS que quase entraram:**
+- `.aba[data-aba="telao"]{display:grid}` tem especificidade maior que o
+  `[hidden]{display:none}` do navegador — **deitar o celular mostraria todas as
+  abas empilhadas**. Guardado com `:not([hidden])`.
+- A regra que escondia a prévia com a cifra aberta nascia **morta**: a prévia
+  mora no `<header>` e as abas no `<main>`, e o combinador de irmão (`~`) não
+  atravessa isso. Removida, com o motivo anotado no arquivo.
+
+## Continua em aberto
+- **#5 estrutura de repetição** — feito na Candeia, no 483 e n'O Senhor da Ceifa,
+  pelo vídeo/áudio. Falta aplicar em massa; depende dos links que ele mandar.
+- **#1 acervo** — as três coletâneas já entraram. Varrer a internet continua sem
+  ser necessário.
+- Ele ainda deve o **nome de mais um louvor difícil** tocado em 30/08.

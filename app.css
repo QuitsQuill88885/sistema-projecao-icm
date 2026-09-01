@@ -288,6 +288,11 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .fila-item .chk.on{background:var(--ouro);border-color:var(--ouro);color:#1a1a1a;font-weight:700}
 .fila-item .chk:hover{border-color:var(--ouro)}
 .fila-dica{font-size:10.5px;color:var(--ouro);letter-spacing:.3px;opacity:.85}
+/* O NÚMERO DA ORDEM DO CULTO. Discreto e de largura fixa, para os rótulos
+   ficarem alinhados mesmo passando de 9 para 10. */
+.fila-num{flex:0 0 auto;min-width:1.35em;text-align:right;margin-right:6px;
+  font-size:11px;color:#6f86a8;font-variant-numeric:tabular-nums}
+.fila-item.atual .fila-num{color:#f5d76e}
 .fila-grupo{font-size:9.5px;text-transform:uppercase;letter-spacing:1.3px;color:#7f96b8;font-weight:700;
             padding:8px 4px 3px;border-bottom:1px solid #ffffff10;margin-bottom:3px}
 .fila-grupo:first-child{padding-top:2px}

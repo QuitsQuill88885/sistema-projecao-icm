@@ -110,6 +110,11 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
    ele desliza a cifra, em vez de ficarem la em cima fora de alcance */
 .cifra-topo{position:sticky;top:0;z-index:7;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   padding:9px 10px;background:#101d33;border:1px solid var(--borda);border-radius:9px}
+/* MODO COMPACTO: a barra do topo encolhe junto. O dedo continua alcançando —
+   os botões seguem com 30px de altura; o que sai é a folga em volta. */
+.compacto .cifra-topo{padding:4px 8px;gap:6px}
+.compacto .cifra-topo .cifra-nome{font-size:12px}
+.compacto .cifra-volta,.compacto .cifra-zoom button{padding:3px 9px}
 /* O "‹ Escolher outra" era o maior elemento da barra e roubava a linha inteira
    do nome do louvor e do tom. Agora é só a seta, do tamanho do dedo (36px, como
    os outros botões), e o nome do louvor fica com o espaço que é dele. */
@@ -240,6 +245,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .fi.ja{opacity:.45}
 .fi .rot{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fi .tirar{background:#2a1a1a;color:#e88;border-radius:7px;padding:6px 10px;font-size:13px;flex:none}
+/* ordem do culto: número discreto na frente, e o versículo em ouro para não se
+   confundir com o louvor agora que não há mais cabeçalho de grupo */
+.fi-num{flex:0 0 auto;min-width:1.4em;text-align:right;margin-right:7px;
+  font-size:11px;color:#6f86a8;font-variant-numeric:tabular-nums}
+.fi.atual .fi-num{color:var(--ouro)}
+.fi .rot.verso{color:var(--ouro)}
 .fi-grupo{font-size:10.5px;letter-spacing:1px;color:var(--ouro);font-weight:700;margin:10px 0 4px}
 .item .add{margin-left:auto;background:var(--painel2);color:var(--ouro);border-radius:8px;
   padding:7px 12px;font-size:15px;font-weight:700;flex:none;line-height:1}
@@ -282,6 +293,41 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
     box-shadow:none}
   .leitura{max-height:none}
   nav button{padding:7px 10px;font-size:12.5px}
+
+  /* DEITADO: APROVEITAR A LARGURA, e não esticar a mesma coluna.
+     Queixa dele: "se eu tombo o celular pra esquerda fica tudo errado, tudo
+     estranho... quero que ao virar o layout se reorganize, mais informação
+     lado a lado". Só a aba Bíblia tinha esse tratamento; as outras quatro
+     continuavam em coluna única, altas demais para uma tela de 560px. */
+
+  /* LOUVORES: a lista de resultados à esquerda, os slides do louvor escolhido
+     à direita. Deitado, era rolar a lista inteira para só então ver as telas. */
+  /* :not([hidden]) É OBRIGATÓRIO. A aba escondida usa o atributo `hidden`
+     (controle.html:1520), e `[hidden]{display:none}` do navegador tem
+     especificidade 0,1,0 — menor que a desta regra. Sem o :not, deitar o
+     celular mostrava TODAS as abas empilhadas de uma vez. */
+  .aba[data-aba="louvor"]:not([hidden]){display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .aba[data-aba="louvor"] > .busca{flex:0 0 100%}
+  .aba[data-aba="louvor"] > #lista{flex:1 1 44%;min-width:0;max-height:70vh;overflow-y:auto}
+  .aba[data-aba="louvor"] > #slides-louvor{flex:1 1 48%;min-width:0;max-height:70vh;
+    overflow-y:auto}
+
+  /* TELÃO: os blocos (cronômetro, relógio, telas, recado, fundos) empilhavam
+     um debaixo do outro. Deitado cabem dois por linha. */
+  .aba[data-aba="telao"]:not([hidden]){display:grid;grid-template-columns:1fr 1fr;
+    gap:10px;align-items:start}
+  .aba[data-aba="telao"] .bloco-tel:last-child{grid-column:1 / -1}
+
+  /* CIFRA deitada: quem ganha altura aqui é o botão de compactar, que agora
+     recolhe a prévia junto (pendência #10) — e vale em pé ou deitado.
+     ESCREVI uma regra aqui para esconder a prévia com a cifra aberta e ela
+     nascia MORTA: a prévia mora no <header> e as abas no <main>, então o
+     combinador de irmão (~) nunca as alcança. Fica o registro para eu não
+     tentar de novo. */
+
+  /* LISTA: a ordem do culto em duas colunas cabe inteira sem rolar. */
+  #fila-cel{column-count:2;column-gap:12px}
+  #fila-cel .fi{break-inside:avoid}
 }
 
 /* ---- marcar vários versículos e projetar numa tela só (como no computador) ---- */
@@ -656,6 +702,8 @@ async function ouvir() {
     // rótulo daqui manda, porque o estado que chega ainda é de antes do
     // comando. Passado esse tempo, quem manda é o computador — assim o celular
     // acompanha também quando quem mexeu no A+ foi quem está no teclado.
+    // avisos calculados pelo computador (próximo culto, ceia, vigília…)
+    pintarAvisos(e.avisos);
     if (typeof e.escala === 'number' && Date.now() - escalaMinha > 2500
         && Math.abs(e.escala - escala) > 0.001) { escala = e.escala; pintarTam(); }
     // PRESERVA o 'mini': este className é reescrito a cada 900ms, e antes ele
@@ -759,19 +807,37 @@ $('#t-anim').onclick     = () => enviar('anim');
 $('#t-projetar').onclick = () => enviar('texto', { titulo: $('#t-titulo').value, corpo: $('#t-texto').value });
 unidadeMin();
 // recados prontos, os mesmos do computador
+/* RESERVA, para quando o computador estiver fora do ar. Os avisos de verdade
+   vêm dele prontos (campo `avisos` do estado), porque quatro deles — Próximo
+   culto, Cultos da semana, Ceia e Vigília — são calculados da agenda da igreja,
+   que só existe lá. Manter a agenda escrita nos dois lugares era garantia de
+   desencontro. */
 const PRONTOS = [
   ['Silêncio e oração', 'MOMENTO DE ORAÇÃO', 'Pedimos silêncio e reverência.'],
   ['Bem-vindos', 'SEJAM BEM-VINDOS', 'A paz do Senhor!'],
   ['Celular', 'ATENÇÃO', 'Por favor, desligue ou silencie o celular.'],
   ['Aniversariantes', 'ANIVERSARIANTES', 'Vamos orar pelos irmãos que fazem aniversário nesta semana.'],
 ];
-(() => {
+let avisosTxt = null;             // não redesenha os botões a cada 900ms à toa
+function pintarAvisos(lista) {
   const c = $('#t-prontos'); if (!c) return;
-  PRONTOS.forEach(([rot, tit, corpo]) => {
+  const usar = (lista && lista.length) ? lista.map(a => [a.n, a.t, a.c]) : PRONTOS;
+  const txt = usar.map(x => x[0]).join('|');
+  if (txt === avisosTxt) return;
+  avisosTxt = txt; c.innerHTML = '';
+  usar.forEach(([rot, tit, corpo]) => {
     const b = document.createElement('button'); b.className = 'bt-min'; b.textContent = rot;
-    b.onclick = () => { $('#t-titulo').value = tit; $('#t-texto').value = corpo; };
+    b.onclick = () => {
+      $('#t-titulo').value = tit; $('#t-texto').value = corpo;
+      // ele preenchia e não via nada acontecer: o campo fica acima, fora da
+      // vista, quando a fileira de atalhos foi rolada até aqui.
+      $('#t-titulo').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    };
     c.appendChild(b);
   });
+}
+(() => {
+  pintarAvisos(null);
 })();
 // ligar e desligar o telão
 $('#liga').onclick = () => {
@@ -795,21 +861,16 @@ function pintarFila(e) {
     c.innerHTML = '<div class="vazio">A lista está vazia.</div>';
     return;
   }
-  let grupo = null;
   fila.forEach((it, i) => {
-    if (it.tipo !== grupo) {
-      grupo = it.tipo;
-      const g = document.createElement('div');
-      g.className = 'fi-grupo';
-      g.textContent = it.tipo === 'louvor' ? 'LOUVORES' : 'VERSÍCULOS';
-      c.appendChild(g);
-    }
+    // Sem cabeçalho de grupo, igual ao computador: a lista é a ORDEM DO CULTO
+    // e o cabeçalho picava a ordem a cada troca de louvor para versículo.
     const pos = typeof e.pos === 'number' ? e.pos : -1;
-    // já cantado = ficou para trás DENTRO do mesmo grupo (igual ao computador)
-    const jaFoi = pos >= 0 && fila[pos] && fila[pos].tipo === it.tipo && i < pos;
+    const jaFoi = pos >= 0 && i < pos;      // já passou = está antes do que está no ar
     const d = document.createElement('div');
     d.className = 'fi' + (i === pos ? ' atual' : '') + (jaFoi ? ' ja' : '');
-    d.innerHTML = '<span class="rot">' + (it.tipo === 'louvor' ? '♪ ' : '') +
+    d.innerHTML = '<span class="fi-num">' + (i + 1) + '</span>' +
+                  '<span class="rot' + (it.tipo === 'louvor' ? '' : ' verso') + '">' +
+                  (it.tipo === 'louvor' ? '♪ ' : '') +
                   (it.rotulo || '') + '</span>' +
                   '<button class="tirar" title="Tirar da lista">✕</button>';
     d.onclick = ev => {
@@ -1261,11 +1322,28 @@ function pintarMini(mini) {
      correr menos. Não mexe no A+/A−: quando ele volta ao normal, a letra volta
      exatamente ao que era. */
   if (f) f.style.setProperty('--enc', mini ? '.88' : '1');
-  if (b) { b.title = mini ? 'Mostrar a barra e a letra normal'
-                          : 'Encolher a barra e a letra (cabe mais cifra)';
+  /* A PRÉVIA DO TELÃO VAI JUNTO — era a queixa dele: "o botão de reduzir tem
+     que realmente compactar bem o que está em cima". A prévia ocupa 24vh, um
+     quarto da tela, e é de longe o que mais rouba altura da cifra.
+     Só recolho se ELE não tinha recolhido antes, e ao voltar só reabro o que
+     fui eu que fechei — senão descompactar abriria a prévia na cara dele.
+     E não gravo essa escolha no aparelho: a preferência guardada continua
+     sendo a que ele escolheu no dedo. */
+  const pv = $('#previa');
+  if (pv) {
+    if (mini && !pv.classList.contains('mini')) {
+      previaPeloCompacto = true; previaRecolhida(true, false);
+    } else if (!mini && previaPeloCompacto) {
+      previaPeloCompacto = false; previaRecolhida(false, false);
+    }
+  }
+  const q = $('#cifra-quadro'); if (q) q.classList.toggle('compacto', mini);
+  if (b) { b.title = mini ? 'Mostrar a prévia, a barra e a letra normal'
+                          : 'Compactar tudo (esconde a prévia, cabe mais cifra)';
            b.setAttribute('aria-label', b.title); }
   if (typeof ajustarLargura === 'function') ajustarLargura();
 }
+let previaPeloCompacto = false;   // fui EU que recolhi a prévia, ou foi ele?
 $('#auto-min').onclick = () => {
   const mini = !$('#auto-linha').classList.contains('mini');
   pintarMini(mini);
@@ -1427,10 +1505,13 @@ $('#pv').addEventListener('load', () => { telaN = -1; espelhar(); });
 
 /* recolher a prévia: ela ocupava mais da metade da tela e sobrava uma janelinha
    pra escolher versículo. A escolha fica guardada no próprio celular. */
-function previaRecolhida(mini) {
+function previaRecolhida(mini, guardar) {
   $('#previa').classList.toggle('mini', mini);
   $('#previa-dica').textContent = mini ? 'toque para mostrar a prévia do telão'
                                        : 'toque aqui para recolher a prévia';
+  // `guardar === false` = foi o modo compacto que mexeu, não ele. Não grava:
+  // a preferência do aparelho tem de continuar sendo a escolha DELE.
+  if (guardar === false) return;
   try { localStorage.setItem('previa-mini', mini ? '1' : ''); } catch (e) {}
 }
 const alternarPrevia = () => previaRecolhida(!$('#previa').classList.contains('mini'));
@@ -1832,9 +1913,14 @@ function lerJuntosDaFila(fila) {
   // por ~2,5s depois do meu toque a pintura é minha: o estado que chega ainda é
   // anterior ao comando e faria as marcas piscarem de volta
   if (Date.now() < juntosMeuAte) return;
+  // OURO = "está na Lista de Projeção", e não "vai aparecer junto".
+  // Antes eu lia `it.on`, que é o campo do modo "juntos". Como guardar na
+  // Lista deixou de marcar automaticamente (era a falha do 1º com o 7º), ler
+  // `it.on` faria o ouro sumir da tela do celular. O que ele quer ver aqui é
+  // o que já está guardado — igual ao "na-fila" do computador.
   const novo = [];
   (fila || []).forEach(it => {
-    if (it.tipo !== 'verso' || !it.on) return;
+    if (it.tipo !== 'verso') return;
     const x = refDoRotulo(it.rotulo); if (x) novo.push(chaveV(x));
   });
   const txt = novo.join(',');
