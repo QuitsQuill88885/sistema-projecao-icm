@@ -204,7 +204,7 @@ de tudo que eu tenho falado, você vai ficar maluco"*.
       está saindo torta em bastante louvor. É o defeito mais grave da cifra
       hoje — o instrumentista lê a nota em cima da sílaba errada. (A coluna
       vem do OCR, no campo `a: [[coluna, acorde], ...]`.)
-- [ ] **RESTAURAR o traço separador de nota.** Existia e sumiu: um tracinho
+- [x] **RESTAURAR o traço separador de nota.** Existia e sumiu: um tracinho
       **bem delicado** no meio das letras, mostrando exatamente onde a nota
       troca. Palavras dele: *"não fica ridículo, mostra exatamente onde troca
       nota"*. Ele quer de volta.
@@ -304,7 +304,7 @@ Trabalho completo em `Conhecimento\cifras_refazer\reextracao_2026-08-30\LEIA-ME.
       acordes, os **22.394 COM tracinho caem em cima da letra em 99,5%** dos
       casos (105 erros). Os 13.744 sem tracinho são **notas de transição** —
       para essas, cair no vão é o certo, não é defeito.
-- [ ] **Guardar as colunas dos tracinhos** na linha (campo `m`), para a folha
+- [x] **Guardar as colunas dos tracinhos** na linha (campo `m`), para a folha
       desenhar a separação de nota. É o pedido dele, e agora tem de onde tirar.
 - [ ] **Distinguir na tela** acorde do ritmo × acorde de transição.
 - [ ] **Ler as últimas páginas do livro**, que descrevem os ritmos (Básico,

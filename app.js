@@ -941,6 +941,32 @@ function escaparCifra(t) {
     .split('&').join('&amp;').split('<').join('&lt;');
 }
 
+/* O TRACINHO: onde a nota troca. Vem do livro (campo `m` da linha, em contagem
+   de LETRAS) e ele pediu de volta — "bem delicado, mostra exatamente onde troca
+   nota". Fica no vão ENTRE as letras, encostado na que começa a nota.
+
+   LARGURA ZERO, de propósito: a folha é monoespaçada e o acorde é posicionado
+   por COLUNA. Se o tracinho empurrasse um caractere, todo acorde da linha sairia
+   de cima da sílaba. Por isso é uma borda de 1px com margem negativa que
+   devolve o pixel.
+
+   A contagem é de LETRAS (o que sobra sem espaço, acento e pontuação) porque a
+   posição veio de outro livro, com outro espaçamento. */
+function comTracos(t, m) {
+  const esc = escaparCifra;
+  if (!m || !m.length) return esc(t);
+  const alvo = new Set(m);
+  let saida = '', letras = 0;
+  for (const c of (t || '').replace(/\u0001/g, '')) {
+    const eLetra = /[0-9A-Za-zÀ-ÿ]/.test(c);
+    if (eLetra && alvo.has(letras)) { saida += '<i class="tr"></i>'; alvo.delete(letras); }
+    saida += esc(c);
+    if (eLetra) letras++;
+  }
+  if (alvo.has(letras)) saida += '<i class="tr"></i>';
+  return saida;
+}
+
 /* Desenha a linha de acordes ACIMA da letra, cada um na coluna que veio do PDF.
    Em fonte monoespaçada a coluna É o caractere: acorde na coluna 8 fica em cima
    da 8ª letra. É por isso que a folha não pode usar fonte proporcional — com ela
@@ -1085,7 +1111,7 @@ function desenharFolha(d) {
     for (const l of d.violao.linhas) {
       if (RE_FICHA.test(l.t || '')) continue;   // autor/tonalidade/ritmo: fora da folha
       const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], cifraDesloc, bemol)]);
-      corpo += linhaDeAcordes(a) + marcarLinha(l.t, escaparCifra(l.t)) + '\n';
+      corpo += linhaDeAcordes(a) + marcarLinha(l.t, comTracos(l.t, l.m)) + '\n';
     }
   } else {
     corpo = 'Este louvor não tem cifra.';

@@ -205,6 +205,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
   font-size:calc(var(--cf,13px) * var(--enc,1));line-height:1.45;color:#e7edf7;
   margin:0;white-space:pre;
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+/* o tracinho do ritmo: fio de 1px no vão entre as letras, LARGURA ZERO para não
+   empurrar a grade monoespaçada (senão o acorde sai de cima da sílaba) */
+.folha .tr{display:inline-block;width:0;margin-right:-1px;border-left:1px solid rgba(245,215,110,.5);
+  height:1.05em;vertical-align:-0.2em}
 .folha .ac{color:var(--ouro);font-weight:700}
 .folha .no{color:#79c0ff;font-weight:700}
 /* a estrutura do louvor, destacada: Coro / Introducao / repeticao (#38/#44) */
@@ -987,6 +991,31 @@ function listarCifras(f) {
     (euToco === 'violao' ? 'cifra' : 'melodia') + ' para este instrumento.</div>';
 }
 
+/* O TRACINHO: onde a nota troca. Vem do livro (campo `m` da linha, em contagem
+   de LETRAS) e ele pediu de volta — "bem delicado, mostra exatamente onde troca
+   nota". Fica no vão ENTRE as letras, encostado na que começa a nota.
+
+   LARGURA ZERO, de propósito: a folha é monoespaçada e o acorde é posicionado
+   por COLUNA. Se o tracinho empurrasse um caractere, todo acorde da linha sairia
+   de cima da sílaba. Por isso é uma borda de 1px com margem negativa que
+   devolve o pixel.
+
+   A contagem é de LETRAS (o que sobra sem espaço, acento e pontuação) porque a
+   posição veio de outro livro, com outro espaçamento. */
+function comTracos(t, m) {
+  const esc = escapar;
+  if (!m || !m.length) return esc(t);
+  const alvo = new Set(m);
+  let saida = '', letras = 0;
+  for (const c of (t || '').replace(/\u0001/g, '')) {
+    const eLetra = /[0-9A-Za-zÀ-ÿ]/.test(c);
+    if (eLetra && alvo.has(letras)) { saida += '<i class="tr"></i>'; alvo.delete(letras); }
+    saida += esc(c);
+    if (eLetra) letras++;
+  }
+  if (alvo.has(letras)) saida += '<i class="tr"></i>';
+  return saida;
+}
 function escapar(t) {
   // O marcador invisível (\x01) é o do amarelo do TELÃO. Na folha de cifra ele não é
   // interpretado e aparecia como caractere quebrado (2.040 vezes no acervo).
@@ -1174,7 +1203,7 @@ function desenharFolha(d) {
     for (const l of d.violao.linhas) {
       if (RE_FICHA.test(l.t || '')) continue;   // ficha fora da folha
       const a = (l.a || []).map(par => [par[0], transporAcorde(par[1], desloc, bemol)]);
-      corpo += linhaDeAcordes(a) + marcarLinha(l.t, escapar(l.t)) + '\n';
+      corpo += linhaDeAcordes(a) + marcarLinha(l.t, comTracos(l.t, l.m)) + '\n';
     }
   } else if (euToco !== 'violao' && d.melodia) {
     for (const l of d.melodia.linhas)
