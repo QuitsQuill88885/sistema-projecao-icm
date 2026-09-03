@@ -23,13 +23,13 @@ VSVersionInfo(
         '041604b0',                      # portugues do Brasil, Unicode
         [StringStruct('CompanyName', 'Samuel Mariano Ribeiro'),
          StringStruct('FileDescription', 'Sistema - Projecao da igreja'),
-         StringStruct('FileVersion', '2.8.7'),
+         StringStruct('FileVersion', '2.8.8'),
          StringStruct('InternalName', 'Sistema'),
          StringStruct('LegalCopyright', 'Copyright (c) 2026 Samuel Mariano Ribeiro - MIT / CC BY 4.0'),
          StringStruct('LegalTrademarks', 'Sistema, de Samuel Mariano Ribeiro'),
          StringStruct('OriginalFilename', 'Sistema.exe'),
          StringStruct('ProductName', 'Sistema'),
-         StringStruct('ProductVersion', '2.8.7')])
+         StringStruct('ProductVersion', '2.8.8')])
     ]),
     VarFileInfo([VarStruct('Translation', [1046, 1200])])
   ]
