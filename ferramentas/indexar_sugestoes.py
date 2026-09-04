@@ -84,10 +84,18 @@ def preparar_figuras():
     gatilho = palavra que aparece no TEXTO BÍBLICO ("marido", "muro")
     tema    = palavra que o LOUVOR usaria ("esposo", "bodas", "igreja")
     """
-    caminho = os.path.join(FERR, "tipologia_maranata.json")
+    # A AMPLIADA VEM PRIMEIRO. É o material dos obreiros, e ele é autoridade
+    # sobre o resumo antigo. Conferido antes de ligar: a ampliada carrega as 131
+    # figuras do `tipologia_maranata.json` com o significado IDÊNTICO, palavra
+    # por palavra, e traz 178 a mais — é superconjunto, não versão divergente.
+    # Se um dia divergirem, quem manda continua sendo o material dos obreiros.
+    caminho = os.path.join(FERR, "tipologia_ampliada.json")
     if not os.path.exists(caminho):
-        print("!! tipologia_maranata.json não encontrado — seguindo sem as figuras")
+        caminho = os.path.join(FERR, "tipologia_maranata.json")
+    if not os.path.exists(caminho):
+        print("!! nenhuma tipologia encontrada — seguindo sem as figuras")
         return []
+    print("figuras lidas de: %s" % os.path.basename(caminho))
     d = json.load(io.open(caminho, encoding="utf-8"))
     figuras = []
     for f in d.get("figuras", []):
@@ -119,6 +127,24 @@ def main():
     vetores = temas["louvores"]
     print("  louvores: %d | figuras: %d | palavras com peso: %d"
           % (len(louvores), len(figuras), len(idf)))
+
+    # A IDENTIDADE do louvor, igual à do app (`identTitulo` em app.js): título
+    # + começo da primeira linha, tudo reduzido a letras e números. É o que
+    # reconhece a mesma peça repetida entre a coletânea de 2018 e a Antiga.
+    def so_letras(t):
+        return " ".join(re.sub(r"[^a-z0-9]+", " ", normal(t)).split())
+
+    ident_cache = {}
+
+    def ident(i):
+        d = ident_cache.get(i)
+        if d is None:
+            s = louvores[i] if i < len(louvores) else {}
+            slides = s.get("slides") or []
+            linha1 = ((slides[0] or {}).get("linhas") or [""])[0] if slides else ""
+            d = so_letras(s.get("titulo") or "") + "|" + so_letras(linha1)[:12]
+            ident_cache[i] = d
+        return d
 
     # índice invertido: palavra -> [(louvor, peso)] — sem isto seriam 63 milhões
     # de multiplicações por versículo, e a máquina da igreja não é de brincadeira
@@ -236,9 +262,17 @@ def main():
                 escolha, vistos = [], set()
                 for fonte in (lit[:1], fig, lit):
                     for i, s in fonte:
-                        if i in vistos:
+                        # o mesmo louvor existe em DUAS coletâneas (2018 e
+                        # Antiga): guardar os dois gastava uma das três vagas
+                        # com o título repetido. O `montarRoda` do app já
+                        # descartava a cópia na tela — então o versículo
+                        # entregava dois louvores e o programa completava
+                        # puxando dos vizinhos. Aqui a vaga volta a ser útil.
+                        # A chave é a MESMA do app (`identTitulo`): título +
+                        # começo da primeira linha.
+                        if ident(i) in vistos:
                             continue
-                        vistos.add(i)
+                        vistos.add(ident(i))
                         escolha.append((i, s))
                         if len(escolha) >= POR_VERSICULO:
                             break
