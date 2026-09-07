@@ -9,7 +9,11 @@
   --fundo:#0b1526; --painel:#16233c; --painel2:#1e2d49; --borda:#2c3d5c;
   --txt:#eaf0fb; --suave:#9db3d6; --ouro:#f5d76e; --verde:#2e8b57; --vermelho:#a31a1a; --azul:#14487a;
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* TOUCH-ACTION: o `user-scalable=no` do viewport o iPhone IGNORA desde o iOS 10.
+   Quem realmente mata o zoom do toque duplo e' isto. Sem ele, marcar versiculo
+   (que pede dois toques) dava zoom na tela no meio do culto. */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation}
 /* ALTURA: 100% mede a tela do iPhone COM a barra do Safari recolhida, e quando
    ela reaparece o fim da página fica embaixo dela — foi assim que "o rodapé
    comeu as últimas linhas da cifra". 100dvh acompanha a barra; o 100% fica de
@@ -246,6 +250,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .lista-dica b{color:var(--ouro)}
 .fi{display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:9px;background:var(--painel);font-size:13.5px}
 .fi.atual{background:var(--azul);box-shadow:inset 3px 0 0 var(--ouro);font-weight:600}
+/* ESTA' NO AR JUNTO: nao e' o item "atual" da lista, mas esta' na tela AGORA,
+   ao lado dele. Antes ficava apagado como "ja' passou", e era isso que fazia a
+   marcacao de varios versiculos parecer confusa. */
+.fi.junto{background:#13294a;box-shadow:inset 3px 0 0 var(--ouro)}
+.fi.junto .fi-num{color:var(--ouro)}
+.fi.junto .rot::after{content:' · no ar';color:var(--ouro);font-size:11px;font-weight:600}
 .fi.ja{opacity:.45}
 .fi .rot{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fi .tirar{background:#2a1a1a;color:#e88;border-radius:7px;padding:6px 10px;font-size:13px;flex:none}
@@ -256,8 +266,17 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .fi.atual .fi-num{color:var(--ouro)}
 .fi .rot.verso{color:var(--ouro)}
 .fi-grupo{font-size:10.5px;letter-spacing:1px;color:var(--ouro);font-weight:700;margin:10px 0 4px}
-.item .add{margin-left:auto;background:var(--painel2);color:var(--ouro);border-radius:8px;
-  padding:7px 12px;font-size:15px;font-weight:700;flex:none;line-height:1}
+/* O + guarda na Lista, e o resto da linha projeta. Ele operava tocando violao e
+   o dedo acertava o + sem querer: o louvor entrava na lista sozinho. Duas
+   medidas, e nenhuma mexe no desenho, que ele aprovou:
+   1. `margin-right` cria uma FAIXA MORTA na beirada da tela -- e' ali que o
+      polegar apoia, e agora encostar ali projeta (inofensivo) em vez de guardar;
+   2. o toque tem de COMECAR no + (ver `pressionouAdd` no script): dedo que cai
+      na linha e escorrega para o + nao guarda mais. */
+.item .add{margin-left:auto;margin-right:10px;background:var(--painel2);color:var(--ouro);
+  border-radius:8px;padding:8px 13px;font-size:15px;font-weight:700;flex:none;line-height:1;
+  transition:transform .08s}
+.item .add:active{transform:scale(.9);background:var(--azul);color:#fff}
 .tom{background:#a8570f;color:#fff;border-radius:5px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:6px}
 
 /* o rodapé da grade de versículos: a leitura e a barra de marcar vários.
@@ -340,6 +359,18 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
 .btn-juntar{background:#16233c;border:1px solid var(--borda);color:#cfe0f5;border-radius:8px;
   padding:8px 12px;font-size:12.5px;font-weight:600;flex:none;white-space:nowrap}
 .btn-juntar.on{background:var(--ouro);color:#101d33;border-color:var(--ouro)}
+/* a tira do grupo que esta' no ar: um chip por versiculo, na ordem, com X */
+.grupo-ar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 2px 2px}
+.grupo-ar[hidden]{display:none}
+.grupo-ar .gr-cab{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--ouro);font-weight:700;width:100%;margin-bottom:2px}
+.grupo-ar .chip{display:flex;align-items:center;gap:7px;background:#2a2313;
+  border:1px solid var(--ouro);color:var(--ouro);border-radius:999px;
+  padding:6px 6px 6px 12px;font-size:12.5px;font-weight:600}
+.grupo-ar .chip button{background:#3a3016;color:var(--ouro);border-radius:999px;
+  width:22px;height:22px;font-size:13px;line-height:1;flex:none}
+.grupo-ar .chip button:active{background:var(--ouro);color:#101d33}
+.grupo-ar .gr-dica{font-size:11.5px;color:var(--suave);width:100%;margin-top:2px}
 .barra-juntar{display:flex;gap:7px;padding:9px 10px;background:#101d33;border-top:1px solid var(--borda)}
 /* `display:flex` VENCE o atributo hidden — sem esta linha a barra ficava
    aparecendo fora do modo de marcar */
@@ -633,6 +664,11 @@ textarea.campo{line-height:1.4;resize:vertical}
 const $ = s => document.querySelector(s);
 const LOUVORES = window.LOUVORES || [], BIBLIA = window.BIBLIA || {livros:{},ordem:[]};
 let livroSel = null, capSel = null, louvorSel = -1, falhas = 0;
+/* acabou de digitar na busca? entao a lista volta para o topo do que achou, em
+   vez de continuar parada no louvor que esta' no ar */
+let digitando = false;
+/* o toque comecou no botao + ? so' guarda na Lista se sim */
+let pressionouAdd = false;
 /* marcar vários versículos (aba Bíblia). Declarados aqui em cima porque a
    primeira leitura do estado chega antes de o resto do arquivo rodar. */
 let modoJuntar = false;      // toque MARCA em vez de projetar
@@ -859,6 +895,7 @@ function pintarFila(e) {
   const fila = e.fila || [];
   ultimaFila = fila;          // a aba Bíblia usa para saber o que já está marcado
   lerJuntosDaFila(fila);
+  pintarGrupoAr();            // a tira "no ar juntos" acompanha a lista
   const c = $('#fila-cel'); if (!c) return;
   c.innerHTML = '';
   if (!fila.length) {
@@ -869,9 +906,15 @@ function pintarFila(e) {
     // Sem cabeçalho de grupo, igual ao computador: a lista é a ORDEM DO CULTO
     // e o cabeçalho picava a ordem a cada troca de louvor para versículo.
     const pos = typeof e.pos === 'number' ? e.pos : -1;
-    const jaFoi = pos >= 0 && i < pos;      // já passou = está antes do que está no ar
+    /* VERSICULO MARCADO NAO E' VERSICULO QUE JA' PASSOU. Marcando dois para
+       aparecerem juntos, so' UM e' a posicao atual -- o outro ficava antes dela
+       e a lista o apagava, como se ja' tivesse sido projetado. Mas ele esta' na
+       tela AGORA. Quem tem `on` esta' no ar junto: nunca apaga. */
+    const noAr = it.on === true;
+    const jaFoi = pos >= 0 && i < pos && !noAr;   // já passou = antes do que está no ar
     const d = document.createElement('div');
-    d.className = 'fi' + (i === pos ? ' atual' : '') + (jaFoi ? ' ja' : '');
+    d.className = 'fi' + (i === pos ? ' atual' : '') +
+                  (noAr && i !== pos ? ' junto' : '') + (jaFoi ? ' ja' : '');
     d.innerHTML = '<span class="fi-num">' + (i + 1) + '</span>' +
                   '<span class="rot' + (it.tipo === 'louvor' ? '' : ' verso') + '">' +
                   (it.tipo === 'louvor' ? '♪ ' : '') +
@@ -1577,6 +1620,12 @@ function som(p) {
   p = p.replace(/([aeiou])s([aeiou])/g,'$1z$2').replace(/z/g,'s');
   p = p.replace(/r{2,}/g,'r').replace(/l{2,}/g,'l').replace(/h/g,'');
   p = p.replace(/[mn]$/,'n').replace(/y/g,'i');
+  /* PLURAL VIRA SINGULAR. O louvor e' "NO CEU AS JANELAS ABERTAS" e ele
+     procurou "nos ceus as janelas abertas" -- de cabeca, no plural. Achou por
+     sorte. Tirando o -s do fim de cada palavra (dos DOIS lados da comparacao),
+     "ceus" e "ceu" viram a mesma coisa e o plural passa a achar de proposito.
+     Palavra de 3 letras ou menos fica quieta: "nos", "seus", "deus". */
+  if (p.length > 2) p = p.replace(/s$/, '');
   return p.replace(/(.)\1+/g,'$1');
 }
 function perto(a, b, teto) {
@@ -1594,7 +1643,12 @@ function perto(a, b, teto) {
   }
   return ant[b.length] <= teto;
 }
-const somDaFrase = t => (t||'').split(/[^A-Za-zÀ-ÿ]+/).filter(Boolean).map(som);
+/* SOM CURTO NAO VALE COMO BUSCA. "ghg" vira o som `g` -- uma letra so' -- e uma
+   letra casa, com folga de um erro, com quase qualquer palavra do acervo: por
+   isso digitar bobagem trazia louvores. Som de menos de 3 letras fica de fora
+   da camada fonetica; o que ele escreveu certo continua achando pelo texto. */
+const somDaFrase = t => (t||'').split(/[^A-Za-zÀ-ÿ]+/).filter(Boolean)
+  .map(som).filter(x => x.length >= 3);
 let SOM_BUSCA = [];
 
 // Quão perto do que foi digitado. Título antes da letra, sempre: procurar
@@ -1643,9 +1697,18 @@ function listarLouvores(f) {
     d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') +
       '<span>' + s.titulo + (i === louvorSel ? '<em class="no-ar"> · no ar</em>' : '') + '</span>' +
       '<button class="add" title="Guardar na Lista de Projeção">+</button>';
+    /* o toque tem de COMECAR no +. Dedo que cai na linha e escorrega ate' o +
+       nao guarda mais -- era assim que o louvor entrava na lista sozinho
+       enquanto ele tocava violao. */
+    d.addEventListener('pointerdown', ev => {
+      pressionouAdd = !!(ev.target.classList && ev.target.classList.contains('add'));
+    }, {passive: true});
     d.onclick = ev => {
       if (ev.target.classList.contains('add')) {   // o + guarda; o toque projeta
-        ev.stopPropagation(); enviar('addlouvor', {idx: i});
+        ev.stopPropagation();
+        if (!pressionouAdd) return;                // encostou de raspao: nao guarda
+        pressionouAdd = false;
+        enviar('addlouvor', {idx: i});
         ev.target.textContent = '✓'; setTimeout(() => { ev.target.textContent = '+'; }, 900);
         return;
       }
@@ -1654,8 +1717,20 @@ function listarLouvores(f) {
     cont.appendChild(d); n++;
   }
   if (!n) cont.innerHTML = '<div class="vazio">Nada encontrado.</div>';
-  const sel = cont.querySelector('.item.sel');
-  if (sel) sel.scrollIntoView({ block: 'nearest' });
+  /* QUEM DIGITA QUER VER O QUE ACHOU. Antes a lista so' corria ate' o louvor que
+     esta' no ar -- entao, depois de apagar a busca e escrever outra coisa, ela
+     ficava parada la' embaixo (onde estava o louvor antigo) e o resultado novo
+     ficava fora da tela, em cima. Agora: digitou, volta para o topo do que achou;
+     rolou com o dedo, fica onde ele deixou; voltou a digitar, foca de novo. */
+  if (digitando) {
+    digitando = false;
+    const rolo = cont.closest('main') || cont.parentElement;
+    if (rolo && rolo.scrollTop > 0) rolo.scrollTo({ top: 0, behavior: 'auto' });
+    cont.scrollTop = 0;
+  } else {
+    const sel = cont.querySelector('.item.sel');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
 }
 let sugCelPedindo = false;
 function sugerirCelular(livro, cap, v) {
@@ -1696,7 +1771,21 @@ function mostrarSlides(i) {
     c.appendChild(d);
   });
 }
-$('#q').oninput = e => listarLouvores(e.target.value);
+/* O CURSOR TEM DE CAIR NO FIM. Tocando de novo no campo depois de ter escrito,
+   o iPhone punha o cursor onde o dedo encostou -- quase sempre no comeco -- e
+   ele precisava arrastar o cursor duas vezes para apagar e reescrever. Agora o
+   toque leva para o fim do que ja' esta' escrito.
+   O setTimeout existe porque o Safari posiciona o cursor DEPOIS do focus: mexer
+   antes disso nao adianta, ele desfaz. */
+function cursorNoFim(el) {
+  setTimeout(() => {
+    const n = el.value.length;
+    try { el.setSelectionRange(n, n); } catch (e) {}
+  }, 0);
+}
+$('#q').addEventListener('focus', e => cursorNoFim(e.target));
+$('#q').addEventListener('click', e => cursorNoFim(e.target));
+$('#q').oninput = e => { digitando = true; listarLouvores(e.target.value); };
 listarLouvores('');
 
 /* ---------- bíblia ---------- */
@@ -1893,6 +1982,11 @@ function passoBiblia(voltando) {
     // o versículo — e, marcando vários, vê a tela inteira que vai projetar.
     const rod = document.createElement('div'); rod.className = 'rodape-vers';
     rod.innerHTML = '<div class="leitura" id="leitura"></div>' +
+      // A TIRA DO GRUPO: quais versiculos estao no ar JUNTOS, na ordem, cada um
+      // com um X para tirar. Ele marcou dois, tocou num terceiro e nao entendeu
+      // o que tinha ficado no ar nem como desmarcar -- "onde estao as caixas
+      // seletoras?". A resposta certa e' MOSTRAR o grupo, nao explicar o gesto.
+      '<div class="grupo-ar" id="grupo-ar" hidden></div>' +
       '<div class="sug-cel" id="sug-cel" hidden></div>' +
       // botão VISÍVEL para guardar na lista o versículo que está aberto. O jeito
       // antigo era só "segurar o dedo", que ninguém descobria; agora tem botão.
@@ -1976,6 +2070,36 @@ function mostrarBotaoGuardar() {
   const b = $('#bj-guardar'); if (!b) return;
   b.hidden = modoJuntar || !ultimoVerso;
 }
+/* O QUE ESTA' NO AR JUNTO, escrito na tela. Ele marcou dois versiculos, tocou
+   num terceiro e ficou sem saber o que sobrou no telao nem como desmarcar. O
+   gesto ele nao adivinha; a lista dos que estao no ar ele LE'. Cada chip tem o
+   X que tira aquele versiculo do grupo -- e ao tirar, os que sobram continuam
+   juntos, que era a duvida dele. */
+function pintarGrupoAr() {
+  const g = $('#grupo-ar'); if (!g) return;
+  const nos = [];
+  ultimaFila.forEach((it, i) => {
+    if (it.tipo === 'verso' && it.on === true) nos.push({i: i, rot: it.rotulo || ''});
+  });
+  if (nos.length < 2) { g.hidden = true; g.innerHTML = ''; return; }
+  g.hidden = false;
+  g.innerHTML = '<div class="gr-cab">No ar juntos (' + nos.length + ')</div>';
+  nos.forEach(o => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.innerHTML = '<span></span><button title="Tirar do grupo">✕</button>';
+    c.firstChild.textContent = o.rot;
+    c.querySelector('button').onclick = ev => {
+      ev.stopPropagation();
+      enviar('tirardalista', {i: o.i});
+    };
+    g.appendChild(c);
+  });
+  const d = document.createElement('div');
+  d.className = 'gr-dica';
+  d.textContent = 'Tirando um, os outros continuam juntos.';
+  g.appendChild(d);
+}
 /* ouro = vai aparecer junto. Marcando, mostra o que EU escolhi; fora do modo,
    mostra o grupo que está montado no computador. */
 function pintarGradeVersos() {
@@ -2040,6 +2164,7 @@ function atualizarJuntar() {
   if (modoJuntar) { if (l) l.innerHTML = previaEscolha(); }
   else if (l) l.textContent = 'Toque num número para ler aqui antes de projetar.';
   mostrarBotaoGuardar();
+  pintarGrupoAr();
   pintarGradeVersos();
 }
 /* Manda o grupo pro telão. O computador não tem um comando "projete estes":
@@ -2164,5 +2289,57 @@ $('#menor').onclick = () => { mexerTam(1 / 1.08); enviar('menos'); };
 $('#tam').onclick   = () => { escala = 1; escalaMinha = Date.now(); pintarTam(); enviar('tampadrao'); };
 </script>
 
+
+
+<!-- TELA ACESA: video preto de 2x2 px, mudo, em laco. E' o que segura a tela do
+     iPhone quando a pagina nao esta' em HTTPS (e a do celular nao esta'). -->
+<video id="acordado" muted loop playsinline autoplay disablepictureinpicture
+       style="position:fixed;width:2px;height:2px;opacity:0;pointer-events:none;
+              bottom:0;left:0;z-index:-1"
+       src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMQbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAA+gAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAjt0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAA+gAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAIAAAACAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAPoAAAAAAABAAAAAAGzbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAQABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABXm1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAR5zdGJsAAAAunN0c2QAAAAAAAAAAQAAAKphdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAIAAgBIAAAASAAAAAAAAAABFExhdmM2My4xLjEwMSBsaWJ4MjY0AAAAAAAAAAAAAAAAGP//AAAAMGF2Y0MBQsAe/+EAGGdCwB7ZH4iIwEQAAAMABAAAAwAIPFi5IAEABWjLg8sgAAAAEHBhc3AAAAABAAAAAQAAABRidHJ0AAAAAAAAFDAAAAAAAAAAGHN0dHMAAAAAAAAAAQAAAAEAAEAAAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAABAAAAAQAAABRzdHN6AAAAAAAAAoYAAAABAAAAFHN0Y28AAAAAAAAAAQAAA0AAAABhdWR0YQAAAFltZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACxpbHN0AAAAJKl0b28AAAAcZGF0YQAAAAEAAAAATGF2ZjYzLjEuMTAxAAAACGZyZWUAAAKObWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjUgcjMyMjMgMDQ4MGNiMCAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjUgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBX///w9FAAFC34A="></video>
+<script>
+/* ------- nao deixar a tela apagar enquanto ele toca -------
+   Ele opera com o celular na mao tocando violao: nao da' para cutucar a tela so'
+   para o aparelho nao dormir. Dois caminhos porque a API oficial exige HTTPS e o
+   celular entra por HTTP. */
+(function () {
+  var trava = null;
+  var vid = document.getElementById('acordado');
+
+  function segurar() {
+    if (document.visibilityState !== 'visible') return;
+    if (navigator.wakeLock && navigator.wakeLock.request) {
+      navigator.wakeLock.request('screen').then(function (t) {
+        trava = t;
+        t.addEventListener('release', function () { trava = null; });
+      })['catch'](function () { video(); });
+    } else {
+      video();
+    }
+  }
+  function video() {
+    if (!vid) return;
+    var p = vid.play();
+    if (p && p['catch']) p['catch'](function () {});
+  }
+  function soltar() {
+    if (trava) { try { trava.release(); } catch (e) {} trava = null; }
+    if (vid) { try { vid.pause(); } catch (e) {} }
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') segurar(); else soltar();
+  });
+  /* o iPhone so' deixa tocar video depois de UM toque na pagina; entao tento de
+     cara (as vezes passa, por ser mudo) e de novo no primeiro toque dele */
+  segurar();
+  ['touchend', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, function so() {
+      segurar();
+      document.removeEventListener(ev, so);
+    }, {once: true, passive: true});
+  });
+})();
+</script>
 
 </body></html>

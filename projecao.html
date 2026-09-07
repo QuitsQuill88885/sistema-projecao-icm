@@ -97,7 +97,14 @@ html,body{height:100%;background:#000;overflow:hidden;
      15.2%    -> borda esquerda do bloco a 19% da tela  */
 #lou-txt{font-family:'Sistema A3',sans-serif;color:#fff;font-size:5.75cqh;flex-direction:column;text-transform:uppercase;align-items:flex-start}
 #lou-txt .bloco{text-align:left;display:inline-block;width:76%;margin-left:15.2%}
-#lou-txt .bloco .linha{display:block;line-height:var(--lh,1.815);margin:0}
+/* PALAVRA SOLTA: linha comprida nao cabe na largura do telao e quebra, e a
+   sobra caía sozinha embaixo -- uma palavra no meio do vazio, que foi o que ele
+   viu no culto ("palavra meio solta, espaco desperdiçado").
+   `balance` reparte a linha em duas metades parelhas em vez de encher a
+   primeira e largar o resto; `pretty` fica antes como reserva para navegador
+   que so' conhece esse. Nao muda dado nenhum -- e' so' como a linha se dobra. */
+#lou-txt .bloco .linha{display:block;line-height:var(--lh,1.815);margin:0;
+  text-wrap:pretty;text-wrap:balance}
 #lou-txt .label-coro{display:block;color:#ffff00;font-style:italic;font-size:.72em;letter-spacing:1px;margin-bottom:.12em}
 #lou-txt .mk{color:#ffff00}
 /* wrapper de medição p/ auto-ajuste (shrink-to-fit) */
