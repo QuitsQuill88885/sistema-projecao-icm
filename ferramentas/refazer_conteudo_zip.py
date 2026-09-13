@@ -37,7 +37,67 @@ def md5(p):
     return h.hexdigest()
 
 
+
+
+# --- TRAVA DA LETRA (13/09/2026) -------------------------------------------
+# A v2.9.2 foi RETIRADA: o banco novo tinha acordes bons, mas PERDIA LINHAS DA
+# LETRA (40% dos louvores trocados com menos de 90% da letra do telao). A prova
+# daquela vez so' media acorde. Esta trava mede a LETRA: compara o banco que vai
+# sair com o que ja' esta' publicado (o que mora hoje no Conteudo.zip) e ABORTA
+# se a cobertura da letra do telao cair. Passar por cima exige --aceito-perda,
+# escrito a mao, depois de o Samuel ver os numeros.
+import json, re, unicodedata
+
+LOUVORES_JS = os.path.join(APP, "dados", "louvores.js")
+
+
+def _sem(s):
+    s = unicodedata.normalize("NFD", (s or "").upper())
+    return re.sub(r"[^A-Z0-9]", "", "".join(c for c in s if unicodedata.category(c) != "Mn"))
+
+
+def cobertura_da_letra(banco):
+    """(media, quantos abaixo de 90%, quantos medidos) da letra do telao presente no banco"""
+    b = open(LOUVORES_JS, encoding="utf-8").read().strip()
+    louv = json.loads(b[b.index("=") + 1:].rstrip(";"))
+    soma, baixos, n = 0.0, 0, 0
+    for L in louv:
+        if not L.get("slides") or not L["slides"][0].get("linhas"):
+            continue
+        ch = "%s|%s|%s" % (L.get("num", ""), L["titulo"], L["slides"][0]["linhas"][0])
+        if ch not in banco:
+            continue
+        unicas = list(dict.fromkeys(x for x in (_sem(l) for s in L["slides"] for l in s["linhas"]) if x))
+        if not unicas:
+            continue
+        texto = _sem(" ".join(l.get("t", "") for l in banco[ch].get("linhas", [])))
+        c = sum(1 for l in unicas if l in texto) / len(unicas)
+        soma += c
+        baixos += c < 0.9
+        n += 1
+    return (soma / n if n else 0.0), baixos, n
+
+
+def trava_da_letra(novo, publicado):
+    mn, bn, nn = cobertura_da_letra(novo)
+    mp, bp, np_ = cobertura_da_letra(publicado)
+    print("TRAVA DA LETRA: publicado %.1f%% (%d abaixo de 90%%)  ->  novo %.1f%% (%d abaixo de 90%%)"
+          % (100 * mp, bp, 100 * mn, bn))
+    return not (mn < mp - 0.005 or bn > bp + 10)
+
+
 def main():
+    # 0. TRAVA DA LETRA: o banco novo nao pode ter menos letra que o publicado
+    if os.path.exists(ZIP):
+        with zipfile.ZipFile(ZIP) as z:
+            publicado = json.loads(z.read("cifras/acordes.json").decode("utf-8"))
+        novo = json.load(open(BANCO_APP, encoding="utf-8"))
+        if not trava_da_letra(novo, publicado):
+            if "--aceito-perda" not in sys.argv:
+                print("ABORTADO: o banco novo tem MENOS LETRA que o publicado. Foi o erro da v2.9.2.")
+                print("Mostre os numeros ao Samuel. Para passar mesmo assim: --aceito-perda")
+                return 2
+            print("passando por cima da trava (--aceito-perda)")
     # 1. o pacote tem de levar o banco que o App usa
     if md5(BANCO_APP) != md5(BANCO_PKG):
         shutil.copy2(BANCO_APP, BANCO_PKG)
