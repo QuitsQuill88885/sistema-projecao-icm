@@ -158,7 +158,7 @@ function stLouvor(idx, slide, fade) {
   const s = LOUVORES[idx], sl = s.slides[slide], prim = slide === 0;
   return {
     modo: 'louvor', fundo: prim ? FB.louvor1 : FB.louvor2,
-    titulo: prim ? ((s.num ? s.num + ' - ' : '') + s.titulo) : '',
+    titulo: prim ? ((s.num && s.num !== 'MEU' ? s.num + ' - ' : '') + s.titulo) : '',   // "MEU - " não é número
     rep: repeticoes(s)[slide],
     // o selo do LIVRO (bis/2x/3x/repete o hino), tirado da Coletânea Nível 1.
     // É diferente do rep: o rep conta slides duplicados; o selo avisa a
@@ -790,8 +790,9 @@ function siglaCol(s) {
   return { 'Coletânea 2018': 'COLETÂNEA', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
            'Avulsos 2018': 'AVULSO', 'Meus louvores': 'MEU' }[s.col] || '';
 }
-// "AV" não é número: nos Avulsos a coluna fica com um traço em vez de repetir a sigla
-function numLouvor(s) { return (!s.num || s.num === 'AV') ? '' : s.num; }
+// "AV" e "MEU" não são número: a coluna fica com um traço em vez de repetir a sigla
+// (o "MEU" repetido saía "MEU MEU · TODO-PODEROSO ÉS" — o Samuel viu, 13/09/2026)
+function numLouvor(s) { return (!s.num || s.num === 'AV' || s.num === 'MEU') ? '' : s.num; }
 function numInt(s) { const n = numLouvor(s); return /^\d+$/.test(n) ? parseInt(n, 10) : null; }
 // como o louvor se apresenta fora da lista (fila, barra de estado, celular),
 // onde não existe o cabeçalho de grupo para dizer de que coletânea ele é

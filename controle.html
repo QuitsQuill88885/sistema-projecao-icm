@@ -1301,7 +1301,7 @@ async function buscarFolha(s) {
 }
 
 async function abrirCifra(s) {
-  $('#cifra-nome').textContent = (s.num ? s.num + ' · ' : '') + s.titulo;
+  $('#cifra-nome').textContent = (s.num && s.num !== 'MEU' ? s.num + ' · ' : '') + s.titulo;
   $('#folha').innerHTML = '<p class="cab">Carregando…</p>';
   desloc = 0;                       // louvor novo comeca no tom impresso
   // A cifra SUBSTITUI a tela de escolha: sem isto o quadro aparecia amontoado
