@@ -285,7 +285,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
    sticky e NÃO fixed: dentro do <main>, que tem -webkit-overflow-scrolling,
    o Safari do iPhone rebaixa position:fixed para absolute e isto sumiria. */
 .rodape-vers{position:sticky;bottom:0;z-index:4;margin-top:10px;box-shadow:0 -6px 12px #0a142699;
-  max-height:52vh;display:flex;flex-direction:column}
+  max-height:52vh;display:flex;flex-direction:column;
+  /* FUNDO SOLIDO. Ele nasceu transparente e ninguem via, porque o unico
+     conteudo que aparecia -- a leitura e o botao -- ja tem fundo proprio. Com a
+     tira de sugestao no ar, o cabecalho e os vaos entre os louvores ficavam
+     VAZADOS: a grade de numeros aparecia por tras da letra. So' apareceu na
+     foto; medida nenhuma pega isso. */
+  background:var(--fundo)}
 /* o texto do versículo, pra ele conferir ANTES de jogar no telão */
 /* TETO NA LEITURA. Ela nascia sem limite: um toque num versiculo longo
    (Salmos, Isaias) enchia o rodape, e como o rodape e' sticky no pe' da tela
@@ -297,6 +303,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px
          border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#cfe0f5;
          max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .leitura b{color:var(--ouro)}
+/* A TIRA DE SUGESTAO PEDE 139px QUE ANTES NUNCA EXISTIAM (ela vivia escondida
+   por um defeito na chave). Com versiculo longo -- Ester 8:9, 504 letras -- o
+   rodape batia no teto de 52vh e o botao "Guardar na lista" caia 31px FORA da
+   tela, medido. A leitura ja rola dentro de si mesma, entao quem cede altura e'
+   ela: 34vh viram 20vh so' enquanto ha' louvor sugerido. */
+.rodape-vers.com-sug .leitura{max-height:20vh}
 .sug-cel{margin-top:10px}
 .sug-cel .sug-cab{font-size:11px;color:#6f86a8;letter-spacing:.5px;text-transform:uppercase;padding:0 4px 5px}
 .sug-cel .item{cursor:pointer}
@@ -1736,13 +1748,26 @@ let sugCelPedindo = false;
 function sugerirCelular(livro, cap, v) {
   const cx = $('#sug-cel'); if (!cx) return;
   cx.hidden = true; cx.innerHTML = '';
-  const cod = livro + '.' + cap + '.' + v;
+  const rod = cx.closest('.rodape-vers');
+  if (rod) rod.classList.remove('com-sug');
+  // A CHAVE E' O NUMERO DO LIVRO, NUNCA O NOME. O dados/sugestoes.js guarda
+  // "42.3.16"; aqui se montava "Joao.3.16" e NENHUM versiculo achava louvor --
+  // as 31.105 chaves sao todas numericas, entao a tira ficava escondida sempre.
+  // Foi por isso que ele nao "achou" a sugestao no culto de 06/09: nao havia o
+  // que achar. O PC ja fazia certo (codVers, no app.js) -- aqui faltou.
+  const li = BIBLIA.ordem.indexOf(livro);
+  if (li < 0) return;
+  const cod = li + '.' + cap + '.' + v;
   const mostrar = () => {
     const base = (window.SUGESTOES && window.SUGESTOES[cod]) || [];
     if (!base.length) return;
     cx.hidden = false;
+    if (rod) rod.classList.add('com-sug');
     cx.innerHTML = '<div class="sug-cab">Louvores para este versículo</div>';
-    base.slice(0, 3).forEach(([idx]) => {
+    // 1 em cada 3 versiculos vem fora de ordem no arquivo (10.512 de 31.105,
+    // medido): sem ordenar pelo peso, os tres da tela nao sao os tres mais
+    // fortes -- sao so' os tres primeiros que o gerador escreveu.
+    base.slice().sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([idx]) => {
       const s = LOUVORES[idx]; if (!s) return;
       const d = document.createElement('div'); d.className = 'item';
       d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>';
