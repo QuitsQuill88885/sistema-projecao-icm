@@ -56,6 +56,23 @@ def _sem(s):
     return re.sub(r"[^A-Z0-9]", "", "".join(c for c in s if unicodedata.category(c) != "Mn"))
 
 
+def cobertura_de_um(louvor, banco):
+    """Quanto da letra do telao de UM louvor esta' na cifra (0.0 a 1.0), ou None
+    se o louvor nao tem cifra. `louvor` e' o objeto do louvores.js. Quebra de
+    slide e bis nao contam: mede palavra por linha unica. Pedido da HD para o
+    Sem Claude avisar louvor a louvor (13/09/2026)."""
+    if not louvor.get("slides") or not louvor["slides"][0].get("linhas"):
+        return None
+    ch = "%s|%s|%s" % (louvor.get("num", ""), louvor["titulo"], louvor["slides"][0]["linhas"][0])
+    if ch not in banco:
+        return None
+    unicas = list(dict.fromkeys(x for x in (_sem(l) for s in louvor["slides"] for l in s["linhas"]) if x))
+    if not unicas:
+        return None
+    texto = _sem(" ".join(l.get("t", "") for l in banco[ch].get("linhas", [])))
+    return sum(1 for l in unicas if l in texto) / len(unicas)
+
+
 def cobertura_da_letra(banco):
     """(media, quantos abaixo de 90%, quantos medidos) da letra do telao presente no banco"""
     b = open(LOUVORES_JS, encoding="utf-8").read().strip()
@@ -64,14 +81,9 @@ def cobertura_da_letra(banco):
     for L in louv:
         if not L.get("slides") or not L["slides"][0].get("linhas"):
             continue
-        ch = "%s|%s|%s" % (L.get("num", ""), L["titulo"], L["slides"][0]["linhas"][0])
-        if ch not in banco:
+        c = cobertura_de_um(L, banco)
+        if c is None:
             continue
-        unicas = list(dict.fromkeys(x for x in (_sem(l) for s in L["slides"] for l in s["linhas"]) if x))
-        if not unicas:
-            continue
-        texto = _sem(" ".join(l.get("t", "") for l in banco[ch].get("linhas", [])))
-        c = sum(1 for l in unicas if l in texto) / len(unicas)
         soma += c
         baixos += c < 0.9
         n += 1
