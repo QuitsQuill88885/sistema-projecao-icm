@@ -93,7 +93,10 @@ e passam adiante.
 
 **Kevin**, o operador. Foi o primeiro a operar o Sistema num culto de verdade,
 sem ter experiência com computador — e foi por causa dele que o controle pelo
-celular deixou de ser conveniência e virou a peça central.
+celular deixou de ser conveniência e virou a peça central. Foi ele também quem
+achou, em setembro de 2026, que as setas esquerda e direita paravam de trocar o
+slide enquanto a cifra estava aberta no computador — um defeito que ninguém
+tinha imaginado.
 
 **Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
 é dele.
