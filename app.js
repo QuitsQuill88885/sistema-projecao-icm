@@ -1216,6 +1216,25 @@ function cifraPag(d) {
   lv.p = n; mostrarPagCifra();
 }
 
+/* Com a folha aberta e o slide passando, o louvor vira (acaba um, começa o
+   outro). A folha tem de acompanhar: ler a cifra do louvor que já saiu do telão
+   é pior do que não ter cifra nenhuma. Louvor sem cifra não apaga a folha — o
+   operador pode estar lendo a de propósito enquanto projeta um versículo. */
+function seguirCifraDoSlide() {
+  const cif = $('#cifra-ov');
+  if (!cif || cif.classList.contains('oculto')) return;
+  const s = est.louvorIdx >= 0 ? LOUVORES[est.louvorIdx] : null;
+  if (!s || s === cifraLouvor || !temCifra(s)) return;
+  cifraLouvor = s; cifraDados = null; cifraTom = null;
+  cifraDesloc = 0;                       // louvor novo começa no tom impresso
+  fecharTons();
+  $('#cifra-tit').textContent = rotuloLouvor(s);
+  $('#cifra-tom-cx').innerHTML = '';
+  $('#cifra-folha').innerHTML = '<p class="cab">Carregando…</p>';
+  $('#cifra-folha').scrollTop = 0;
+  buscarCifra(s);
+}
+
 function fecharCifra() {
   $('#cifra-ov').classList.add('oculto');
   fecharTons();
@@ -2836,6 +2855,16 @@ function ligarEventos() {
     const cif = $('#cifra-ov');
     if (cif && !cif.classList.contains('oculto')) {
       if (e.key === 'Escape') { fecharCifra(); return; }
+      // ←/→ passam o SLIDE mesmo com a folha aberta (achado do Kevin). Quem opera
+      // tocando violão deixa a cifra na tela o culto inteiro, e antes daqui NENHUMA
+      // tecla passava adiante: o telão ficava parado. ↑/↓, espaço, PgUp/PgDn e
+      // Home/End seguem rolando a folha, que é o que a mão procura para ler.
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (e.key === 'ArrowRight') proximo(); else anterior();
+        seguirCifraDoSlide();
+        return;
+      }
       const f = $('#cifra-folha'); if (!f) return;
       const salto = { ArrowDown: 60, ArrowUp: -60, ' ': f.clientHeight * 0.9,
                       PageDown: f.clientHeight * 0.9, PageUp: -f.clientHeight * 0.9,
