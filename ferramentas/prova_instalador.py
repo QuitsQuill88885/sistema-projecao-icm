@@ -37,6 +37,13 @@ if pk:
     t2 = "s.num && s.num !== 'MEU' ? s.num + ' - '" in js
     print("conserto MEU MEU (lista):", t1, "| (telao):", t2)
     if not (t1 and t2): falha("app.js sem o conserto")
+    # v2.9.5: as setas passam o slide com a cifra aberta (achado do Kevin) e a
+    # folha segue o louvor que entra. Sem estas duas, o instalador saiu sem o
+    # conserto que motivou a versao.
+    t3 = "function seguirCifraDoSlide" in js
+    t4 = "if (e.key === 'ArrowRight') proximo(); else anterior();" in js
+    print("setas com a cifra aberta:", t4, "| folha segue o louvor:", t3)
+    if not (t3 and t4): falha("app.js sem o conserto das setas (item A da v2.9.5)")
 else:
     # pode estar dentro de um PYZ/pasta diferente; mostra onde esta
     print("amostra nomes:", [n for n in nomes if "app.js" in n][:5])
@@ -49,6 +56,13 @@ if lk:
     if len(ordem) != 8 or ordem[5][0] != "" or ordem[3][0] != "CORO": falha("ordem dos slides")
 if vk:
     exe = arq.extract(vk[0])
-    print("Sistema.exe tem 2.9.4 na versao:", "2.9.4".encode("utf-16-le") in exe)
-    if "2.9.4".encode("utf-16-le") not in exe: falha("versao do exe")
+    # A versao esperada vem do sistema.py, nao escrita a mao: com o numero fixo
+    # aqui, a prova aprovava o instalador VELHO (foi o que aconteceu em 20/09,
+    # quando o .exe com hifen ainda era o do lancamento anterior).
+    import re
+    fonte_py = open(os.path.join(APP, "sistema.py"), encoding="utf-8").read()
+    esperada = re.search(r'^VERSAO\s*=\s*"([^"]+)"', fonte_py, re.M).group(1)
+    tem = esperada.encode("utf-16-le") in exe
+    print("Sistema.exe tem %s na versao: %s" % (esperada, tem))
+    if not tem: falha("versao do exe (esperava %s)" % esperada)
 print("\nRESULTADO:", "TUDO CONFERE" if ok else "NAO PUBLICAR")
