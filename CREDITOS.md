@@ -96,7 +96,12 @@ sem ter experiência com computador — e foi por causa dele que o controle pelo
 celular deixou de ser conveniência e virou a peça central. Foi ele também quem
 achou, em setembro de 2026, que as setas esquerda e direita paravam de trocar o
 slide enquanto a cifra estava aberta no computador — um defeito que ninguém
-tinha imaginado.
+tinha imaginado. E no culto de 26/09/2026, projetando, achou três erros de uma
+vez: o louvor 249 (*Esta é a mensagem eterna de Deus*) terminava sem o último
+coro; o 97 (*Jesus é o caminho*) mostrava um "BISBIS" no lugar do bis; e os
+louvores que repetem a última linha a escreviam duas vezes em vez de mostrá-la
+uma vez com o "(2x)" — com a ideia, dele, de que o bis na frente da linha é mais
+fácil de seguir. O conserto corrigiu 27 louvores, conferidos na gravação oficial.
 
 **Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
 é dele.

@@ -1851,7 +1851,16 @@ function anterior() {
   else if (est.live.tipo === 'slide') slideAnterior();
   else if (est.live.tipo === 'biblia' || est.live.tipo === 'bibmulti') bibliaAnterior();
 }
-function esperaAtual() { return est.descansoFundo || FB.descanso; }
+// A tela de espera PADRÃO do Sistema é o fundo OFICIAL da ICM, "Maranata — O Senhor
+// Jesus vem!" (o mesmo arquivo de onde saiu o azul oficial #042544), e não o
+// descanso desenhado aqui em Iperó. Na igreja isso nunca apareceu porque o operador
+// já tinha escolhido o oficial (fica gravado em 'icm_espera'); numa instalação nova
+// caía no de Iperó — o Samuel viu no Vaio (26/09/2026). No Estilo Mapa-múndi a
+// espera continua a do mapa, e o que o operador escolher continua valendo.
+const ESPERA_ICM = 'fundos/galeria/cultos__maranata___o_senhor_jesus_vem.jpg';
+function esperaAtual() {
+  return est.descansoFundo || (est.estilo === 'limpo' ? ESPERA_ICM : FB.descanso);
+}
 function definirEspera(arq) { est.descansoFundo = arq; Guardar.gravar('icm_espera', arq); }   // lembra ao fechar e abrir
 // manterCongelado: usado quando a espera vem SOZINHA (fim do louvor). Descongelar
 // ali quebrava o congelamento que o operador pediu justamente para preparar o
