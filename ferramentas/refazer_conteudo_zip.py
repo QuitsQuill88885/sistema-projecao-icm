@@ -56,21 +56,67 @@ def _sem(s):
     return re.sub(r"[^A-Z0-9]", "", "".join(c for c in s if unicodedata.category(c) != "Mn"))
 
 
+# O SELO do telao: o trecho entre \x01 ... \x01. E marcacao de PROJECAO —
+# "(2x)", "CORO", "VARÕES", "(SANTA PAZ)" — e a cifra nao tem, nem deve ter.
+# 1.247 linhas do telao carregam um (medido em 21/09/2026).
+_SELO = re.compile("\x01[^\x01]*\x01")
+
+# ... e em 59 linhas a etiqueta ABRE e nao fecha ("\x01CORO A MELHOR COISA QUE
+# EU JA FIZ"): ali o marcador come a si mesmo e a palavra colada nele.
+_ETIQUETA = re.compile("\x01\\s*\\w+\\s*")
+
+# Linhas que sao RECADO PARA QUEM PROJETA, nao letra. Casadas pela linha
+# INTEIRA ja normalizada, nunca por pedaco: "INSTR" solto pegaria "UM
+# INSTRUMENTO PRA TEU LOUVOR", que e letra de verdade — o mesmo tipo de
+# engano que fez "antes_" recusar "QUEM_ERA_EU_ANTES_DE_CONHECER" ali em cima.
+_RECADOS = frozenset((
+    "REPETIROLOUVOR", "REPETIROHINO", "REPETEOLOUVOR", "REPETEOHINO",
+    "REPETEESTROFE", "REPETIRESTROFE", "REPETIROCORO", "REPETEOCORO",
+    "INSTRPBIS", "INSTRUMENTAL",
+))
+
+
+def _so_a_letra(linha):
+    """A linha sem enfeite de projecao: selo, etiqueta aberta."""
+    return _sem(_ETIQUETA.sub(" ", _SELO.sub(" ", linha or "")))
+
+
 def cobertura_de_um(louvor, banco):
     """Quanto da letra do telao de UM louvor esta' na cifra (0.0 a 1.0), ou None
     se o louvor nao tem cifra. `louvor` e' o objeto do louvores.js. Quebra de
     slide e bis nao contam: mede palavra por linha unica. Pedido da HD para o
-    Sem Claude avisar louvor a louvor (13/09/2026)."""
+    Sem Claude avisar louvor a louvor (13/09/2026).
+
+    O SELO NAO CONTA (21/09/2026). A linha vale como presente se casar COM o
+    selo ou SEM ele. Antes disto, "QUE CALOR E ESTE EM VOLTA DO ALTAR? <3x>"
+    virava "...ALTAR3X" e nunca casava com a cifra, que tem so "...ALTAR" — e o
+    louvor 748 era acusado de 89% com a linha escrita TRES vezes na cifra.
+    Custava 53 falsos acusados dos 170, quase um terco da lista; a cobertura
+    media do acervo estava subnotificada em 0,7 ponto (96,7% contra 97,4%).
+    Perdoar o selo nunca marca presente o que nao esta: so para de acusar
+    por causa do enfeite."""
     if not louvor.get("slides") or not louvor["slides"][0].get("linhas"):
         return None
     ch = "%s|%s|%s" % (louvor.get("num", ""), louvor["titulo"], louvor["slides"][0]["linhas"][0])
     if ch not in banco:
         return None
-    unicas = list(dict.fromkeys(x for x in (_sem(l) for s in louvor["slides"] for l in s["linhas"]) if x))
+    # cada linha do telao vira o par (chave crua, so a letra)
+    limpas = {}
+    for s in louvor["slides"]:
+        for l in s["linhas"]:
+            cru = _sem(l)
+            if cru:
+                limpas.setdefault(cru, _so_a_letra(l))
+    # recado de projecao nao e letra: sai da conta em vez de contar como falta
+    unicas = [k for k, v in limpas.items() if v not in _RECADOS]
     if not unicas:
         return None
     texto = _sem(" ".join(l.get("t", "") for l in banco[ch].get("linhas", [])))
-    return sum(1 for l in unicas if l in texto) / len(unicas)
+    achou = 0
+    for l in unicas:
+        if l in texto or (limpas[l] and limpas[l] in texto):
+            achou += 1
+    return achou / len(unicas)
 
 
 def cobertura_da_letra(banco):

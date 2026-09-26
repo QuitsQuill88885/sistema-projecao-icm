@@ -780,15 +780,22 @@ const NOME_COL = {
   'CIA 2018': 'CIAS',
   'Coletânea Antiga': 'COLETÂNEA ANTIGA',
   'Avulsos 2018': 'AVULSOS',
+  'Avulsos 2024': 'AVULSOS 2024',
+  'Avulsos 2026': 'AVULSOS 2026',
   'Meus louvores': 'MEUS LOUVORES',
 };
-const ORDEM_COL = ['Coletânea 2018', 'CIA 2018', 'Coletânea Antiga', 'Avulsos 2018', 'Meus louvores'];
+// "Avulsos 2026" ficava FORA desta lista — e o que está fora volta com índice -1,
+// isto é, ordena ANTES de tudo: 113 louvores apareciam na frente da Coletânea.
+// Achado em 20/09/2026 ao entrar com a coletânea de 2024.
+const ORDEM_COL = ['Coletânea 2018', 'CIA 2018', 'Coletânea Antiga', 'Avulsos 2018',
+                   'Avulsos 2024', 'Avulsos 2026', 'Meus louvores'];
 function nomeCol(s) { return NOME_COL[s.col] || String(s.col || '').toUpperCase(); }
 function ehCias(s) { return s.col === 'CIA 2018'; }
 // etiqueta curta da coletânea, usada quando a lista vem ranqueada (sem grupo)
 function siglaCol(s) {
   return { 'Coletânea 2018': 'COLETÂNEA', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
-           'Avulsos 2018': 'AVULSO', 'Meus louvores': 'MEU' }[s.col] || '';
+           'Avulsos 2018': 'AVULSO', 'Avulsos 2024': 'AVULSO 24',
+           'Avulsos 2026': 'AVULSO 26', 'Meus louvores': 'MEU' }[s.col] || '';
 }
 // "AV" e "MEU" não são número: a coluna fica com um traço em vez de repetir a sigla
 // (o "MEU" repetido saía "MEU MEU · TODO-PODEROSO ÉS" — o Samuel viu, 13/09/2026)
@@ -800,6 +807,7 @@ function rotuloLouvor(s) {
   const n = numLouvor(s), c = nomeCol(s);
   // palavra, nunca outro número: "709 2018" parecia um código duplo
   const curto = { 'COLETÂNEA 2018': 'COLETÂNEA', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
+                  'AVULSOS 2024': 'AVULSO 24', 'AVULSOS 2026': 'AVULSO 26',
                   'MEUS LOUVORES': 'MEU', 'CIAS': 'CIAS' }[c] || c;
   return (n ? n + ' ' : '') + curto + ' · ' + s.titulo;
 }

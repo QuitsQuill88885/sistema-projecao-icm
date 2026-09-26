@@ -16,6 +16,10 @@ LJS = os.path.join(RAIZ, "dados", "louvores.js")
 CON = os.path.join(RAIZ, "dados", "consertos_louvores.json")
 
 
+def io_json_acrescimos():
+    return json.load(io.open(CON, encoding="utf-8")).get("acrescimos", [])
+
+
 def main():
     consertos = json.load(io.open(CON, encoding="utf-8"))["consertos"]
     s = io.open(LJS, encoding="utf-8").read()
@@ -31,6 +35,20 @@ def main():
                     l["slides"] = c["slides"]
                     mudou += 1
                 break
+    # ACRESCIMOS (26/09/2026): louvor que nao existe em livro nenhum desta maquina,
+    # entrado de fonte de fora (acrescenta_louvor_de_fora.py). O gen_louvores.py nao
+    # sabe dele, entao sem isto ele SUMIRIA na proxima regeneracao.
+    acrescentados = 0
+    for c in io_json_acrescimos():
+        existe = any(str(l.get("num")) == str(c["num"]) and l.get("col") == c["col"]
+                     and (l.get("titulo") or "").strip() == c["titulo"].strip() for l in lista)
+        if not existe:
+            lista.append({"num": c["num"], "titulo": c["titulo"], "col": c["col"],
+                          "slides": c["slides"]})
+            acrescentados += 1
+            mudou += 1
+    if acrescentados:
+        print("louvores acrescentados:", acrescentados)
     if mudou:
         tmp = LJS + ".tmp"
         io.open(tmp, "w", encoding="utf-8").write(

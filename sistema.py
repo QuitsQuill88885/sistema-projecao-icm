@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.5"
+VERSAO = "2.9.6"
 
 PORTA = 8765
 
