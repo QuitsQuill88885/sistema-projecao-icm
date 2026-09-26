@@ -567,7 +567,7 @@ def main_silencioso():
     return 0
 
 
-def main():
+def main(atualizando=False):
     # Interface em tkinter — sem dependência de WebView2.
     # O WebView2 era o motor do instalador antes, mas tinha inicialização lenta
     # e corrupção do diretório de dados entre execuções. Tkinter está embutido
@@ -589,7 +589,7 @@ def main():
     AZUL_ESC = "#1e2d49"
 
     root = tk.Tk()
-    root.title("Instalar o Sistema")
+    root.title("Atualizar o Sistema" if atualizando else "Instalar o Sistema")
     root.resizable(False, False)
     root.configure(bg=FUNDO)
     ico = os.path.join(origem(), "sistema.ico")
@@ -673,8 +673,8 @@ def main():
 
     # ---- Tela 2: progresso ----
     f2 = tk.Frame(root, bg=FUNDO, padx=44, pady=50)
-    tk.Label(f2, text="Instalando o Sistema…", font=("Segoe UI", 16, "bold"),
-             bg=FUNDO, fg=BRANCO).pack(pady=(0, 24))
+    tk.Label(f2, text="Atualizando o Sistema…" if atualizando else "Instalando o Sistema…",
+             font=("Segoe UI", 16, "bold"), bg=FUNDO, fg=BRANCO).pack(pady=(0, 24))
     try:
         pbar = ttk.Progressbar(f2, style="S.Horizontal.TProgressbar",
                                 length=400, mode="determinate")
@@ -684,6 +684,18 @@ def main():
     passo_var = tk.StringVar(value="Preparando…")
     tk.Label(f2, textvariable=passo_var, font=("Segoe UI", 10),
              bg=FUNDO, fg=CINZA).pack(pady=(10, 0))
+    # O RELÓGIO: há passos que levam dezenas de segundos parados no mesmo
+    # ponto da barra (fechar o Sistema, copiar o programa). Com o relógio
+    # andando, a tela nunca parece travada — regra da casa: toda espera tem
+    # contagem visível.
+    relogio_var = tk.StringVar(value="")
+    tk.Label(f2, textvariable=relogio_var, font=("Segoe UI", 10),
+             bg=FUNDO, fg=CINZA).pack(pady=(4, 0))
+    if atualizando:
+        tk.Label(f2, text="Não feche esta janela e não abra o Sistema.\n"
+                          "Ele reabre sozinho quando terminar.",
+                 font=("Segoe UI", 11, "bold"), bg=FUNDO, fg=OURO,
+                 justify="center").pack(pady=(18, 0))
 
     # ---- Tela 3: pronto ----
     f3 = tk.Frame(root, bg=FUNDO, padx=44, pady=28)
@@ -730,18 +742,25 @@ def main():
         estado["pct"] = pct
         estado["txt"] = txt
 
+    comeco = [time.time()]
+
     def verificar():
         pbar["value"] = estado["pct"]
         passo_var.set(estado["txt"])
+        relogio_var.set("%d s" % int(time.time() - comeco[0]))
         if estado["fim"]:
             if exe_path[0]:
                 mostrar(f3)
+                if atualizando:
+                    # quem clicou em Atualizar espera o Sistema voltar sozinho
+                    root.after(2500, abrir_e_fechar)
             # sem exe_path: fica em f2 mostrando o erro no passo_var
         else:
             root.after(150, verificar)
 
     def iniciar():
         btn.config(state="disabled")
+        comeco[0] = time.time()          # o relógio conta a instalação, não a tela de boas-vindas
         mostrar(f2)
 
         def tarefa():
@@ -762,11 +781,32 @@ def main():
         root.after(150, verificar)
 
     btn.config(command=iniciar)
-    mostrar(f1)
+    if atualizando:
+        # sem tela de boas-vindas nem clique: a pessoa já disse "Atualizar"
+        # dentro do Sistema. Por cima de tudo, porque o Sistema vai fechar
+        # atrás dela e a janela não pode sumir junto.
+        try:
+            root.attributes("-topmost", True)
+        except Exception:
+            pass
+        root.after(200, iniciar)
+    else:
+        mostrar(f1)
     root.mainloop()
+    return 0
 
 
 if __name__ == "__main__":
+    # --reabrir = quem chamou foi o botão "Atualizar" de dentro do Sistema, e há
+    # uma pessoa olhando a tela ESPERANDO. Até a 2.9.6 isso caía no modo
+    # silencioso: o Sistema dizia "vai atualizar", sumia, o computador torava
+    # dois minutos sem nenhuma janela e só aparecia o "parabéns" no fim. O
+    # Samuel quase abriu o Sistema de novo no meio (26/09/2026): "você acha que
+    # um leigo vai ter paciência para esperar dois minutos?". Então com
+    # --reabrir a janela de progresso APARECE, mesmo que venha junto --silencioso
+    # (todas as versões antigas mandam os dois — por isso a decisão é daqui).
+    if "--reabrir" in sys.argv:
+        sys.exit(main(atualizando=True))
     if "--silencioso" in sys.argv:
         sys.exit(main_silencioso())
     main()

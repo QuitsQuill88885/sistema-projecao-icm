@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.6"
+VERSAO = "2.9.7"
 
 PORTA = 8765
 
@@ -1615,15 +1615,23 @@ def _atualizar_thread():
 
         baixar_se_recuperando(url, alvo, andamento)
 
-        ATUALIZA.update({"pct": 96, "txt": "Instalando… o Sistema vai fechar e reabrir sozinho.",
-
-                         "fim": True})
-
-        # --reabrir: o instalador novo reabre o Sistema no fim. Um instalador
-
-        # antigo ignora a bandeira — aí o operador reabre pelo atalho.
-
+        ATUALIZA.update({"pct": 96, "txt": "Abrindo o instalador…"})
+        # --reabrir: o instalador novo reabre o Sistema no fim E MOSTRA A JANELA
+        # DE PROGRESSO (a partir da 2.9.7). --silencioso vai junto só para um
+        # instalador antigo, que não conhece --reabrir, não abrir a tela de boas-vindas.
         subprocess.Popen([alvo, "--silencioso", "--reabrir"], **SEM_JANELA)
+        # O instalador leva um tempo para aparecer (ele se desempacota e depois
+        # fecha este Sistema). Antes a frase congelava aqui com "fim": a tela
+        # parava de perguntar, parecia travado, e o Samuel quase abriu o Sistema
+        # de novo (26/09/2026). Agora o relógio anda até o instalador nos fechar.
+        inicio = time.time()
+        while time.time() - inicio < 180:
+            ATUALIZA["txt"] = ("Abrindo o instalador… %d s — não feche nem abra o "
+                               "Sistema: ele reabre sozinho." % int(time.time() - inicio))
+            time.sleep(1)
+        ATUALIZA.update({"txt": "O instalador não fechou o Sistema em 3 minutos. "
+                                "Feche o Sistema e abra de novo pelo atalho da Área de Trabalho.",
+                         "fim": True, "rodando": False})
 
     except Exception as e:
 
