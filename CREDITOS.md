@@ -103,6 +103,19 @@ louvores que repetem a última linha a escreviam duas vezes em vez de mostrá-la
 uma vez com o "(2x)" — com a ideia, dele, de que o bis na frente da linha é mais
 fácil de seguir. O conserto corrigiu 27 louvores, conferidos na gravação oficial.
 
+No culto do dia seguinte, 27/09/2026, achou mais: o coro do 207 (*Deus enviou
+Seu Filho amado*) estava **partido no meio da frase** — "Porque Ele vive," numa
+tela e "temor não há." só na seguinte — e levantou a dúvida sobre o "(2x)". Essa
+dúvida fez conferir, **pela gravação oficial**, o que se canta em cada um dos
+louvores da evangelização das CIAs de outubro/2026: seis estavam errados (69, 97,
+79, 226, 242 e *Conheçamos e prossigamos*) e foram consertados na versão 2.9.10.
+
+**Joelma** mandou as coletâneas da evangelização das CIAs de outubro de 2026: a
+**lista de louvores cifrados do DEPLOV** e as partituras **Cias 2026 (outubro)**
+em Dó e em Si bemol. Foi dessa lista que saiu, na versão 2.9.9, a **cifra oficial**
+dos 11 louvores da evangelização — no lugar das que tinham vindo de leitura de
+livro, e uma delas trazia outro louvor inteiro dentro.
+
 **Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
 é dele.
 
