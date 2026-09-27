@@ -1090,9 +1090,9 @@ function escapar(t) {
 /* A ESTRUTURA do louvor, destacada (#38/#44): "Coro", "Introdução:",
    "Instrumentos", "Final:" e repeticoes ("bis", "2x") ganham cor propria.
    O texto NAO muda (a coluna do acorde e' o caractere) — so' a cor. */
-const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
+const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*(\(\s*bis(\s+no\s+final)?\s*\))?\s*$/i;
 const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
-const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+const RE_REPETE = /^\s*[[(|]*\s*(bis(\s+no\s+final)?|\d+\s*[xX])\s*[)\]|]*\s*$/;
 /* O CRÉDITO DO AUTOR não é letra do louvor. Ele vem no alto da página do livro
    ("(Let. J.J.M / Mús. I.A.M.)") e o leitor o empilhava junto com a letra, em
    monoespaçada e do mesmo tamanho — o Samuel bateu o olho e achou que o nome

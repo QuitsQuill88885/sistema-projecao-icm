@@ -1003,9 +1003,9 @@ function linhaDeAcordes(acordes) {
    "Introdução: ...", "Instrumentos", "Final:" e as repetições ("bis", "2x").
    Sem destacar, tudo isso parecia verso e o músico procurava o coro no olho.
    O texto NÃO muda (a coluna do acorde é o caractere) — só ganha cor. */
-const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*$/i;
+const RE_ROTULO = /^\s*c[oô]ro\s*:?\s*(\(\s*bis(\s+no\s+final)?\s*\))?\s*$/i;
 const RE_INTRO = /^\s*(introdu[cç][aã]o|instrumentos?|final|solo)\s*:?/i;
-const RE_REPETE = /^\s*[[(|]*\s*(bis|\d+\s*[xX])\s*[)\]|]*\s*$/;
+const RE_REPETE = /^\s*[[(|]*\s*(bis(\s+no\s+final)?|\d+\s*[xX])\s*[)\]|]*\s*$/;
 // linha de FICHA (autor "(Let./Mús.)", "Tonalidade:", "Ritmo:"): não é letra
 // nem acorde — o Samuel mandou tirar da folha ("não faz diferença")
 const RE_FICHA = /^\s*\(?\s*let\.|^\s*tonalidade\s*:|^\s*ritmo\s*:/i;
