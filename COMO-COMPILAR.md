@@ -20,14 +20,21 @@ python "..\biblia\gen_galeria.py"     # gera dados/galeria.js e copia os fundos
 python ferramentas\aplicar_consertos_louvores.py   # repoe os consertos manuais
 ```
 
-## 2. Subir a versao em DOIS lugares
+## 2. Subir a versao em QUATRO lugares
 
-Esquecer um dos dois faz o programa mentir sobre si mesmo:
+Esquecer um deles faz o programa mentir sobre si mesmo. (Ate 27/09/2026 esta
+tabela dizia DOIS: na 2.9.11 o programa saiu 2.9.11 e os tres instaladores
+continuaram dizendo 2.9.10 — so apareceu lendo a versao DE DENTRO do .exe.)
 
 | arquivo | o que |
 |---|---|
 | `sistema.py` | `VERSAO = "x.y.z"` — e o que o botao de atualizar compara |
-| `versao_exe.txt` | `filevers`, `prodvers`, `FileVersion`, `ProductVersion` |
+| `versao_exe.txt` | `filevers`, `prodvers`, `FileVersion`, `ProductVersion` do programa |
+| `versao_instalador.txt` | o mesmo, para `Instalar o Sistema` e `Instalar o Sistema completo` |
+| `versao_baixador.txt` | o mesmo, para `Baixar o Sistema` |
+
+Para conferir, leia a versao de dentro dos quatro `.exe` (propriedades do
+arquivo, ou `win32api.GetFileVersionInfo`) — nunca confie no numero digitado.
 
 ## 3. A cadeia de compilacao, nesta ordem
 

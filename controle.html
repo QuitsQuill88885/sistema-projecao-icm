@@ -1028,13 +1028,39 @@ function listarCifras(f) {
   const c = $('#lista-cifras'); if (!c) return;
   c.innerHTML = '';
   if (!euToco) { c.innerHTML = '<div class="vazio">Escolha o seu instrumento acima.</div>'; return; }
-  const q = semAcento(f).replace(/[^a-z0-9 ]+/g, ' ').trim();
+  /* A MESMA REGUA DA BUSCA DE LOUVOR (pontuar, logo abaixo). Antes esta lista
+     andava o acervo NA ORDEM GUARDADA -- Coletanea 2018 primeiro, avulsos por
+     ultimo -- pegava todo titulo que CONTINHA o texto e parava em 60. Digitar o
+     nome certinho de um avulso trazia antes uma fila de louvores da Coletanea, e
+     o numero casava por "contem": "81" trazia 81, 181, 281, 810... O Samuel
+     pegou isso no culto, 27/09/2026: "se eu to pesquisando pelo nome ou numero,
+     aparece o mais proximo primeiro. E depois os outros." Agora: numero por
+     IGUALDADE, texto por proximidade, e o corte de 60 so depois de ordenar. */
+  const alvoQ = soLetras(f);
+  const palavras = alvoQ ? alvoQ.split(' ').filter(Boolean) : [];
+  const soNum = /^\d+$/.test(alvoQ) ? parseInt(alvoQ, 10) : null;
+  if (alvoQ) SOM_BUSCA = somDaFrase(f);
+  const achados = [];
+  LOUVORES.forEach((s, i) => {
+    const ref = temMaterial(s);
+    if (!ref) return;
+    let p = 1;
+    if (alvoQ) {
+      if (soNum !== null) {
+        const nn = /^\d+$/.test(s.num || '') ? parseInt(s.num, 10) : null;
+        if (nn !== soNum) return;
+        p = 1000;
+      } else {
+        p = pontuar(s, alvoQ, palavras);
+        if (!p) return;
+      }
+    }
+    achados.push([s, i, p, ref]);
+  });
+  achados.sort((a, b) => (b[2] - a[2]) || (a[1] - b[1]));
   let n = 0;
-  for (let i = 0; i < LOUVORES.length && n < 60; i++) {
-    const s = LOUVORES[i], ref = temMaterial(s);
-    if (!ref) continue;
-    const alvo = semAcento(s.titulo).replace(/[^a-z0-9 ]+/g, ' ');
-    if (q && !alvo.includes(q) && !(s.num && s.num.toLowerCase().includes(q))) continue;
+  for (const [s, i, p, ref] of achados) {
+    if (n >= 60) break;
     const d = document.createElement('div');
     d.className = 'item';
     d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>' +

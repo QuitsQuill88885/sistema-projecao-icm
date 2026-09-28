@@ -82,6 +82,11 @@ e `animacoes/` pelo seu próprio conteúdo. As fontes podem ficar — são livre
 O Sistema foi escrito por uma pessoa só, mas não foi pensado por uma pessoa só.
 Estas ideias vieram de gente da igreja, e é justo que os nomes fiquem aqui.
 
+**Tudo o que está nesta página saiu de uma igreja só: a Igreja Cristã Maranata
+de Iperó.** Quem testou, quem achou defeito no meio do culto, quem arrumou os
+PDFs, quem deu a ideia — todos são de lá. Ninguém de fora fez parte. Nas
+palavras do Samuel: *"é um projeto realmente nosso"*.
+
 **Alexandre — o "Xande"**, instrumentista. Foi uma conversa com ele que virou a
 chave da coletânea única. Samuel contou que ia levar para o Sistema os acordes
 que o Xande anotou à mão na própria apostila, e ele ficou acanhado: *"são notas
@@ -110,7 +115,16 @@ dúvida fez conferir, **pela gravação oficial**, o que se canta em cada um dos
 louvores da evangelização das CIAs de outubro/2026: seis estavam errados (69, 97,
 79, 226, 242 e *Conheçamos e prossigamos*) e foram consertados na versão 2.9.10.
 
-**Joelma** mandou as coletâneas da evangelização das CIAs de outubro de 2026: a
+E num papel escrito à mão, ainda em 27/09/2026, anotou mais dois: o **36**
+(*Crucificado foi meu Jesus*) acabava **seco** na segunda estrofe, sem o coro
+final, e o **146** (*Existe um alguém que cuida de mim*) não dizia que o coro é
+**bis**. Foi esse papel que deu origem ao **Protocolo de Conferência Absoluta** —
+ouvir a gravação, ver a cifra, ver o livro e só então consertar. O papel trazia
+também o **CIA 91** e o **658**, que ele não chegou a testar porque desistiu do
+Sistema no meio do culto; os dois foram conferidos assim mesmo, e o 658 estava
+sem o bis de *Exaltar-te-ei, ó Deus*. Os quatro foram consertados na versão 2.9.11.
+
+**Joelma** arrumou e mandou as coletâneas da evangelização das CIAs de outubro de 2026: a
 **lista de louvores cifrados do DEPLOV** e as partituras **Cias 2026 (outubro)**
 em Dó e em Si bemol. Foi dessa lista que saiu, na versão 2.9.9, a **cifra oficial**
 dos 11 louvores da evangelização — no lugar das que tinham vindo de leitura de
