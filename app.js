@@ -158,7 +158,9 @@ function stLouvor(idx, slide, fade) {
   const s = LOUVORES[idx], sl = s.slides[slide], prim = slide === 0;
   return {
     modo: 'louvor', fundo: prim ? FB.louvor1 : FB.louvor2,
-    titulo: prim ? ((s.num && s.num !== 'MEU' ? s.num + ' - ' : '') + s.titulo) : '',   // "MEU - " não é número
+    // "MEU - " não é número; o mesmo louvor com outro número sai "69   9990   AV - TÍTULO"
+    titulo: prim ? (((numerosLouvor(s, idx) || (s.num === 'AV' ? 'AV' : '')) ?
+      (numerosLouvor(s, idx) || 'AV') + ' - ' : '') + s.titulo) : '',
     rep: repeticoes(s)[slide],
     // o selo do LIVRO (bis/2x/3x/repete o hino), tirado da Coletânea Nível 1.
     // É diferente do rep: o rep conta slides duplicados; o selo avisa a
@@ -657,6 +659,7 @@ function linhas(alvo, arr, texto, peso) {
 
 // ---------- LOUVOR ----------
 function projetarLouvor(idx, slide, fade) {
+  idx = daVez(idx);                    // a cópia (número antigo/avulso) projeta a principal
   const s = LOUVORES[idx];
   if (s) abrirNoAr('louvor', rotuloLouvor(s), chaveLouvor(s));
   est.louvorIdx = idx; est.louvorSlide = slide;
@@ -804,16 +807,63 @@ function numInt(s) { const n = numLouvor(s); return /^\d+$/.test(n) ? parseInt(n
 // como o louvor se apresenta fora da lista (fila, barra de estado, celular),
 // onde não existe o cabeçalho de grupo para dizer de que coletânea ele é
 function rotuloLouvor(s) {
-  const n = numLouvor(s), c = nomeCol(s);
+  const c = nomeCol(s);
   // palavra, nunca outro número: "709 2018" parecia um código duplo
   const curto = { 'COLETÂNEA 2018': 'COLETÂNEA', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
                   'AVULSOS 2024': 'AVULSO 24', 'AVULSOS 2026': 'AVULSO 26',
                   'MEUS LOUVORES': 'MEU', 'CIAS': 'CIAS' }[c] || c;
-  return (n ? n + ' ' : '') + curto + ' · ' + s.titulo;
+  const ns = numerosLouvor(s);
+  return (ns ? ns + ' ' : '') + curto + ' · ' + s.titulo;
 }
 
+// ---- louvor repetido (ponto D do relatório da igreja, 05/10/2026) ----------
+// A mesma letra com número antigo, número novo e avulso aparecia 2 ou 3 vezes
+// na busca e confundia ("lixo herdado do Glorifica"). dados/repetidos.js diz
+// qual é a PRINCIPAL de cada grupo (gerado por ferramentas_lista/
+// gera_repetidos_js.py, que junta PELA LETRA, nunca pelo título). A busca mostra
+// só a principal, com o número da outra ao lado, e o número antigo continua
+// achando. Nenhum louvor é apagado: cifra, selo, listas salvas e histórico
+// seguem ligados pela chave de cada um.
+let REP = null;
+function repetidos() {
+  if (REP && REP.n === LOUVORES.length) return REP;
+  const mapa = window.REPETIDOS || {}, porChave = {};
+  LOUVORES.forEach((s, i) => { porChave[chaveLouvor(s)] = i; });
+  const principalDe = {}, irmas = {};
+  Object.keys(mapa).forEach(k => {
+    const i = porChave[k], p = porChave[mapa[k]];
+    if (i === undefined || p === undefined || i === p) return;
+    principalDe[i] = p;
+    (irmas[p] = irmas[p] || []).push(i);
+  });
+  return (REP = { n: LOUVORES.length, principalDe, irmas });
+}
+// UMA VERSÃO SÓ (ordem dele, 09/10/2026: "o louvor é o mesmo, caramba"). Esconder
+// a cópia na busca não bastava: lista salva, celular e número antigo ainda abriam
+// a letra crua dela (o 9990 dizia "Venha" com o 69 já corrigido para "Vem"). Agora
+// a cópia SEMPRE abre a principal, que é a que tem as correções. Nada é apagado e
+// nenhuma chave muda: cifra, selo e listas salvas seguem ligados.
+function daVez(i) {
+  if (i === undefined || i === null || i < 0) return i;
+  const p = repetidos().principalDe[i];
+  return p === undefined ? i : p;
+}
+// "69   9990   AV": primeiro o número NOVO, depois o ANTIGO, depois AV (ordem dele, 09/10)
+const ORDEM_NUM = { 'Coletânea Antiga': 1, 'Avulsos 2018': 2 };
+function numerosLouvor(s, i) {
+  if (s._nums !== undefined) return s._nums;
+  const R = repetidos();
+  if (i === undefined) i = LOUVORES.indexOf(s);
+  const p = daVez(i);
+  const grupo = [p].concat(R.irmas[p] || []).map(j => LOUVORES[j]).filter(Boolean);
+  if (grupo.length < 2) return numLouvor(s);   // sem cache: o "Meu louvor" pode mudar de número
+  const nums = grupo.slice().sort((a, b) => (ORDEM_NUM[a.col] || 0) - (ORDEM_NUM[b.col] || 0))
+    .map(o => o.num === 'AV' ? 'AV' : numLouvor(o)).filter(Boolean);
+  return (s._nums = nums.filter((x, k) => nums.indexOf(x) === k).join(' '));
+}
 function renderListaLouvores(filtro) {
   const cont = $('#lista-louvores'); cont.innerHTML = '';
+  const R = repetidos(), ja = new Set();
   const f = semAcento(filtro).trim();
   // digitar "60" tem que trazer o 60, não o 160, o 600 e o 1160: quando a busca
   // é só dígitos, o número casa por IGUALDADE, não por "contém"
@@ -824,6 +874,14 @@ function renderListaLouvores(filtro) {
   const achados = [];
   LOUVORES.forEach((s, i) => {
     let pontos = 1;
+    const p = R.principalDe[i];
+    if (p !== undefined) {                         // repetida: quem aparece é a principal
+      if (soNumero !== null && numInt(s) === soNumero && !ja.has(p)) {
+        achados.push([LOUVORES[p], p, 1000]); ja.add(p);   // o número antigo ainda acha
+      }
+      return;
+    }
+    if (ja.has(i)) return;
     if (f) {
       if (soNumero !== null) {                     // busca por número: igualdade
         if (numInt(s) !== soNumero) return;
@@ -834,7 +892,7 @@ function renderListaLouvores(filtro) {
         s._naLetra = pontos <= 300;                // achou só na letra
       }
     }
-    achados.push([s, i, pontos]);
+    achados.push([s, i, pontos]); ja.add(i);
   });
   // agrupa mantendo a ordem das coletâneas; a 2018 é a mais cantada, vem primeiro
   achados.sort((a, b) => {
@@ -866,9 +924,11 @@ function renderListaLouvores(filtro) {
     const d = document.createElement('div');
     d.className = 'item' + (naLista ? ' na-lista' : '') + (ehCias(s) ? ' cias' : '');
     d.dataset.i = i;
-    const n = numLouvor(s);
+    // o mesmo louvor com outro número sai junto, separadinho: "69   9990   AV"
+    const n = numerosLouvor(s, i);
     d.innerHTML = (naLista ? '<span class="marca-lista" title="Já está na lista de projeção">♪</span>' : '') +
-      '<small>' + (n || '—') + '</small>' +
+      '<small' + (R.irmas[i] ? ' class="nums" title="O mesmo louvor: número novo, antigo e avulso"' : '') + '>' +
+      (n || '—') + '</small>' +
       (agrupar ? '' : '<small class="etq-col">' + siglaCol(s) + '</small>') + s.titulo +
       (f && s._naLetra ? ' <small style="color:#6fa8dc">· letra</small>' : '');
     // o clique simples espera um tico: se vier o segundo clique, ele é cancelado
@@ -886,6 +946,7 @@ function renderListaLouvores(filtro) {
 // a lista com a projeção aberta fazia a congregação ver os 4 louvores do culto
 // desfilarem no telão antes de começar.
 function selecionarLouvor(i, semProjetar) {
+  i = daVez(i);                        // a cópia abre a principal: uma letra só
   est.setPos = -1;
   $$('#lista-louvores .item').forEach(e => e.classList.toggle('sel', +e.dataset.i === i));
   const s = LOUVORES[i];
@@ -898,7 +959,7 @@ function selecionarLouvor(i, semProjetar) {
     d.onclick = () => projetarLouvor(i, k, false);
     d.ondblclick = () => {   // 2 cliques no slide também manda o louvor pra lista
       const s2 = LOUVORES[i];
-      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s2), rotulo: (s2.num ? s2.num + ' · ' : '') + s2.titulo });
+      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s2), rotulo: rotuloLouvor(s2) });
     };
     cont.appendChild(d);
   });
@@ -920,8 +981,26 @@ function carregarExtras() {
   fetch('/api/animacoes').then(r => r.json()).then(r => { ANIMACOES = r.indice || {}; atualizarExtras(); }).catch(() => {});
   fetch('/api/musico').then(r => r.json()).then(r => { CIFRAS = r.violao || {}; atualizarExtras(); }).catch(() => {});
 }
-function temAnimacao(s) { return !!(s && s.col === 'CIA 2018' && ANIMACOES[String(parseInt(s.num, 10))]); }
-function daAnimacao(s) { return temAnimacao(s) ? ANIMACOES[String(parseInt(s.num, 10))] : null; }
+// CIA pelo NÚMERO (o 60 das CIAS não pode emprestar a animação ao 60 da
+// Coletânea, por isso o teste da coleção). AVULSO pela CHAVE do louvor, que é
+// única: quatro louvores da Evangelização das CIAs (out/2026) são avulsos com
+// PowerPoint animado, e o Sistema só procurava animação na CIA 2018.
+function daAnimacao(s) {
+  if (!s) return null;
+  if (s.col === 'CIA 2018') { const a = ANIMACOES[String(parseInt(s.num, 10))]; if (a) return a; }
+  const a = ANIMACOES['chave:' + chaveLouvor(s)];
+  if (a) return a;
+  // o mesmo louvor com outro número (dados/repetidos.js): a animação pode ter sido
+  // ligada à entrada que a busca esconde (ex.: Com Cristo no barco → Antiga 9909)
+  const R = repetidos(), i = LOUVORES.indexOf(s);
+  const parentes = (R.irmas[i] || []).concat(R.principalDe[i] !== undefined ? [R.principalDe[i]] : []);
+  for (const j of parentes) {
+    const b = ANIMACOES['chave:' + chaveLouvor(LOUVORES[j])];
+    if (b) return b;
+  }
+  return null;
+}
+function temAnimacao(s) { return !!daAnimacao(s); }
 // o catálogo guarda o TOM, e há cifra cujo tom o PDF não declarou (string vazia).
 // Testar o valor esconderia o botão dessas: quem manda é a chave EXISTIR.
 // O louvor "tem cifra" se existe em QUALQUER um dos dois níveis.
@@ -1339,8 +1418,32 @@ function renderLivros(filtro) {
   const ref = refDaBusca(filtro);
   if (ref) {
     cont.innerHTML = '';
-    const d = document.createElement('div'); d.className = 'item sel'; d.textContent = ref.livro;
-    d.onclick = () => selecionarLivro(ref.livro, d);
+    // Item 7 do relatório da igreja (05/10/2026): a sugestão mostrava só o LIVRO e,
+    // clicada, chamava selecionarLivro() — que zera o capítulo: "Isaías 61" caía
+    // em Isaías. E não tinha duplo clique: o versículo não ia para a Lista e, ao
+    // sair, sumia. Agora ela é a referência inteira; 1 clique abre o capítulo (e
+    // projeta, se veio o versículo), 2 cliques guardam na Lista — como na grade.
+    const d = document.createElement('div'); d.className = 'item sel';
+    d.textContent = ref.livro + ' ' + ref.cap + (ref.v != null ? ':' + ref.v : '');
+    const abrir = () => {
+      if (est.livro !== ref.livro) selecionarLivro(ref.livro, d);
+      selecionarCap(ref.cap, $$('#grid-caps .gnum').find(e => +e.textContent === ref.cap));
+      $$('#grid-vers .gnum').forEach(e => e.classList.toggle('alvo-busca', ref.v != null && +e.dataset.v === ref.v));
+    };
+    d.onclick = () => {
+      clearTimeout(d._t);
+      d._t = setTimeout(() => {
+        abrir();
+        if (ref.v != null) { est.setPos = -1; projetarVerso(ref.livro, ref.cap, ref.v); }
+      }, 230);
+    };
+    d.ondblclick = () => {
+      clearTimeout(d._t);
+      abrir();
+      if (ref.v == null) { toast('Escolha o versículo de ' + ref.livro + ' ' + ref.cap + ' (2 cliques guardam na lista).'); return; }
+      adicionarLista({ tipo: 'verso', ref: ref.livro + ' ' + ref.cap + ':' + ref.v,
+                       livro: ref.livro, cap: ref.cap, v: ref.v, on: false });
+    };
     cont.appendChild(d);
     cont.classList.remove('oculto'); if (tre) tre.classList.add('oculto');
     if (est.livro !== ref.livro) selecionarLivro(ref.livro, d);
@@ -1423,10 +1526,19 @@ function buscarTrecho(texto, alvo) {
     d.className = 'item item-trecho';
     d.innerHTML = '<b>' + livro + ' ' + cap + ':' + v + '</b><small>' +
                   t.slice(0, 120) + (t.length > 120 ? '…' : '') + '</small>';
-    d.onclick = () => {                            // um clique projeta, como na grade
-      est.livro = livro; est.cap = cap;
-      selecionarLivro(livro);
-      projetarVerso(livro, cap, v);
+    // um clique projeta, como na grade; dois guardam na Lista (item 7 do relatório
+    // da igreja: antes o achado pelo trecho não ia para a Lista e, ao sair, sumia)
+    d.onclick = () => {
+      clearTimeout(d._t);
+      d._t = setTimeout(() => {
+        est.livro = livro; est.cap = cap;
+        selecionarLivro(livro);
+        projetarVerso(livro, cap, v);
+      }, 230);
+    };
+    d.ondblclick = () => {
+      clearTimeout(d._t);
+      adicionarLista({ tipo: 'verso', ref: livro + ' ' + cap + ':' + v, livro, cap, v, on: false });
     };
     alvo.appendChild(d);
   });
@@ -1511,6 +1623,10 @@ function bibliaAnterior() {
 }
 // LISTA DE PROJEÇÃO (setlist): louvores (+) e versículos (Guardar), na ordem, um após o outro
 function adicionarLista(item) {
+  if (item.tipo === 'louvor' && item.idx !== undefined && daVez(item.idx) !== item.idx) {
+    const p = daVez(item.idx), sp = LOUVORES[p];   // a cópia entra na lista como a principal
+    item = Object.assign({}, item, { idx: p, chave: chaveLouvor(sp), rotulo: rotuloLouvor(sp) });
+  }
   if (item.tipo === 'louvor' && est.fila.some(x => x.tipo === 'louvor' && x.chave === item.chave)) {
     toast('Esse louvor já está na lista.'); return;                    // não duplica
   }
@@ -1542,7 +1658,8 @@ function chaveLouvor(s) {
 function idxDoItem(it) {   // resolve o índice pela CHAVE (o índice cru muda se você apagar um "Meu louvor")
   // Se a chave não acha mais, o louvor foi APAGADO. Devolver it.idx aqui fazia o
   // telão abrir um louvor completamente diferente, calado, no meio do culto.
-  if (it.chave) return LOUVORES.findIndex(s => chaveLouvor(s) === it.chave);
+  // lista salva com a CÓPIA (número antigo/avulso) abre a principal: uma letra só
+  if (it.chave) return daVez(LOUVORES.findIndex(s => chaveLouvor(s) === it.chave));
   return it.idx;
 }
 function projetarItemLista(i, aoFim) {
@@ -2777,7 +2894,15 @@ function ligarExportarUsb() {
 function ligarEventos() {
   $$('.tab').forEach(t => t.onclick = () => trocarAba(t.dataset.aba));
   $('#btn-estilo').onclick = trocarEstilo;
-  $('#busca-louvor').oninput = e => renderListaLouvores(e.target.value);
+  // item 6 do relatório da igreja (05/10/2026): buscar a CADA LETRA travava o
+  // computador fraco da igreja — digitar "s" monta milhares de linhas, e cada letra
+  // seguinte desmonta e monta tudo de novo. Agora espera o operador parar de digitar.
+  let buscaT = null;
+  $('#busca-louvor').oninput = e => {
+    clearTimeout(buscaT);
+    const q = e.target.value;
+    buscaT = setTimeout(() => renderListaLouvores(q), 350);
+  };
   $('#busca-livro').oninput = e => renderLivros(e.target.value);
   $('#cifra-telao').onclick = projetarCifraTelao;
   // referência completa + Enter = projeta na hora ("ageu 2:9" ↵)

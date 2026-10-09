@@ -12,7 +12,7 @@ datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), 
 # e backup novo nao consegue mais pegar carona. Leveza e' lei nesta casa.
 import os as _os
 _DADOS = ['biblia.js', 'consertos_louvores.json', 'fundos.js', 'galeria.js',
-          'louvores.js', 'repeticoes.js', 'sugestoes.js', 'temas.js',
+          'louvores.js', 'repeticoes.js', 'repetidos.js', 'sugestoes.js', 'temas.js',
           'tipologia.js']
 for _nome in _DADOS:
     _cam = _os.path.join(SPECPATH, 'dados', _nome)

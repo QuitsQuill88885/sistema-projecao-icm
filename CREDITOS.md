@@ -125,10 +125,27 @@ Sistema no meio do culto; os dois foram conferidos assim mesmo, e o 658 estava
 sem o bis de *Exaltar-te-ei, ó Deus*. Os quatro foram consertados na versão 2.9.11.
 
 **Joelma** arrumou e mandou as coletâneas da evangelização das CIAs de outubro de 2026: a
-**lista de louvores cifrados do DEPLOV** e as partituras **Cias 2026 (outubro)**
+**lista de louvores cifrados oficial da Evangelização** e as partituras **Cias 2026 (outubro)**
 em Dó e em Si bemol. Foi dessa lista que saiu, na versão 2.9.9, a **cifra oficial**
 dos 11 louvores da evangelização — no lugar das que tinham vindo de leitura de
 livro, e uma delas trazia outro louvor inteiro dentro.
+
+**Kevin**, de novo, na versão 2.9.12: viu na igreja que *Jesus é o caminho* saía
+com **um bloco por tela**, quando o certo são **dois blocos "cantar 2x" por tela** —
+o jeito do slide das crianças. Daí saiu a conferência de **todos** os louvores das
+CIAS contra o PowerPoint oficial. E disse, com todas as letras, que a Evangelização
+tinha louvor faltando: os avulsos da lista ganharam a animação deles.
+
+**Samuel** operou o Sistema na igreja em 05/10/2026 e ditou o **relatório** que virou a
+versão 2.9.12: animação parada, corte seco no fim do louvor das crianças, a animação
+virando fundo, a busca lenta, o versículo que esquecia o capítulo, e os louvores
+repetidos. E **achou o PowerPoint de 6 GB** das CIAS animadas, que trouxe de volta o
+movimento de 147 telas e as animações de 241 louvores (o pacote antigo parava no 142).
+E em 09/10 mandou que cada louvor tivesse **uma versão só** — *"o louvor é o mesmo,
+caramba"* —, com os números juntos, o novo primeiro: **"69   9990   AV"**.
+
+**Cristiane** mandou os slides da aula e os áudios que fecharam a ordem dos louvores
+da Evangelização de outubro de 2026 (o *Você sabe o que é salvação* no meio da aula).
 
 **Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
 é dele.

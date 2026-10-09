@@ -266,19 +266,29 @@ function montarAviso(cont, arr){
    depois vira o fundo de verdade. Com fade 0 continua instantâneo. */
 let FUNDO_ATUAL=null, FUNDO_T=null;
 const fx=document.querySelector('#fundo-fx');
-function fundo(url){
-  const alvo = url?`#000 url('${url}') center/100% 100% no-repeat`:'#000';
+/* TUDO o que pinta o fundo do telão passa por aqui — o fundo do louvor E a tela
+   pronta das CIAS. Relatório da igreja, 05/10/2026: a tela das CIAS era pintada
+   direto em #tela, sem passar por FUNDO_ATUAL. Voltando para o texto, fundo()
+   achava que o fundo já era o certo, saía sem repintar, e a ANIMAÇÃO FICAVA DE
+   FUNDO COM A LETRA POR CIMA (item 3). E, sem passar pela camada de esmaecer,
+   a tela das CIAS entrava e saía no CORTE SECO (item 2: "nós somos o Sistema
+   ICM, não o Glorifica, para dar coisa dura assim"). Teste:
+   ferramentas\testes\test_sistema_telao.py */
+function trocaFundo(alvo){
   if(alvo===FUNDO_ATUAL) return;
+  // troca no meio de outra (operador clicando rápido): a que estava entrando vira
+  // o fundo na hora e a nova esmaece por cima dela — nunca reaparece a anterior
+  if(FUNDO_T){ clearTimeout(FUNDO_T); FUNDO_T=null; if(FUNDO_ATUAL!==null) tela.style.background=FUNDO_ATUAL; }
   FUNDO_ATUAL=alvo;
   const ms=parseFloat(getComputedStyle(cam).getPropertyValue('--fade'))||0;
-  clearTimeout(FUNDO_T);
   if(ms<=0){ tela.style.background=alvo; fx.style.transition='none'; fx.style.opacity='0'; return; }
   fx.style.transition='none'; fx.style.opacity='0'; fx.style.background=alvo;
   void fx.offsetWidth;                     // firma o estado antes de animar
   fx.style.transition='opacity '+ms+'ms ease';
   fx.style.opacity='1';
-  FUNDO_T=setTimeout(()=>{ tela.style.background=alvo; fx.style.transition='none'; fx.style.opacity='0'; }, ms+50);
+  FUNDO_T=setTimeout(()=>{ FUNDO_T=null; tela.style.background=alvo; fx.style.transition='none'; fx.style.opacity='0'; }, ms+50);
 }
+function fundo(url){ trocaFundo(url?`#000 url('${url}') center/100% 100% no-repeat`:'#000'); }
 /* TELA PRONTA — a animação das CIAS e o slide do PowerPoint.
    A imagem JÁ é a tela inteira (título, letra e arte), então ela não se soma a
    nada: só aparece. Vai INTEIRA, sem esticar, porque as telas das CIAS são 4:3
@@ -287,7 +297,7 @@ function fundo(url){
    ESTE MODO FALTAVA: o Sistema mandava modo:'slide' e nenhum caso o atendia, de
    modo que a animação das CIAS caía no vazio e o telão ficava PRETO. Era por
    isso que o Samuel nunca tinha visto a função das CIAS funcionar. */
-function telaPronta(url){ tela.style.background = url?`#000 url('${url}') center/contain no-repeat`:'#000'; }
+function telaPronta(url){ trocaFundo(url?`#000 url('${url}') center/contain no-repeat`:'#000'); }
 // auto-ajuste: reduz a fonte até o conteúdo caber na caixa (nenhum louvor/versículo quebra)
 /* Ajusta a fonte para o texto SEMPRE caber inteiro na caixa.
    A escala do A-/A+ entra ANTES do ajuste: aumentar aumenta, mas nunca deixa cortar. */

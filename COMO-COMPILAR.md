@@ -11,6 +11,20 @@ pip install pywebview pywin32 pyinstaller pillow qrcode cryptography
 > arquivos `.spec` que ja existem. **Use os `.spec`.** Eles sao a verdade — as
 > linhas soltas saem de sincronia sem ninguem perceber.
 
+## 0. ANTES DE TUDO: a bateria de testes tem de passar
+
+```bash
+python -m pytest "C:\Users\Emanuel\.claude\ferramentas\testes\test_sistema_dados.py" -q
+```
+
+Tem de dar **tudo verde**. Cada teste nasceu de um defeito que ja aconteceu (selo e
+cifra desligados calados, louvor que acaba seco, versao diferente nos instaladores,
+busca de cifra fora de ordem...). Foi um defeito no 2o louvor que fez o Kevin largar o
+Sistema no meio do culto (27/09/2026). **Vermelho = nao publica.** A bateria tambem
+roda sozinha toda madrugada as 03h05 (tarefa "Testes da casa"), e falha vai pro diario.
+
+Mexeu nas cifras (`acordes.json`)? O `Conteudo.zip` fica velho calado: refaca (passo 4).
+
 ## 1. Gerar os dados (so quando mudar a fonte dos louvores/Biblia)
 
 ```bash

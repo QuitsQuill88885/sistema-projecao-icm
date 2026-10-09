@@ -672,9 +672,33 @@ textarea.campo{line-height:1.4;resize:vertical}
 
 <script src="dados/louvores.js"></script>
 <script src="dados/biblia.js"></script>
+<script src="dados/repetidos.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const LOUVORES = window.LOUVORES || [], BIBLIA = window.BIBLIA || {livros:{},ordem:[]};
+/* UMA VERSAO SO' (ordem dele, 09/10/2026): o mesmo louvor com numero antigo e
+   avulso aparece UMA vez, com os numeros juntos ("69   9990   AV"), e a copia
+   sempre abre a PRINCIPAL -- a que tem as correcoes. Mesma regra do app.js. */
+const PRINC = {}, IRMAS = {};
+(function () {
+  const ch = s => (s.num || '') + '|' + s.titulo + '|' + ((s.slides[0] && s.slides[0].linhas[0]) || '');
+  const por = {}, m = window.REPETIDOS || {};
+  LOUVORES.forEach((s, i) => { por[ch(s)] = i; });
+  Object.keys(m).forEach(k => {
+    const i = por[k], p = por[m[k]];
+    if (i === undefined || p === undefined || i === p) return;
+    PRINC[i] = p; (IRMAS[p] = IRMAS[p] || []).push(i);
+  });
+})();
+function daVez(i) { return PRINC[i] === undefined ? i : PRINC[i]; }
+function numerosLouvor(i) {
+  const s = LOUVORES[i]; if (!s) return '';
+  const p = daVez(i), g = [p].concat(IRMAS[p] || []).map(j => LOUVORES[j]).filter(Boolean);
+  if (g.length < 2) return s.num || '';
+  const ordem = { 'Coletânea Antiga': 1, 'Avulsos 2018': 2 };
+  const ns = g.sort((a, b) => (ordem[a.col] || 0) - (ordem[b.col] || 0)).map(o => o.num).filter(Boolean);
+  return ns.filter((x, k) => ns.indexOf(x) === k).join(' ');
+}
 let livroSel = null, capSel = null, louvorSel = -1, falhas = 0;
 /* acabou de digitar na busca? entao a lista volta para o topo do que achou, em
    vez de continuar parada no louvor que esta' no ar */
@@ -1715,12 +1739,20 @@ function listarLouvores(f) {
   const palavras = alvo ? alvo.split(' ').filter(Boolean) : [];
   SOM_BUSCA = alvo ? somDaFrase(f) : [];
   const soNum = /^\d+$/.test(alvo) ? parseInt(alvo, 10) : null;
-  const achados = [];
+  const achados = [], ja = new Set();
   LOUVORES.forEach((s, i) => {
-    if (!alvo) { achados.push([s, i, 1]); return; }
+    if (PRINC[i] !== undefined) {               // copia: quem aparece e' a principal
+      const n = /^\d+$/.test(s.num || '') ? parseInt(s.num, 10) : null;
+      if (soNum !== null && n === soNum && !ja.has(PRINC[i])) {
+        achados.push([LOUVORES[PRINC[i]], PRINC[i], 1000]); ja.add(PRINC[i]);   // o numero antigo ainda acha
+      }
+      return;
+    }
+    if (ja.has(i)) return;
+    if (!alvo) { achados.push([s, i, 1]); ja.add(i); return; }
     if (soNum !== null) {                       // número casa por IGUALDADE
       const n = /^\d+$/.test(s.num || '') ? parseInt(s.num, 10) : null;
-      if (n === soNum) achados.push([s, i, 1000]);
+      if (n === soNum) { achados.push([s, i, 1000]); ja.add(i); }
       return;
     }
     const p = pontuar(s, alvo, palavras);
@@ -1732,7 +1764,7 @@ function listarLouvores(f) {
     if (n >= 60) break;
     const d = document.createElement('div');
     d.className = 'item' + (i === louvorSel ? ' sel' : '');
-    d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') +
+    d.innerHTML = (numerosLouvor(i) ? '<small>' + numerosLouvor(i) + '</small>' : '') +
       '<span>' + s.titulo + (i === louvorSel ? '<em class="no-ar"> · no ar</em>' : '') + '</span>' +
       '<button class="add" title="Guardar na Lista de Projeção">+</button>';
     /* o toque tem de COMECAR no +. Dedo que cai na linha e escorrega ate' o +
@@ -1793,10 +1825,10 @@ function sugerirCelular(livro, cap, v) {
     // 1 em cada 3 versiculos vem fora de ordem no arquivo (10.512 de 31.105,
     // medido): sem ordenar pelo peso, os tres da tela nao sao os tres mais
     // fortes -- sao so' os tres primeiros que o gerador escreveu.
-    base.slice().sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([idx]) => {
-      const s = LOUVORES[idx]; if (!s) return;
+    base.slice().sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([idx0]) => {
+      const idx = daVez(idx0), s = LOUVORES[idx]; if (!s) return;   // copia abre a principal
       const d = document.createElement('div'); d.className = 'item';
-      d.innerHTML = (s.num ? '<small>' + s.num + '</small>' : '') + '<span>' + s.titulo + '</span>';
+      d.innerHTML = (numerosLouvor(idx) ? '<small>' + numerosLouvor(idx) + '</small>' : '') + '<span>' + s.titulo + '</span>';
       d.onclick = () => { louvorSel = idx; enviar('louvor', {idx}); listarLouvores($('#q').value); mostrarSlides(idx); };
       cx.appendChild(d);
     });
