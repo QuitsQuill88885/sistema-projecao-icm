@@ -142,7 +142,8 @@ virando fundo, a busca lenta, o versículo que esquecia o capítulo, e os louvor
 repetidos. E **achou o PowerPoint de 6 GB** das CIAS animadas, que trouxe de volta o
 movimento de 147 telas e as animações de 241 louvores (o pacote antigo parava no 142).
 E em 09/10 mandou que cada louvor tivesse **uma versão só** — *"o louvor é o mesmo,
-caramba"* —, com os números juntos, o novo primeiro: **"69   9990   AV"**.
+caramba"* —, com os números juntos, o novo primeiro: **"69   9990   AV"**. Na 2.9.13
+mandou conferir um a um os 63 parecidos que ainda estavam separados.
 
 **Cristiane** mandou os slides da aula e os áudios que fecharam a ordem dos louvores
 da Evangelização de outubro de 2026 (o *Você sabe o que é salvação* no meio da aula).
