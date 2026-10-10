@@ -681,7 +681,12 @@ function projetarLouvor(idx, slide, fade) {
     projetar({ modo: 'slide', src: '/animacoes/' + encodeURIComponent(anim[i]),
                transicao: true, fade: ESMAECER });
   } else {
-    projetar(stLouvor(idx, slide, fade));
+    // 2.9.16: as telas OFICIAIS do Período de Louvor podem ser MAIS que as de texto (97: 6 × 3).
+    // Desligar a animação na última tela pedia uma página de texto que não existe, e a tela
+    // CIAS ficava no telão. Vai para a última página de texto que existe.
+    const k = s ? Math.max(0, Math.min(slide, s.slides.length - 1)) : slide;
+    if (k !== slide) { est.louvorSlide = k; est.live = { tipo: 'louvor', idx, slide: k }; }
+    projetar(stLouvor(idx, k, fade));
   }
   marcarSlide(); atualizarExtras();
 }
