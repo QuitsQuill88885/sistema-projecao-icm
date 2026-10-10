@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.16"
+VERSAO = "2.9.17"
 
 PORTA = 8765
 
@@ -2528,7 +2528,7 @@ def _telas_da_pasta(pasta):
 
     fs = [os.path.join(r, f) for r, _, nomes in os.walk(pasta) for f in nomes
 
-          if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+          if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".gif"))]
 
     def chave(p):
 
