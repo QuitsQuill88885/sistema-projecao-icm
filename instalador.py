@@ -579,6 +579,20 @@ def main(atualizando=False):
         main_silencioso()
         return
 
+    # ORDEM DELE (10/10/2026): "assim que acionar o instalador novo, ele tem que FECHAR O
+    # PROGRAMA PRIMEIRO e depois abrir a janela de instalação; hoje fica um tempão instalando
+    # com o programa aberto e só fecha no último instante." Fecha ANTES de qualquer janela.
+    if atualizando:
+        fechar_sistema_aberto()
+    # Escala de tela ligada ANTES de criar a janela: ligada depois (dentro de
+    # centro_da_tela), a janela já nascia medida em outra escala que a conta do
+    # centro, e em telas a 125%/150% caía fora do meio ("descentralizado", 10/10).
+    try:
+        import ctypes
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
     fechar_splash()
 
     FUNDO = "#0b1526"

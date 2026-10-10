@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.13"
+VERSAO = "2.9.14"
 
 PORTA = 8765
 
@@ -1619,7 +1619,16 @@ def _atualizar_thread():
         # --reabrir: o instalador novo reabre o Sistema no fim E MOSTRA A JANELA
         # DE PROGRESSO (a partir da 2.9.7). --silencioso vai junto só para um
         # instalador antigo, que não conhece --reabrir, não abrir a tela de boas-vindas.
-        subprocess.Popen([alvo, "--silencioso", "--reabrir"], **SEM_JANELA)
+        inst = subprocess.Popen([alvo, "--silencioso", "--reabrir"], **SEM_JANELA)
+        # ORDEM DELE (10/10/2026): o Sistema fecha ANTES de instalar, não no último
+        # instante. Antes ele ficava aberto enquanto o instalador se desempacotava
+        # (60 MB) e só caía quando o instalador o matava. Agora: o instalador subiu
+        # e continua vivo 3 s depois -> este Sistema sai sozinho. O instalador novo
+        # reabre o Sistema no fim (--reabrir).
+        ATUALIZA["txt"] = "Fechando o Sistema para instalar a versão nova…"
+        time.sleep(3)
+        if inst.poll() is None:
+            os._exit(0)
         # O instalador leva um tempo para aparecer (ele se desempacota e depois
         # fecha este Sistema). Antes a frase congelava aqui com "fim": a tela
         # parava de perguntar, parecia travado, e o Samuel quase abriu o Sistema
