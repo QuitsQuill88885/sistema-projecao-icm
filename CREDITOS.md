@@ -147,6 +147,13 @@ mandou conferir um a um os 63 parecidos que ainda estavam separados.
 
 **Cristiane** mandou os slides da aula e os áudios que fecharam a ordem dos louvores
 da Evangelização de outubro de 2026 (o *Você sabe o que é salvação* no meio da aula).
+A aula dela, *Você sabe o que é Salvação*, vem dentro do Sistema desde a 2.9.15, como
+apresentação de exemplo.
+
+**Samuel**, na versão 2.9.15: testou no notebook a pasta da igreja e achou o PDF que
+nunca abria (*"imagina isso na hora do vamos ver"*). Também ditou a página de
+Apresentações, igual à de Fundos, e a regra do Restaurar: trazer de volta o que veio
+com o Sistema sem apagar o que a pessoa acrescentou.
 
 **Luís**, padrasto do Samuel. A ideia da **sugestão de louvores por versículo**
 é dele.

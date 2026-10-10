@@ -104,6 +104,12 @@ if (CANAL) CANAL.onmessage = e => {   // mensagens vindas da janela de projeçã
   if (d.tipo === 'proj-pronta') setTimeout(() => { try { CANAL.postMessage(est.ultimo); } catch (_) {} }, 120);
   else if (d.tipo === 'cmd' && window.__cmdProj) window.__cmdProj(d.cmd);   // setas apertadas no telão
 };
+// ESMAECER: a duração do PowerPoint OFICIAL. Ordem dele (10/10/2026): esmaecer entre
+// louvores e entre páginas, inclusive na troca de tela do louvor das crianças, "com a
+// duração do PowerPoint". Medido nos .pptx oficiais: o fade das CIAS e do "Período de
+// louvor - CRI" da Evangelização é p14:dur="700". Antes cada lugar tinha um número
+// (200, 240, 500, 600 ms). Teste: ferramentas\testes\test_sistema_mesclagem.py
+const ESMAECER = 700;
 const nativo = () => !!(window.pywebview && window.pywebview.api);
 function post(win, st) { if (win) try { win.postMessage(JSON.stringify(st), '*'); } catch (e) {} }
 // o que a prévia do celular deve mostrar
@@ -173,7 +179,7 @@ function stLouvor(idx, slide, fade) {
     // posição pro CELULAR ("3 de 4" na prévia): o operador de lá precisa saber
     // qual tela está no ar sem contar slide de cabeça
     pos: slide + 1, de: s.slides.length,
-    transicao: true, fade: fade ? 600 : 240,   // fade suave entre slides; um pouco maior no encerramento
+    transicao: true, fade: ESMAECER,   // o mesmo esmaecer do PowerPoint oficial, entre páginas e no fim
   };
 }
 function stBiblia(ref, texto) {
@@ -673,7 +679,7 @@ function projetarLouvor(idx, slide, fade) {
     est.louvorSlide = i;
     est.live = { tipo: 'louvor', idx, slide: i, anim: true, n: anim.length };
     projetar({ modo: 'slide', src: '/animacoes/' + encodeURIComponent(anim[i]),
-               transicao: true, fade: fade ? 500 : 200 });
+               transicao: true, fade: ESMAECER });
   } else {
     projetar(stLouvor(idx, slide, fade));
   }
@@ -782,9 +788,10 @@ const NOME_COL = {
   'Coletânea 2018': 'COLETÂNEA 2018',
   'CIA 2018': 'CIAS',
   'Coletânea Antiga': 'COLETÂNEA ANTIGA',
-  'Avulsos 2018': 'AVULSOS',
-  'Avulsos 2024': 'AVULSOS 2024',
-  'Avulsos 2026': 'AVULSOS 2026',
+  // "O que for avulso e AV" (ordem dele, 10/10/2026): nunca "Avulso" por extenso
+  'Avulsos 2018': 'AV',
+  'Avulsos 2024': 'AV 2024',
+  'Avulsos 2026': 'AV 2026',
   'Meus louvores': 'MEUS LOUVORES',
 };
 // "Avulsos 2026" ficava FORA desta lista — e o que está fora volta com índice -1,
@@ -797,8 +804,8 @@ function ehCias(s) { return s.col === 'CIA 2018'; }
 // etiqueta curta da coletânea, usada quando a lista vem ranqueada (sem grupo)
 function siglaCol(s) {
   return { 'Coletânea 2018': 'COLETÂNEA', 'CIA 2018': 'CIAS', 'Coletânea Antiga': 'ANTIGA',
-           'Avulsos 2018': 'AVULSO', 'Avulsos 2024': 'AVULSO 24',
-           'Avulsos 2026': 'AVULSO 26', 'Meus louvores': 'MEU' }[s.col] || '';
+           'Avulsos 2018': 'AV', 'Avulsos 2024': 'AV 24',
+           'Avulsos 2026': 'AV 26', 'Meus louvores': 'MEU' }[s.col] || '';
 }
 // "AV" e "MEU" não são número: a coluna fica com um traço em vez de repetir a sigla
 // (o "MEU" repetido saía "MEU MEU · TODO-PODEROSO ÉS" — o Samuel viu, 13/09/2026)
@@ -809,8 +816,8 @@ function numInt(s) { const n = numLouvor(s); return /^\d+$/.test(n) ? parseInt(n
 function rotuloLouvor(s) {
   const c = nomeCol(s);
   // palavra, nunca outro número: "709 2018" parecia um código duplo
-  const curto = { 'COLETÂNEA 2018': 'COLETÂNEA', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AVULSOS': 'AVULSO',
-                  'AVULSOS 2024': 'AVULSO 24', 'AVULSOS 2026': 'AVULSO 26',
+  const curto = { 'COLETÂNEA 2018': 'COLETÂNEA', 'COLETÂNEA ANTIGA': 'ANTIGA', 'AV': 'AV',
+                  'AV 2024': 'AV 24', 'AV 2026': 'AV 26',
                   'MEUS LOUVORES': 'MEU', 'CIAS': 'CIAS' }[c] || c;
   const ns = numerosLouvor(s);
   return (ns ? ns + ' ' : '') + curto + ' · ' + s.titulo;
@@ -929,8 +936,7 @@ function renderListaLouvores(filtro) {
     d.innerHTML = (naLista ? '<span class="marca-lista" title="Já está na lista de projeção">♪</span>' : '') +
       '<small' + (R.irmas[i] ? ' class="nums" title="O mesmo louvor: número novo, antigo e avulso"' : '') + '>' +
       (n || '—') + '</small>' +
-      (agrupar ? '' : '<small class="etq-col">' + siglaCol(s) + '</small>') + s.titulo +
-      (f && s._naLetra ? ' <small style="color:#6fa8dc">· letra</small>' : '');
+      (agrupar ? '' : '<small class="etq-col">' + siglaCol(s) + '</small>') + s.titulo;   // nada depois do nome (ordem dele, 10/10/2026: saia "· letra")
     // o clique simples espera um tico: se vier o segundo clique, ele é cancelado
     // e o louvor só vai pra lista — sem piscar no telão
     d.onclick = () => { clearTimeout(d._t); d._t = setTimeout(() => selecionarLouvor(i), 230); };
@@ -1987,7 +1993,7 @@ function descanso(manterCongelado) {
   // pedir a espera na mão é uma ordem para o telão OBEDECER: aí sim descongela
   if (est.freeze && !manterCongelado) { est.freeze = false; $('#btn-congelar').classList.remove('freeze-on'); }
   est.live = { tipo: 'descanso' };
-  projetar({ modo: 'fundo', fundo: esperaAtual(), transicao: true, fade: 500 });
+  projetar({ modo: 'fundo', fundo: esperaAtual(), transicao: true, fade: ESMAECER });
 }
 // Põe no telão o que está selecionado AGORA, na ordem do que faz mais sentido:
 // versículos marcados > item da lista > versículo aberto > louvor aberto.
@@ -2274,7 +2280,7 @@ function renderFundos() {
       '</div><span class="nome">' + f.nome + '</span>';
     const projetarFundo = () => {
       est.live = { tipo: 'fundo' };
-      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: 500 });
+      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: ESMAECER });
       renderFundos();
       toast('Fundo: ' + f.nome);
     };
@@ -2331,11 +2337,57 @@ async function abrirApresentacao() {
     SLIDES = { nome: r2.nome, lista: r2.slides };
     est.slidePos = -1;
     renderSlides(); statusSlides(r2.slides.length + ' slides prontos — clique em um para projetar.');
+    carregarApresentacoes();            // ela fica salva: aparece na grade da próxima vez
   } catch (e) {
     statusSlides('Esta função precisa do Sistema aberto pelo atalho (não pelo navegador).', true);
   }
 }
+// ---- APRESENTAÇÕES SALVAS: a grade, igual à de Fundos (ordem dele, 10/10/2026) ----
+// As que vêm com o Sistema (demo) só ficam ESCONDIDAS (voltam em Restaurar), como os
+// fundos de fábrica; as que o operador importou somem de verdade.
+let APRES = [], AP_OCULTAS = Guardar.ler('icm_ap_ocultas', []) || [];
+function carregarApresentacoes() {
+  fetch('/api/apresentacoes').then(r => r.json())
+    .then(r => { APRES = r.lista || []; renderApresentacoes(); }).catch(() => {});
+}
+function abrirSalva(a) {
+  SLIDES = { nome: a.nome, lista: a.slides }; est.slidePos = -1;
+  renderSlides(); statusSlides(a.slides.length + ' slides — clique em um para projetar.');
+}
+function apagarApresentacao(a) {
+  const msg = a.demo
+    ? 'Esconder <b>' + a.nome + '</b>?<br><br>Ela veio com o Sistema, então não some de verdade: volta em Configurações › Sistema › Restaurar.'
+    : 'Apagar <b>' + a.nome + '</b>?<br><br>Foi você que trouxe — some de vez, e só volta se você abrir o arquivo de novo.';
+  confirmar(msg, async () => {
+    if (a.demo) { if (!AP_OCULTAS.includes(a.nome)) AP_OCULTAS.push(a.nome); Guardar.gravar('icm_ap_ocultas', AP_OCULTAS); }
+    else { try { await fetch('/api/apagar-apresentacao', { method: 'POST', body: JSON.stringify({ nome: a.nome }) }); } catch (e) {} }
+    if (SLIDES.nome === a.nome) { SLIDES = []; est.slidePos = -1; }
+    carregarApresentacoes(); renderSlides(); toast(a.demo ? 'Apresentação escondida.' : 'Apresentação apagada.');
+  }, a.demo ? 'Sim, esconder' : 'Sim, apagar');
+}
+function renderApresentacoes() {
+  const g = $('#ap-grade'); if (!g) return; g.innerHTML = '';
+  const aberta = !!(SLIDES.lista && SLIDES.lista.length);
+  g.hidden = aberta; $('#ap-topo').hidden = !aberta; $('#ap-dica').hidden = aberta;
+  if (aberta) { $('#ap-nome').textContent = SLIDES.nome || ''; return; }
+  APRES.filter(a => !AP_OCULTAS.includes(a.nome)).forEach(a => {
+    const c = document.createElement('div'); c.className = 'fundo-card';
+    // "Exemplo" vai embaixo do nome: em cima da miniatura ele cobria o título do slide
+    c.innerHTML = '<img src="' + a.slides[0] + '" alt="">' +
+      '<div class="fundo-acoes"><button class="fa fa-del" title="' + (a.demo ? 'Esconder' : 'Apagar') + ' esta apresentação">✕</button></div>' +
+      '<span class="nome"><span class="ap-nome"></span><small class="ap-info"></small></span>';
+    c.querySelector('.ap-nome').textContent = a.nome;
+    c.querySelector('.ap-info').textContent = (a.demo ? 'Exemplo · ' : '') + a.slides.length + ' slides';
+    c.onclick = () => abrirSalva(a);
+    c.querySelector('.fa-del').onclick = ev => { ev.stopPropagation(); apagarApresentacao(a); };
+    g.appendChild(c);
+  });
+  const add = document.createElement('div'); add.className = 'fundo-card add-card';
+  add.innerHTML = '<div class="add-inner"><span class="plus">+</span><span>Abrir apresentação</span></div>';
+  add.onclick = abrirApresentacao; g.appendChild(add);
+}
 function renderSlides() {
+  renderApresentacoes();
   const g = $('#sl-grade'); if (!g) return; g.innerHTML = '';
   if (!SLIDES.lista || !SLIDES.lista.length) return;
   SLIDES.lista.forEach((src, i) => {
@@ -2350,7 +2402,7 @@ function projetarSlide(i) {
   est.slidePos = i; est.live = { tipo: 'slide', i, n: SLIDES.lista.length };
   // tela pronta, igual à das CIAS: vai inteira e sem esticar. Apresentação da
   // Escola Bíblica em 4:3 estava sendo alargada até o 16:9 do telão.
-  projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: 260 });
+  projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: ESMAECER });
   renderSlides();
   const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
 }
@@ -2568,18 +2620,38 @@ function renderAvisos() {
   });
 }
 // ---- resets ----
+// REGRA DELE (10/10/2026 15h17): "Restaurar" = REVIVER o que veio de fábrica e foi apagado,
+// SEM apagar o que o usuário acrescentou. Só o "Restaurar tudo" apaga o dele — e pergunta
+// duas vezes ("tem certeza? tem certeza?", como o IObit). Teste: test_sistema_mesclagem.py
 const RESET_TXT = {
-  fundos: 'Restaurar os fundos originais e apagar os que você adicionou?',
+  apagados: 'Trazer de volta os fundos e a apresentação de exemplo que vieram com o Sistema?<br><br>O que você acrescentou continua lá.',
+  fundos: 'Trazer de volta os fundos originais que foram apagados? Os que você adicionou continuam.',
   tamanhos: 'Voltar todos os tamanhos de letra ao padrão?',
   louvores: 'Apagar TODOS os louvores que você adicionou? (a coletânea original continua)',
   slides: 'Apagar todas as apresentações já importadas?',
   tudo: 'Devolver o Sistema ao estado de fábrica? Você verá a apresentação inicial de novo.',
 };
-function resetar(o) { confirmar(RESET_TXT[o] || 'Restaurar?', () => aplicarReset(o)); }
+function resetar(o) {
+  if (o === 'tudo') {
+    return confirmar('<b>Restaurar TUDO?</b><br><br>Você perde o que acrescentou: os louvores, fundos e ' +
+      'apresentações que trouxe, as listas, o histórico dos cultos e os dados da igreja.',
+      () => confirmar('<b>Tem certeza?</b> Isso não tem volta.<br><br>O Sistema volta a ser como ' +
+        'acabou de ser instalado, fecha e abre sozinho.', () => aplicarReset('tudo'), 'Sim, restaurar tudo'),
+      'Continuar');
+  }
+  confirmar(RESET_TXT[o] || 'Restaurar?', () => aplicarReset(o));
+}
 function aplicarReset(o) {
+  if (o === 'apagados' || o === 'fundos') {   // revive o de fábrica; o do operador fica
+    OCULTOS = []; salvarOcultos();
+    AP_OCULTAS = []; Guardar.gravar('icm_ap_ocultas', AP_OCULTAS);
+    renderFundos(); carregarApresentacoes();
+    toast('Pronto: o que veio com o Sistema voltou. O que você acrescentou continua.');
+    return;
+  }
   // Zerar só a memória não restaura nada: a escolha da tela de espera fica
   // gravada em 'icm_espera' e voltava sozinha no arranque seguinte.
-  if (o === 'fundos' || o === 'tudo') {
+  if (o === 'tudo') {
     CUSTOM = []; OCULTOS = []; salvarCustom(); salvarOcultos();
     est.descansoFundo = null; est.textoFundo = null;
     Guardar.gravar('icm_espera', null);
@@ -2588,8 +2660,10 @@ function aplicarReset(o) {
   if (o === 'tamanhos' || o === 'tudo') { est.escalaLouvor = est.escalaVers = est.escalaTexto = 1; atualizarTamLabel(); fonteCifraPadrao(); }
   if (o === 'louvores' || o === 'tudo') { MEUS = []; salvarMeus(); recarregarLouvores(); renderMeus(); }
   if (o === 'slides' || o === 'tudo') {   // apaga as apresentações importadas
-    SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides('');
-    try { fetch('/api/limpar', { method: 'POST' }); } catch (e) {}
+    SLIDES = []; est.slidePos = -1; statusSlides('');
+    AP_OCULTAS = []; Guardar.gravar('icm_ap_ocultas', AP_OCULTAS);   // a de exemplo volta
+    try { fetch('/api/limpar', { method: 'POST' }).then(carregarApresentacoes); } catch (e) {}
+    renderSlides();
   }
   if (o === 'tudo') {
     // "de fábrica" tem que incluir a Lista de Projeção e onde a navegação parou.
@@ -2624,6 +2698,19 @@ function aplicarReset(o) {
    coisa; apagar as animações, cifras e melodias que levaram um pendrive para
    chegar aqui é outra, bem maior. */
 function ligarDesinstalar() {
+  // página Sistema (10/10/2026): duas escolhas à vista, cada uma com o seu aviso
+  const bm = $('#btn-desinst-manter'), ba = $('#btn-desinst-apagar');
+  if (bm) bm.onclick = () => confirmar(
+    'Desinstalar o Sistema deste computador?<br><br>O programa e os atalhos são removidos. ' +
+    '<b>As suas coisas ficam</b> — louvores, fundos, apresentações, listas, animações e cifras — ' +
+    'e uma instalação nova as encontra do jeito que estão.',
+    () => desinstalarAgora(false), 'Sim, desinstalar');
+  if (ba) ba.onclick = () => confirmar(
+    'Desinstalar <b>e apagar tudo</b>?<br><br>Louvores e fundos que você adicionou, as apresentações, ' +
+    'o histórico dos cultos e as <b>animações, cifras e melodias (cerca de 590 MB)</b>.',
+    () => confirmar('<b>Isso não tem volta.</b><br><br>Depois, só baixando de novo ou trazendo o pendrive. ' +
+                    'Desinstalar e apagar agora?', () => desinstalarAgora(true), 'Sim, apagar tudo'),
+    'Continuar');
   const b = $('#btn-desinstalar'); if (!b) return;
   b.onclick = () => confirmar(
     'Desinstalar o Sistema deste computador?<br><br>O programa e os atalhos são ' +
@@ -2781,6 +2868,14 @@ function ligarAtualizacao() {
   // nada aparece — a igreja não pode ver erro só por não ter internet.
   if (Guardar.ler('atu_auto', true)) setTimeout(() => verificarAtualizacao(true), 5000);
 }
+// o botão "Atualizar" da página Sistema veste o mesmo ouro da linha quando o Sistema
+// está atualizado E completo — "quase um brasão de poder" (palavra dele, 10/10/2026)
+function marcarMelhorVersao(sim) {
+  const g = $('#grupo-atualizar'); if (!g) return;
+  g.classList.toggle('melhor', sim);
+  const s = g.querySelector('summary small');
+  if (s) s.textContent = sim ? 'Você está com a melhor versão do Sistema' : 'Versão nova, busca automática e pendrive';
+}
 async function verificarAtualizacao(silenciosa) {
   const st = $('#atu-status');
   if (!silenciosa && st) st.textContent = 'Procurando…';
@@ -2803,9 +2898,11 @@ async function verificarAtualizacao(silenciosa) {
         st.innerHTML = '<b class="st-ouro">Você está com a melhor versão do Sistema: ' +
                        'completa e atualizada (' + r.atual + ').</b>';
         if (linha) linha.classList.add('melhor');
+        marcarMelhorVersao(true);
       } else if (!silenciosa) {
         st.textContent = 'Você já está na versão mais nova (' + r.atual + ').';
         if (linha) linha.classList.remove('melhor');
+        marcarMelhorVersao(false);
       }
     }
     return;
@@ -2959,6 +3056,8 @@ function ligarEventos() {
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
   const bl = $('#btn-limpar'); if (bl) bl.onclick = limparLista;
   const sa = $('#sl-abrir'); if (sa) sa.onclick = abrirApresentacao;
+  const av = $('#ap-voltar'); if (av) av.onclick = () => { SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides(''); };
+  carregarApresentacoes();
   // ---- menu ☰ ----
   $('#btn-menu').onclick = abrirMenu;
   $('#menu-fechar').onclick = fecharMenu;
@@ -2971,6 +3070,7 @@ function ligarEventos() {
   $('#bv-voltar').onclick = () => { if (bvPasso > 0) { bvPasso--; renderBV(); } };
   $('#bv-pular').onclick = () => { salvarIgreja(); aplicarNomeIgreja(); fecharBemVindo(); };
   $('#btn-rever').onclick = () => { fecharMenu(); abrirBemVindo(true); };
+  const sv = $('#sis-versao'); if (sv) sv.textContent = VERSAO && VERSAO !== '1.0.0' ? 'v' + VERSAO : '';
   const ir = $('#ini-rever'); if (ir) ir.onclick = () => { fecharMenu(); abrirBemVindo(true); };
   ligarAtualizacao();
   ligarExportarUsb();
@@ -3129,7 +3229,7 @@ function executarDoCelular(c) {
     case 'fundo': {
       const f = listaFundos()[c.i]; if (!f) break;
       est.live = { tipo: 'fundo' };
-      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: 500 });
+      projetar({ modo: 'fundo', fundo: f.arquivo, transicao: true, fade: ESMAECER });
       break;
     }
     case 'espera': {   // define a tela de espera padrão, sem projetar nada agora

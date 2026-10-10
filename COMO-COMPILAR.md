@@ -14,7 +14,7 @@ pip install pywebview pywin32 pyinstaller pillow qrcode cryptography
 ## 0. ANTES DE TUDO: a bateria de testes tem de passar
 
 ```bash
-python -m pytest "C:\Users\Emanuel\.claude\ferramentas\testes\test_sistema_dados.py" -q
+python -m pytest "C:\Users\Emanuel\.claude\ferramentas\testes" -q
 ```
 
 Tem de dar **tudo verde**. Cada teste nasceu de um defeito que ja aconteceu (selo e

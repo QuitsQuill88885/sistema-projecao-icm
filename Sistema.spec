@@ -2,7 +2,7 @@
 import os as _os_spec
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes')]
+datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes'), ('apresentacoes', 'apresentacoes')]
 
 # A PASTA dados VAI ARQUIVO POR ARQUIVO, NUNCA INTEIRA.
 # Em 31/08/2026 descobri 44 MB de backups meus (louvores_backup_*, *_antes_*)
@@ -34,6 +34,11 @@ hiddenimports = ['win32com.client', 'qrcode', 'webview', 'webview.platforms.edge
                  'cryptography', 'cryptography.hazmat.backends.openssl', 'cryptography.x509']
 tmp_ret = collect_all('webview')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+# motor de PDF DENTRO do Sistema (10/10/2026: importar PDF nunca funcionou; regra dele:
+# nada de programa de fora). pypdfium2_raw traz a DLL do PDFium.
+for _pac in ('pypdfium2', 'pypdfium2_raw'):
+    tmp_ret = collect_all(_pac)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(

@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=46">
+<link rel="stylesheet" href="app.css?v=47">
 </head><body>
 <div id="app">
   <header>
@@ -123,12 +123,16 @@
       <!-- SLIDES (PowerPoint / PDF) -->
       <div class="view centro" data-aba="slides">
         <div class="card" style="width:min(880px,96%)">
-          <h2>Slides da Escola Bíblica</h2>
-          <div class="dica">Abra a apresentação em <b>PowerPoint</b> ou <b>PDF</b> que a igreja enviou. O Sistema converte e você projeta com <b>Voltar</b> e <b>Avançar</b>, como um louvor.</div>
-          <div class="row">
-            <button class="big-btn verde" id="sl-abrir">Abrir apresentação…</button>
-            <span class="sl-status" id="sl-status"></span>
+          <h2>Apresentações</h2>
+          <!-- igual à página de Fundos (ordem dele, 10/10/2026): quadradinhos com miniatura,
+               apagáveis, e o "+" para trazer uma nova. A da Evangelização vem junto como exemplo. -->
+          <div class="dica" id="ap-dica">Clique numa apresentação para abrir os slides e projete com <b>Voltar</b> e <b>Avançar</b>, como um louvor. Ao passar o mouse, remova a que não usa mais. Para trazer uma nova, clique em <b>+</b> (PowerPoint, PDF ou imagem).</div>
+          <div class="row ap-topo" id="ap-topo" hidden>
+            <button class="fcat" id="ap-voltar">‹ Todas as apresentações</button>
+            <b id="ap-nome"></b>
           </div>
+          <span class="sl-status" id="sl-status"></span>
+          <div class="grid-fundos" id="ap-grade"></div>
           <div class="sl-grade" id="sl-grade"></div>
         </div>
       </div>
@@ -149,7 +153,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=46"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=47"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -383,7 +387,7 @@
           <div class="reset-row"><div><b>Achou um defeito ou tem uma ideia?</b><small id="contato-mail">samuelsaxdiesel@gmail.com</small></div>
             <button class="big-btn" id="btn-contato">Copiar e-mail</button></div>
           <h3 class="menu-h3">Voltar ao padrão</h3>
-          <div class="reset-row"><div><b>Fundos</b><small>Restaura os fundos originais e apaga os que você adicionou.</small></div>
+          <div class="reset-row"><div><b>Fundos e apresentação de exemplo</b><small>Traz de volta os que vieram com o Sistema e foram apagados. Os que você adicionou continuam.</small></div>
             <button class="big-btn" data-reset="fundos">Restaurar</button></div>
           <div class="reset-row"><div><b>Tamanhos de letra</b><small>Volta A−/A+ ao padrão em tudo.</small></div>
             <button class="big-btn" data-reset="tamanhos">Restaurar</button></div>
@@ -438,13 +442,13 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=46"></script>
-<script src="dados/repetidos.js?v=46"></script>
-<script src="dados/repeticoes.js?v=46"></script>
+<script src="dados/louvores.js?v=47"></script>
+<script src="dados/repetidos.js?v=47"></script>
+<script src="dados/repeticoes.js?v=47"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=46"></script>
+<script src="dados/galeria.js?v=47"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=46"></script>
-<script src="app.js?v=46"></script>
+<script src="icones.js?v=47"></script>
+<script src="app.js?v=47"></script>
 </body></html>

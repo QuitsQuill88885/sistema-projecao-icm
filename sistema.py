@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.14"
+VERSAO = "2.9.15"
 
 PORTA = 8765
 
@@ -2332,51 +2332,91 @@ def converter_libreoffice(caminho, destino):
 
 
 
-def converter_pdf(caminho, destino):
+def _grava_png(caminho, largura, altura, linhas_rgb):
 
-    """PDF -> uma "tela" por página, usando o leitor de PDF do próprio Windows.
+    """PNG sem PIL (o PIL fica fora do pacote): só zlib, que vem com o Python."""
+
+    import zlib, struct
+
+    def bloco(tipo, dados):
+
+        return struct.pack(">I", len(dados)) + tipo + dados + struct.pack(">I", zlib.crc32(tipo + dados) & 0xffffffff)
+
+    cru = b"".join(b"\x00" + l for l in linhas_rgb)          # filtro 0 em cada linha
+
+    with open(caminho, "wb") as f:
+
+        f.write(b"\x89PNG\r\n\x1a\n" + bloco(b"IHDR", struct.pack(">IIBBBBB", largura, altura, 8, 2, 0, 0, 0))
+
+                + bloco(b"IDAT", zlib.compress(cru, 3)) + bloco(b"IEND", b""))
 
 
 
-    Antes isto dependia do PyMuPDF, que não vem junto: o `import` falhava, o
 
-    `except` engolia o erro e importar PDF na Escola Bíblica não fazia nada, sem
 
-    dizer por quê. Empacotar o PyMuPDF custaria 53 MB — mais do que o Sistema
+def converter_pdf(caminho, destino, larg=1920, alt=1080):
 
-    inteiro — para fazer o que o navegador já faz de graça: ele abre PDF nativo.
+    """PDF -> uma tela (PNG) por página, com o motor de PDF que vai DENTRO do Sistema.
 
-    Então copiamos o arquivo e deixamos cada página ser uma tela.
+    HISTÓRIA (10/10/2026, ele testando no Vaio: "não consegui converter esse arquivo.
+
+    Imagina isso na hora do vamos ver"): esta função só COPIAVA o PDF e contava as
+
+    páginas, mas importar() procura PNG/JPG na pasta — não achava nenhum e respondia
+
+    "Não consegui converter". Importar PDF nunca funcionou, nem no Windows.
+
+    Regra dele: o Sistema roda em qualquer máquina, sem programa de fora. O pypdfium2
+
+    traz o PDFium (o leitor de PDF do Chrome) dentro da própria biblioteca, ~6 MB,
+
+    para Windows e Linux. Teste: ferramentas\\testes\\test_sistema_importar.py
 
     """
 
+    import pypdfium2 as pdfium
+
+    pdf = pdfium.PdfDocument(caminho)
+
     try:
 
-        alvo = os.path.join(destino, "documento.pdf")
+        for i in range(len(pdf)):
 
-        shutil.copy2(caminho, alvo)
+            pg = pdf[i]
 
-        paginas = 1
+            w, h = pg.get_size()
 
-        try:
+            esc = min(larg / w, alt / h)                     # cabe INTEIRA no telão, sem esticar
 
-            from pypdf import PdfReader
+            bm = pg.render(scale=esc, rev_byteorder=True, fill_color=(255, 255, 255, 255))
 
-            paginas = len(PdfReader(alvo).pages)
+            bw, bh, passo, n = bm.width, bm.height, bm.stride, bm.n_channels
 
-        except Exception:
+            buf = bytes(bm.buffer)
 
-            pass                      # sem contar as páginas ainda dá para abrir a primeira
+            if n == 3:
 
-        with open(os.path.join(destino, "paginas.txt"), "w", encoding="utf-8") as f:
+                linhas = [buf[y * passo: y * passo + bw * 3] for y in range(bh)]
 
-            f.write(str(paginas))
+            else:                                            # RGBx: tira o 4º canal, em fatias
 
-        return True
+                linhas = []
 
-    except Exception:
+                for y in range(bh):
 
-        return False
+                    l = buf[y * passo: y * passo + bw * n]; o = bytearray(bw * 3)
+
+                    o[0::3] = l[0::n]; o[1::3] = l[1::n]; o[2::3] = l[2::n]
+
+                    linhas.append(bytes(o))
+
+            _grava_png(os.path.join(destino, "Slide%03d.png" % (i + 1)), bw, bh, linhas)
+
+    finally:
+
+        pdf.close()
+
+    return True
 
 
 
@@ -2463,6 +2503,92 @@ def importar(caminho):
     rel = [quote("slides_importados/" + os.path.relpath(p, SAIDA).replace("\\", "/")) for p in imgs]
 
     return {"ok": True, "nome": nome, "slides": rel}
+
+
+
+
+
+# APRESENTAÇÕES SALVAS — ordem dele, 10/10/2026 15h11: a página de slides fica "igual a
+
+# Fundos": quadradinhos com miniatura, apagáveis, e a da Evangelização de outubro já vem
+
+# DENTRO do Sistema como exemplo ("para quando baixarem da nuvem, ela já vir como DEMO").
+
+# As que vêm com o Sistema moram em BASE/apresentacoes (só leitura: esconder é do lado da
+
+# tela, como os fundos de fábrica); as que o operador importou, em SAIDA (essas apagam).
+
+APRESENTACOES_DEMO = os.path.join(BASE, "apresentacoes")
+
+
+
+
+
+def _telas_da_pasta(pasta):
+
+    fs = [os.path.join(r, f) for r, _, nomes in os.walk(pasta) for f in nomes
+
+          if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+
+    def chave(p):
+
+        b = os.path.basename(p)
+
+        dig = "".join(c for c in b if c.isdigit())
+
+        return (int(dig) if dig else 0, b)
+
+    return sorted(fs, key=chave)
+
+
+
+
+
+def listar_apresentacoes():
+
+    from urllib.parse import quote
+
+    lista = []
+
+    for base, prefixo, demo in ((APRESENTACOES_DEMO, "apresentacoes/", True), (SAIDA, "slides_importados/", False)):
+
+        if not os.path.isdir(base):
+
+            continue
+
+        for nome in sorted(os.listdir(base)):
+
+            pasta = os.path.join(base, nome)
+
+            telas = _telas_da_pasta(pasta) if os.path.isdir(pasta) else []
+
+            if telas:
+
+                lista.append({"nome": nome, "demo": demo, "slides": [
+
+                    quote(prefixo + os.path.relpath(p, base).replace("\\", "/")) for p in telas]})
+
+    return lista
+
+
+
+
+
+def apagar_apresentacao(nome):
+
+    """Só apaga o que o OPERADOR importou, e só dentro da pasta dele."""
+
+    raiz_ = os.path.normpath(SAIDA)
+
+    alvo = os.path.normpath(os.path.join(raiz_, nome or ""))
+
+    if not nome or os.path.dirname(alvo) != raiz_ or not os.path.isdir(alvo):
+
+        return {"ok": False, "erro": "Apresentação não encontrada."}
+
+    shutil.rmtree(alvo)
+
+    return {"ok": True}
 
 
 
@@ -2615,6 +2741,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 idade = time.time() - ESTADO.get("ts", 0) if ESTADO.get("ts") else 999
 
                 return self._json({"ok": True, "estado": dict(ESTADO), "idade": round(idade, 1)})
+
+        if self.path.startswith("/api/apresentacoes"):   # as salvas + a demo que vem junto
+
+            return self._json({"ok": True, "lista": listar_apresentacoes()})
 
         if self.path.startswith("/api/animacoes"):       # louvores de CIAS com animação
 
@@ -2911,6 +3041,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     return self._json({"ok": False, "erro": "Arquivo não encontrado."})
 
                 return self._json(importar(caminho))
+
+            except Exception as e:
+
+                return self._json({"ok": False, "erro": str(e)})
+
+        if self.path.startswith("/api/apagar-apresentacao"):
+
+            try:
+
+                n = int(self.headers.get("Content-Length", 0) or 0)
+
+                corpo = json.loads(self.rfile.read(n) or b"{}")
+
+                return self._json(apagar_apresentacao(corpo.get("nome")))
 
             except Exception as e:
 

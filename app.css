@@ -617,3 +617,28 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 .reset-row.melhor b{color:#f5d76e}
 .reset-row.melhor .big-btn{background:#20304a;color:#8fa8cf;opacity:.62;font-weight:500}
 .reset-row.melhor .big-btn:hover{opacity:1;background:#2a3d5c;color:#cfe0f5}
+/* APRESENTAÇÕES (igual a Fundos, 10/10/2026): nome em cima, "Exemplo · 22 slides" discreto embaixo */
+.fundo-card .ap-info{display:block;margin-top:3px;font-size:11px;opacity:.65;letter-spacing:.02em}
+.fundo-card .nome .ap-nome{display:block}
+/* PÁGINA SISTEMA (10/10/2026): 4 botões que abrem os submenus, no mesmo azul das linhas */
+.sis-grupo{background:#0c1830;border:1px solid var(--borda);border-radius:10px;margin:10px 0;overflow:hidden}
+.sis-grupo>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:12px;padding:13px 16px;user-select:none}
+.sis-grupo>summary::-webkit-details-marker{display:none}
+.sis-grupo>summary::after{content:'▸';margin-left:auto;color:#7f96b8;transition:transform .2s}
+.sis-grupo[open]>summary::after{transform:rotate(90deg)}
+.sis-grupo>summary:hover{background:#12244055}
+.sis-grupo .sg-tit{font-size:15px;font-weight:700;color:#e6eefb}
+.sis-grupo>summary small{color:#7f96b8;font-size:11.5px}
+.sis-grupo[open]{padding-bottom:6px}
+.sis-grupo .reset-row,.sis-grupo .cred-bloco{margin:0 10px 8px}
+#grupo-desinstalar>summary .sg-tit{color:#f0a0a0}
+/* o ouro da "melhor versão" veste também o botão Atualizar (ordem dele: "quase um brasão") */
+.sis-grupo.melhor{border-color:#6b5620;box-shadow:inset 3px 0 0 var(--ouro)}
+.sis-grupo.melhor>summary{background:linear-gradient(90deg,#2a2312 0%,#1a1710 62%,transparent 100%)}
+.sis-grupo.melhor>summary .sg-tit{color:#f5d76e}
+.sis-grupo.melhor>summary small{color:#e8b93c}
+.reset-row.destaque{border-color:var(--verde)}
+.sis-assina{text-align:center;color:#7e93b4;font-size:12px;margin:18px 0 4px;letter-spacing:.02em}
+.sis-assina b{color:#a9bcd8;font-weight:600}
+/* negrito DENTRO do texto miúdo fica na linha (o .reset-row b é bloco: quebrava "Animação" e sobrava um ponto solto) */
+.reset-row small b{display:inline;font-size:inherit;margin:0}
