@@ -1,0 +1,824 @@
+{
+ "versao": 1,
+ "pptx": "Slides - Você sabe o que é Salvação (com o 69 do caderno).pptx",
+ "largura": 1920,
+ "altura": 1080,
+ "slides": {
+  "6": {
+   "base": "_movimento/s06_base.webp",
+   "camadas": [
+    {
+     "id": 1419,
+     "src": "_movimento/s06_c0.webp",
+     "x": 0.0,
+     "y": 0.0,
+     "w": 1.0,
+     "h": 1.0,
+     "cx": 0.5013,
+     "cy": 0.5005
+    },
+    {
+     "id": 2,
+     "src": "_movimento/s06_c2.webp",
+     "x": 0.45729,
+     "y": 0.31481,
+     "w": 0.27187,
+     "h": 0.32222,
+     "cx": 0.5436,
+     "cy": 0.4833
+    },
+    {
+     "id": 1519,
+     "src": "_movimento/s06_c3.webp",
+     "x": 0.00104,
+     "y": 0.00185,
+     "w": 0.99896,
+     "h": 0.99815,
+     "cx": 0.5007,
+     "cy": 0.5012
+    },
+    {
+     "id": 1515,
+     "src": "_movimento/s06_c4.webp",
+     "x": 0.0,
+     "y": 0.0,
+     "w": 1.0,
+     "h": 1.0,
+     "cx": 0.5165,
+     "cy": 0.5515
+    },
+    {
+     "id": null,
+     "src": "_movimento/s06_c5.webp",
+     "x": 0.05885,
+     "y": 0.04167,
+     "w": 0.89062,
+     "h": 0.13981,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [],
+    [
+     {
+      "alvo": 1515,
+      "classe": "exit",
+      "preset": 10,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "esmaecer"
+     },
+     {
+      "alvo": 1519,
+      "classe": "exit",
+      "preset": 10,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "esmaecer"
+     },
+     {
+      "alvo": 1419,
+      "classe": "entr",
+      "preset": 10,
+      "ini": 500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "esmaecer"
+     },
+     {
+      "alvo": 2,
+      "classe": "entr",
+      "preset": 10,
+      "ini": 500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "esmaecer"
+     }
+    ]
+   ],
+   "extras": [
+    {
+     "alvo": 2,
+     "efeito": "pop",
+     "de": 0.85,
+     "porque": "o balao dos discipulos cresce um tico junto com o esmaecer (o oficial so esmaece)",
+     "nosso": true,
+     "passo": 1,
+     "ini": 500,
+     "dur": 500
+    }
+   ],
+   "confere": {
+    "media": 0.0,
+    "pico": 1.0
+   }
+  },
+  "8": {
+   "base": "_movimento/s08_base.webp",
+   "camadas": [
+    {
+     "id": 6,
+     "src": "_movimento/s08_c1.webp",
+     "x": 0.65573,
+     "y": 0.25926,
+     "w": 0.13333,
+     "h": 0.23889,
+     "cx": 0.5015,
+     "cy": 0.5004
+    },
+    {
+     "id": 7,
+     "src": "_movimento/s08_c2.webp",
+     "x": 0.86406,
+     "y": 0.40648,
+     "w": 0.13594,
+     "h": 0.26389,
+     "cx": 0.5433,
+     "cy": 0.5008
+    },
+    {
+     "id": 8,
+     "src": "_movimento/s08_c3.webp",
+     "x": 0.85573,
+     "y": 0.0463,
+     "w": 0.13385,
+     "h": 0.23889,
+     "cx": 0.5022,
+     "cy": 0.5009
+    },
+    {
+     "id": 9,
+     "src": "_movimento/s08_c4.webp",
+     "x": 0.0474,
+     "y": 0.26852,
+     "w": 0.1474,
+     "h": 0.26389,
+     "cx": 0.5013,
+     "cy": 0.5002
+    },
+    {
+     "id": 2,
+     "src": "_movimento/s08_c5.webp",
+     "x": 0.82083,
+     "y": 0.07963,
+     "w": 0.13385,
+     "h": 0.23796,
+     "cx": 0.5014,
+     "cy": 0.5009
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 6,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 7,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 8,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 9,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 2,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 2000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.0,
+    "pico": 0.0
+   }
+  },
+  "10": {
+   "base": "_movimento/s10_base.webp",
+   "camadas": [
+    {
+     "id": 2,
+     "src": "_movimento/s10_c1.webp",
+     "x": 0.0,
+     "y": 0.0,
+     "w": 0.3375,
+     "h": 1.0,
+     "cx": 0.1658,
+     "cy": 0.5009
+    },
+    {
+     "id": null,
+     "src": "_movimento/s10_c2.webp",
+     "x": 0.08958,
+     "y": 0.0213,
+     "w": 0.73906,
+     "h": 0.36019,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 2,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 0,
+      "dur": 2000,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.04,
+    "pico": 1.0
+   }
+  },
+  "11": {
+   "base": "_movimento/s11_base.webp",
+   "camadas": [
+    {
+     "id": 5,
+     "src": "_movimento/s11_c1.webp",
+     "x": 0.89115,
+     "y": 0.4037,
+     "w": 0.08906,
+     "h": 0.15833,
+     "cx": 0.5031,
+     "cy": 0.5017
+    },
+    {
+     "id": 6,
+     "src": "_movimento/s11_c2.webp",
+     "x": 0.03906,
+     "y": 0.20093,
+     "w": 0.08854,
+     "h": 0.15833,
+     "cx": 0.5037,
+     "cy": 0.5038
+    },
+    {
+     "id": 7,
+     "src": "_movimento/s11_c3.webp",
+     "x": 0.66927,
+     "y": 0.78333,
+     "w": 0.08854,
+     "h": 0.15833,
+     "cx": 0.5048,
+     "cy": 0.5029
+    },
+    {
+     "id": 8,
+     "src": "_movimento/s11_c4.webp",
+     "x": 0.84688,
+     "y": 0.66667,
+     "w": 0.08906,
+     "h": 0.15833,
+     "cx": 0.5024,
+     "cy": 0.5043
+    },
+    {
+     "id": null,
+     "src": "_movimento/s11_c5.webp",
+     "x": 0.00365,
+     "y": 0.0287,
+     "w": 0.88646,
+     "h": 0.9713,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    {
+     "id": 14,
+     "src": "_movimento/s11_c6.webp",
+     "x": 0.56094,
+     "y": 0.58426,
+     "w": 0.1349,
+     "h": 0.24167,
+     "cx": 0.5026,
+     "cy": 0.5009
+    },
+    {
+     "id": 16,
+     "src": "_movimento/s11_c7.webp",
+     "x": 0.29896,
+     "y": 0.75185,
+     "w": 0.1349,
+     "h": 0.24074,
+     "cx": 0.5019,
+     "cy": 0.4997
+    },
+    {
+     "id": null,
+     "src": "_movimento/s11_c8.webp",
+     "x": 0.70104,
+     "y": 0.46574,
+     "w": 0.17552,
+     "h": 0.22685,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    {
+     "id": 20,
+     "src": "_movimento/s11_c9.webp",
+     "x": 0.42604,
+     "y": 0.64074,
+     "w": 0.1349,
+     "h": 0.24074,
+     "cx": 0.5021,
+     "cy": 0.5002
+    },
+    {
+     "id": 21,
+     "src": "_movimento/s11_c10.webp",
+     "x": 0.1276,
+     "y": 0.77593,
+     "w": 0.1349,
+     "h": 0.22407,
+     "cx": 0.5031,
+     "cy": 0.5397
+    },
+    {
+     "id": 22,
+     "src": "_movimento/s11_c11.webp",
+     "x": 0.71198,
+     "y": 0.6787,
+     "w": 0.13385,
+     "h": 0.23796,
+     "cx": 0.5032,
+     "cy": 0.5003
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 5,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 6,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 7,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 8,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 14,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 2000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 16,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 2500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 20,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 3000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 21,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 3500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 22,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 4000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.03,
+    "pico": 1.0
+   }
+  },
+  "12": {
+   "base": "_movimento/s12_base.webp",
+   "camadas": [
+    {
+     "id": 5,
+     "src": "_movimento/s12_c1.webp",
+     "x": 0.60365,
+     "y": 0.46389,
+     "w": 0.08854,
+     "h": 0.15833,
+     "cx": 0.5009,
+     "cy": 0.5026
+    },
+    {
+     "id": 6,
+     "src": "_movimento/s12_c2.webp",
+     "x": 0.80365,
+     "y": 0.42593,
+     "w": 0.08854,
+     "h": 0.15833,
+     "cx": 0.5027,
+     "cy": 0.5031
+    },
+    {
+     "id": 7,
+     "src": "_movimento/s12_c3.webp",
+     "x": 0.28385,
+     "y": 0.41574,
+     "w": 0.08854,
+     "h": 0.15741,
+     "cx": 0.5035,
+     "cy": 0.5024
+    },
+    {
+     "id": 8,
+     "src": "_movimento/s12_c4.webp",
+     "x": 0.15156,
+     "y": 0.43704,
+     "w": 0.08854,
+     "h": 0.15741,
+     "cx": 0.5039,
+     "cy": 0.502
+    },
+    {
+     "id": null,
+     "src": "_movimento/s12_c5.webp",
+     "x": 0.73073,
+     "y": 0.09074,
+     "w": 0.13958,
+     "h": 0.19815,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 5,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 6,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 7,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1000,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     },
+     {
+      "alvo": 8,
+      "classe": "entr",
+      "preset": 22,
+      "ini": 1500,
+      "dur": 500,
+      "suave": false,
+      "efeito": "revelar",
+      "lado": "up"
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.0,
+    "pico": 0.0
+   }
+  },
+  "15": {
+   "base": "_movimento/s15_base.webp",
+   "camadas": [
+    {
+     "id": 9,
+     "src": "_movimento/s15_c1.webp",
+     "x": 0.24635,
+     "y": 0.34907,
+     "w": 0.11198,
+     "h": 0.20093,
+     "cx": 0.5018,
+     "cy": 0.5002
+    },
+    {
+     "id": null,
+     "src": "_movimento/s15_c2.webp",
+     "x": 0.03906,
+     "y": 0.06111,
+     "w": 0.92552,
+     "h": 0.70556,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    {
+     "id": 17,
+     "src": "_movimento/s15_c3.webp",
+     "x": 0.6401,
+     "y": 0.21481,
+     "w": 0.2474,
+     "h": 0.25185,
+     "cx": 0.4994,
+     "cy": 0.4991
+    },
+    {
+     "id": 23,
+     "src": "_movimento/s15_c4.webp",
+     "x": 0.21771,
+     "y": 0.33148,
+     "w": 0.16875,
+     "h": 0.29444,
+     "cx": 0.501,
+     "cy": 0.5009
+    },
+    {
+     "id": null,
+     "src": "_movimento/s15_c5.webp",
+     "x": 0.12344,
+     "y": 0.52037,
+     "w": 0.83594,
+     "h": 0.43889,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [],
+    [
+     {
+      "alvo": 17,
+      "classe": "entr",
+      "preset": 10,
+      "ini": 0,
+      "dur": 500,
+      "suave": false,
+      "efeito": "esmaecer"
+     },
+     {
+      "alvo": 9,
+      "classe": "emph",
+      "preset": 8,
+      "ini": 500,
+      "dur": 2000,
+      "suave": false,
+      "efeito": "girar",
+      "graus": -90.0
+     },
+     {
+      "alvo": 9,
+      "classe": "exit",
+      "preset": 1,
+      "ini": 2500,
+      "dur": 1,
+      "suave": false,
+      "efeito": "aparecer"
+     },
+     {
+      "alvo": 23,
+      "classe": "entr",
+      "preset": 1,
+      "ini": 2500,
+      "dur": 1,
+      "suave": false,
+      "efeito": "aparecer"
+     },
+     {
+      "alvo": 23,
+      "classe": "path",
+      "preset": 42,
+      "ini": 2500,
+      "dur": 2000,
+      "suave": true,
+      "efeito": "caminho",
+      "caminho": [
+       [
+        -0.0,
+        0.0
+       ],
+       [
+        0.11576,
+        0.24282
+       ]
+      ]
+     }
+    ]
+   ],
+   "extras": [
+    {
+     "alvo": 23,
+     "efeito": "pulsar",
+     "dur": 1100,
+     "escala": 1.08,
+     "porque": "o coracao vermelho 'cheio de alegria e pulsando' (pedido dele; o pptx oficial nao pulsa)",
+     "nosso": true,
+     "passo": 1,
+     "ini": 4500
+    },
+    {
+     "alvo": 17,
+     "efeito": "pop",
+     "de": 0.85,
+     "porque": "o balao de Jesus cresce um tico junto com o esmaecer (o oficial so esmaece)",
+     "nosso": true,
+     "passo": 1,
+     "ini": 0,
+     "dur": 500
+    }
+   ],
+   "confere": {
+    "media": 0.0,
+    "pico": 1.0
+   }
+  },
+  "19": {
+   "base": "_movimento/s19_base.webp",
+   "camadas": [
+    {
+     "id": null,
+     "src": "_movimento/s19_c2.webp",
+     "x": 0.14531,
+     "y": 0.13611,
+     "w": 0.65052,
+     "h": 0.78519,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 32,
+      "classe": "path",
+      "preset": 0,
+      "ini": 0,
+      "dur": 2000,
+      "suave": true,
+      "efeito": "caminho",
+      "caminho": [
+       [
+        0.09149,
+        -0.09167
+       ],
+       [
+        1.05122,
+        -1.14237
+       ]
+      ]
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.01,
+    "pico": 1.0
+   }
+  },
+  "21": {
+   "base": "_movimento/s21_base.webp",
+   "camadas": [
+    {
+     "id": null,
+     "src": "_movimento/s21_c2.webp",
+     "x": 0.14531,
+     "y": 0.13611,
+     "w": 0.65052,
+     "h": 0.78519,
+     "cx": 0.5,
+     "cy": 0.5
+    }
+   ],
+   "passos": [
+    [
+     {
+      "alvo": 32,
+      "classe": "path",
+      "preset": 0,
+      "ini": 0,
+      "dur": 2000,
+      "suave": true,
+      "efeito": "caminho",
+      "caminho": [
+       [
+        0.09149,
+        -0.09167
+       ],
+       [
+        1.05122,
+        -1.14237
+       ]
+      ]
+     }
+    ]
+   ],
+   "extras": [],
+   "confere": {
+    "media": 0.01,
+    "pico": 1.0
+   }
+  }
+ }
+}

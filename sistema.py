@@ -2714,9 +2714,11 @@ APRESENTACOES_DEMO = os.path.join(BASE, "apresentacoes")
 
 def _telas_da_pasta(pasta):
 
-    fs = [os.path.join(r, f) for r, _, nomes in os.walk(pasta) for f in nomes
-
-          if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".gif"))]
+    # 3.0.7: pasta que começa com "_" é peça de dentro da tela (as camadas do _movimento), não tela
+    fs = []
+    for r, subs, nomes in os.walk(pasta):
+        subs[:] = [d for d in subs if not d.startswith("_")]
+        fs += [os.path.join(r, f) for f in nomes if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".gif"))]
 
     def chave(p):
 
@@ -2730,6 +2732,29 @@ def _telas_da_pasta(pasta):
 
 
 
+
+
+def _movimento_da_pasta(pasta, url_pasta, n):
+    """3.0.7 — a animação DENTRO da tela (o (4/5), ordem dele 11/10 17h20). movimento.json, feito pelo
+    ferramentas/movimento_do_pptx.py, diz por slide: o fundo parado, as camadas que se mexem e a linha do tempo
+    exata do PowerPoint. Devolve {índice da tela (0-based, em texto): dados com os endereços já prontos}.
+    Sem o arquivo (ou com ele estragado) a apresentação toca do jeito de antes: uma imagem por tela."""
+    from urllib.parse import quote
+    try:
+        with open(os.path.join(pasta, "movimento.json"), encoding="utf-8") as f:
+            m = json.load(f)
+        saida = {}
+        for k, sl in (m.get("slides") or {}).items():
+            i = int(k) - 1
+            if not 0 <= i < n:
+                continue
+            sl = dict(sl, base=url_pasta + quote(sl["base"]),
+                      camadas=[dict(c, src=url_pasta + quote(c["src"])) for c in sl.get("camadas", [])])
+            sl.pop("confere", None)
+            saida[str(i)] = sl
+        return saida
+    except Exception:
+        return {}
 
 
 def listar_apresentacoes():
@@ -2759,7 +2784,8 @@ def listar_apresentacoes():
 
                     quote(prefixo + os.path.relpath(p, base).replace("\\", "/")) for p in telas],
 
-                    "notas": _notas_da_pasta(pasta, len(telas))})
+                    "notas": _notas_da_pasta(pasta, len(telas)),
+                    "mov": _movimento_da_pasta(pasta, quote(prefixo + nome + "/"), len(telas))})
 
     return lista
 

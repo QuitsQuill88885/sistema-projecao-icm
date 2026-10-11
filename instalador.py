@@ -90,6 +90,27 @@ def sincronizar_apresentacoes_de_fabrica(pacote):
             p = os.path.join(velha, nome)
             if nome not in ficam and os.path.isdir(p):
                 shutil.rmtree(p, ignore_errors=True)
+            elif nome in ficam and os.path.isdir(p):
+                _tira_o_que_saiu(os.path.join(nova, nome), p)
+
+
+def _tira_o_que_saiu(nova, velha):
+    """3.0.7: DENTRO de uma apresentação de fábrica que ficou, tira o arquivo que saiu do pacote. A Aula foi de 24
+    para 22 telas (o barco e o coração viraram animação dentro da tela); por cima da 3.0.6, as Slide023/024 velhas
+    ficavam na pasta e a Aula aparecia com 24, as duas últimas repetidas."""
+    ficam = set(os.listdir(nova))
+    for nome in os.listdir(velha):
+        p = os.path.join(velha, nome)
+        if nome not in ficam:
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+            else:
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+        elif os.path.isdir(p) and os.path.isdir(os.path.join(nova, nome)):
+            _tira_o_que_saiu(os.path.join(nova, nome), p)
 
 
 def instalar(progresso):

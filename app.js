@@ -2335,7 +2335,7 @@ function renderFundosLiso() {
   });
 }
 // ================= SLIDES (PowerPoint / PDF) =================
-let SLIDES = [];   // {nome, lista:[url], notas:[texto]}
+let SLIDES = [];   // {nome, lista:[url], notas:[texto], mov:{indice: animacao dentro da tela (3.0.7)}}
 function statusSlides(txt, erro) { const e = $('#sl-status'); if (e) { e.textContent = txt || ''; e.className = 'sl-status' + (erro ? ' erro' : ''); } }
 async function abrirApresentacao() {
   statusSlides('Escolhendo o arquivo…');
@@ -2364,7 +2364,7 @@ function carregarApresentacoes() {
     .then(r => { APRES = r.lista || []; renderApresentacoes(); }).catch(() => {});
 }
 function abrirSalva(a) {
-  SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [] }; est.slidePos = -1;
+  SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [], mov: a.mov || {} }; est.slidePos = -1;
   renderSlides(); statusSlides(a.slides.length + ' slides — clique em um para projetar.');
 }
 function apagarApresentacao(a) {
@@ -2414,12 +2414,22 @@ function renderSlides() {
     g.appendChild(c);
   });
 }
-function projetarSlide(i) {
+// 3.0.7 — a animação DENTRO da tela (o (4/5), ordem dele 11/10 17h20): o slide com movimento tem cliques próprios
+// (o barco, o coração da filha de Jairo). passo 0 = o que roda sozinho ao entrar; a seta toca o clique seguinte e
+// só depois vai ao próximo slide; voltar desfaz o último clique, e do slide anterior volta ao FIM dele (o PowerPoint
+// faz assim). O telão (projecao.html) recebe o mesmo slide com outro passo e não troca a tela.
+function movSlide(i) { return (SLIDES.mov || {})[String(i)] || null; }
+function cliquesDoSlide(i) { const m = movSlide(i); return m ? m.passos.length - 1 : 0; }
+function projetarSlide(i, passo) {
   if (!SLIDES.lista || !SLIDES.lista[i]) return;
-  est.slidePos = i; est.live = { tipo: 'slide', i, n: SLIDES.lista.length };
+  const mesmo = est.live && est.live.tipo === 'slide' && est.slidePos === i && typeof passo === 'number';
+  est.slidePos = i; est.slidePasso = Math.max(0, Math.min(cliquesDoSlide(i), passo || 0));
+  est.live = { tipo: 'slide', i, n: SLIDES.lista.length };
   // tela pronta, igual à das CIAS: vai inteira e sem esticar. Apresentação da
   // Escola Bíblica em 4:3 estava sendo alargada até o 16:9 do telão.
-  projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: ESMAECER });
+  const st = { modo: 'slide', src: SLIDES.lista[i], transicao: !mesmo, fade: ESMAECER };
+  const m = movSlide(i); if (m) { st.mov = m; st.passo = est.slidePasso; }
+  projetar(st);
   // 3.0.5 (ordem dele 11/10, depois do culto): projetar slide com o telão desligado LIGA o telão.
   // Ele entrava nos slides, avançava e "não projeta": tinha de sair e clicar em Ativar telão.
   // A janela nova nasce mostrando est.ultimo, que o projetar() acima acabou de gravar.
@@ -2427,8 +2437,18 @@ function projetarSlide(i) {
   renderSlides(); aprAtualizar();
   const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
 }
-function slideProximo() { if (SLIDES.lista && est.slidePos < SLIDES.lista.length - 1) projetarSlide(est.slidePos + 1); }
-function slideAnterior() { if (SLIDES.lista && est.slidePos > 0) projetarSlide(est.slidePos - 1); }
+function slideProximo() {
+  if (!SLIDES.lista) return;
+  const i = est.slidePos;
+  if (i >= 0 && (est.slidePasso || 0) < cliquesDoSlide(i)) { projetarSlide(i, (est.slidePasso || 0) + 1); return; }
+  if (i < SLIDES.lista.length - 1) projetarSlide(i + 1);
+}
+function slideAnterior() {
+  if (!SLIDES.lista) return;
+  const i = est.slidePos;
+  if (i >= 0 && (est.slidePasso || 0) > 0) { projetarSlide(i, est.slidePasso - 1); return; }
+  if (i > 0) projetarSlide(i - 1, cliquesDoSlide(i - 1));
+}
 
 // ================= MODO APRESENTADOR =================
 // Pedido da Cris (professora das crianças), 10/10/2026 21h15, com a foto do Modo
@@ -2451,9 +2471,11 @@ function aprAtualizar() {
   const tem = i + 1 < n;
   sg.hidden = !tem; $('#apr-seg-fim').hidden = tem;
   if (tem && sg.getAttribute('src') !== SLIDES.lista[i + 1]) sg.src = SLIDES.lista[i + 1];
-  $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n;
+  // 3.0.7: o operador precisa saber que a próxima seta é uma ANIMAÇÃO deste slide, não o slide seguinte
+  const cl = cliquesDoSlide(i), falta = cl - (est.slidePasso || 0);
+  $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n + (falta > 0 ? ' · falta' + (falta > 1 ? 'm ' + falta + ' animações' : ' 1 animação') : '');
   $('#apr-barra').style.width = (100 * (i + 1) / n) + '%';
-  $('#apr-ant').disabled = i <= 0; $('#apr-prox').disabled = i >= n - 1;
+  $('#apr-ant').disabled = i <= 0 && !(est.slidePasso > 0); $('#apr-prox').disabled = i >= n - 1 && falta <= 0;
   const preto = !!(est.live && est.live.tipo === 'preto');
   $('#apr').classList.toggle('preto', preto); $('#apr-bt-preto').classList.toggle('on', preto);
 }

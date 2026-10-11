@@ -68,6 +68,13 @@ html,body{height:100%;background:#000;overflow:hidden;
       background:#000 center/100% 100% no-repeat;overflow:hidden;container-type:size}
 .camada{position:absolute;inset:0;transition:opacity var(--fade,0ms) ease}
 #fundo-fx{position:absolute;inset:0;opacity:0;pointer-events:none}
+/* 3.0.7 — o PALCO da animacao dentro da tela: do tamanho do slide (16:9, inteiro, como o center/contain do fundo) */
+#palcos{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.palco{position:absolute;left:50%;top:50%;width:min(100vw,177.778vh);height:min(100vh,56.25vw);transform:translate(-50%,-50%)}
+.palco .pm{position:absolute;inset:0}
+.palco .pr{position:absolute}
+.palco .ps{position:absolute;inset:0}
+.palco img{position:absolute;inset:0;width:100%;height:100%;display:block}
 /* a CIFRA no telao (#27, ensaio do grupo): monoespacada — a coluna E o acorde */
 #cifra-tela{position:absolute;inset:12% 6% 6% 6%;display:none;overflow:hidden}
 #cifra-tela pre{font-family:Consolas,'Courier New',monospace;font-size:3.05cqh;
@@ -181,6 +188,7 @@ html,body{height:100%;background:#000;overflow:hidden;
        espera (depois do último louvor/animação) era o background trocando
        na hora enquanto só o TEXTO sabia atravessar suave. -->
   <div id="fundo-fx"></div>
+  <div id="palcos"></div>
   <div class="camada" id="cam">
     <div class="txt" id="bib-ref"></div>
     <div class="txt" id="bib-txt"></div>
@@ -302,6 +310,107 @@ function fundo(url){ trocaFundo(url?`#000 url('${url}') center/100% 100% no-repe
    modo que a animação das CIAS caía no vazio e o telão ficava PRETO. Era por
    isso que o Samuel nunca tinha visto a função das CIAS funcionar. */
 function telaPronta(url){ trocaFundo(url?`#000 url('${url}') center/contain no-repeat`:'#000'); }
+/* 3.0.7 — A ANIMACAO DENTRO DA MESMA TELA (o (4/5), ordem dele 11/10 17h20).
+   Ate a 3.0.6 cada clique de animacao do PowerPoint era uma TELA a mais: o barco e o coracao da filha de Jairo
+   pareciam slides repetidos e o movimento sumia. Agora o slide e um PALCO: o fundo parado (e.mov.base) + as camadas
+   que se mexem, e a linha do tempo EXATA do pptx (ferramentas/movimento_do_pptx.py): esmaecer, aparecer, revelar,
+   girar, crescer e caminho, com a mesma duracao e o mesmo atraso. e.passo diz em que clique o operador esta:
+   0 = o que roda sozinho ao entrar; +1 toca o clique seguinte; qualquer outro numero vai DIRETO ao estado
+   (voltar desfaz o ultimo clique, como no PowerPoint). Os acrescimos nossos (pulsar, pop) vem em e.mov.extras.
+   Cada camada: .pm (caminho, em % do slide) > .pr (giro, no centro da forma) > .ps (crescer/pulsar) > img. */
+let PALCO=null;
+function limparPalco(ms){
+  if(!PALCO) return;
+  const velho=PALCO.el; clearTimeout(PALCO.t0); PALCO=null;
+  velho.style.transition='opacity '+(ms||0)+'ms ease'; velho.style.opacity='0';
+  setTimeout(()=>velho.remove(), (ms||0)+60);
+}
+function _efeitosDoPasso(mov,k){
+  const efs=(mov.passos[k]||[]).slice();
+  (mov.extras||[]).forEach(x=>{ if(x.passo===k) efs.push(x); });
+  return efs;
+}
+function _anima(f, cam){
+  if(!cam) return [];
+  const m=cam, r=m.firstChild, sc=r.firstChild, img=sc.firstChild;
+  const ini=f.ini||0, dur=Math.max(1,f.dur||1), suave=f.suave?'ease-in-out':'linear';
+  const A=(el,kf,o)=>el.animate(kf,Object.assign({delay:ini,duration:dur,fill:'forwards'},o||{}));
+  const out=[];
+  if(f.classe==='entr'){
+    out.push(A(img,[{visibility:'visible'},{visibility:'visible'}]));
+    if(f.efeito==='esmaecer') out.push(A(img,[{opacity:0},{opacity:1}],{fill:'both'}));
+    if(f.efeito==='revelar'){
+      const de={up:'inset(100% 0 0 0)',down:'inset(0 0 100% 0)',left:'inset(0 0 0 100%)',right:'inset(0 100% 0 0)'}[f.lado]||'inset(100% 0 0 0)';
+      out.push(A(img,[{clipPath:de},{clipPath:'inset(0 0 0 0)'}],{fill:'both'}));
+    }
+  } else if(f.classe==='exit'){
+    if(f.efeito==='esmaecer') out.push(A(img,[{opacity:1},{opacity:0}]));
+    if(f.efeito==='revelar'){
+      const ate={up:'inset(0 0 100% 0)',down:'inset(100% 0 0 0)',left:'inset(0 100% 0 0)',right:'inset(0 0 0 100%)'}[f.lado]||'inset(0 0 100% 0)';
+      out.push(A(img,[{clipPath:'inset(0 0 0 0)'},{clipPath:ate}]));
+    }
+    // sai = opacidade 0 CONSTANTE a partir do fim do efeito. Degrau no ultimo quadro (visibility 'hidden' ou
+    // step-end) NAO serve: no fill o Chrome/Edge para em 0,99999 e nunca chega ao degrau (o teste pegou: o coracao
+    // cinza nunca sumia depois do giro).
+    out.push(A(img,[{opacity:0},{opacity:0}],{delay:ini+dur,duration:1}));
+  } else if(f.efeito==='girar'){
+    out.push(A(r,[{transform:'rotate(0deg)'},{transform:'rotate('+f.graus+'deg)'}],{easing:suave,composite:'add'}));
+  } else if(f.efeito==='crescer'){
+    const e=f.escala||[1,1];
+    out.push(A(sc,[{transform:'scale(1,1)'},{transform:'scale('+e[0]+','+e[1]+')'}],{easing:suave,composite:'add'}));
+  } else if(f.efeito==='caminho'){
+    const pts=f.caminho&&f.caminho.length?f.caminho:[[0,0]];
+    out.push(A(m,pts.map(p=>({transform:'translate('+(p[0]*100)+'%,'+(p[1]*100)+'%)'})),{easing:suave,composite:'add'}));
+  } else if(f.efeito==='pulsar'){            // NOSSO (pedido dele 17h21): o coracao vermelho bate
+    const e=f.escala||1.08;
+    out.push(sc.animate([{transform:'scale(1)'},{transform:'scale('+e+')'},{transform:'scale(1)'}],
+      {delay:ini,duration:f.dur||1100,iterations:Infinity,easing:'ease-in-out',composite:'add'}));
+  } else if(f.efeito==='pop'){               // NOSSO: o balao cresce um tico junto com o esmaecer oficial
+    out.push(sc.animate([{transform:'scale('+(f.de||0.85)+')'},{transform:'scale(1)'}],
+      {delay:ini,duration:dur,easing:'cubic-bezier(.34,1.56,.64,1)',composite:'add'}));
+  }
+  return out;
+}
+function tocarPasso(k, direto){
+  if(!PALCO) return;
+  clearTimeout(PALCO.t0);
+  // clique no meio da animacao anterior: ela termina na hora (o PowerPoint faz assim)
+  PALCO.anims.forEach(a=>{ try{ if(a.effect.getTiming().iterations!==Infinity) a.finish(); }catch(_){} });
+  PALCO.passo=k;
+  _efeitosDoPasso(PALCO.mov,k).forEach(f=>{
+    _anima(f, PALCO.cams[f.alvo]).forEach(a=>{
+      PALCO.anims.push(a);
+      if(!direto) return;
+      try{ if(a.effect.getTiming().iterations===Infinity) a.currentTime=f.ini||0; else a.finish(); }catch(_){}
+    });
+  });
+}
+function montarPalco(e, ms){
+  limparPalco(ms);
+  telaPronta(e.mov.base);
+  const mov=e.mov, el=document.createElement('div'); el.className='palco';
+  // quem ENTRA em algum momento comeca escondido; o resto comeca a vista (o PowerPoint faz assim)
+  const primeiro={};
+  mov.passos.forEach(p=>p.forEach(f=>{ if(!(f.alvo in primeiro)) primeiro[f.alvo]=f.classe; }));
+  const cams={};
+  (mov.camadas||[]).forEach(c=>{
+    const m=document.createElement('div'); m.className='pm';
+    const r=document.createElement('div'); r.className='pr';
+    r.style.cssText='left:'+(c.x*100)+'%;top:'+(c.y*100)+'%;width:'+(c.w*100)+'%;height:'+(c.h*100)+'%;transform-origin:'+(c.cx*100)+'% '+(c.cy*100)+'%';
+    const sc=document.createElement('div'); sc.className='ps'; sc.style.transformOrigin=(c.cx*100)+'% '+(c.cy*100)+'%';
+    const img=document.createElement('img'); img.src=c.src; img.alt='';
+    if(c.id!==null && primeiro[c.id]==='entr') img.style.visibility='hidden';
+    sc.appendChild(img); r.appendChild(sc); m.appendChild(r); el.appendChild(m);
+    if(c.id!==null) cams[c.id]=m;
+  });
+  $('#palcos').appendChild(el);
+  PALCO={src:e.src, mov, el, cams, anims:[], passo:0, t0:null};
+  const alvo=Math.max(0, Math.min(mov.passos.length-1, e.passo|0));
+  if(ms>0){ el.style.opacity='0'; void el.offsetWidth; el.style.transition='opacity '+ms+'ms ease'; el.style.opacity='1'; }
+  if(alvo>0){ for(let k=0;k<=alvo;k++) tocarPasso(k,true); return; }
+  // o que roda sozinho comeca quando a tela terminou de entrar (o PowerPoint espera a transicao)
+  PALCO.t0=setTimeout(()=>{ if(PALCO && PALCO.el===el) tocarPasso(0,false); }, ms||0);
+}
 // auto-ajuste: reduz a fonte até o conteúdo caber na caixa (nenhum louvor/versículo quebra)
 /* Ajusta a fonte para o texto SEMPRE caber inteiro na caixa.
    A escala do A-/A+ entra ANTES do ajuste: aumentar aumenta, mas nunca deixa cortar. */
@@ -392,10 +501,18 @@ function aplicar(e){
   ULT = ['biblia','louvor','texto','bibmulti'].includes(e.modo) ? e : null;   // p/ re-ajustar quando fontes carregam / tela muda
   const fade = e.transicao ? (e.fade||600) : 0;
   cam.style.setProperty('--fade', fade+'ms');
+  // 3.0.7: o MESMO slide com outro passo nao troca a tela: toca o clique seguinte, ou vai direto ao estado pedido
+  if(e.modo==='slide' && e.mov && PALCO && PALCO.src===e.src && typeof e.passo==='number'){
+    if(e.passo===PALCO.passo+1) tocarPasso(e.passo,false);
+    else if(e.passo!==PALCO.passo) montarPalco(Object.assign({},e),0);
+    return;
+  }
   const render=()=>{
     limpar();
+    if(!(e.modo==='slide' && e.mov)) limparPalco(fade);
     if(e.modo==='preto'){ fundo(''); }
     else if(e.modo==='fundo'){ fundo(e.fundo); }
+    else if(e.modo==='slide' && e.mov){ montarPalco(e, fade); }   // 3.0.7: slide com animacao dentro
     else if(e.modo==='slide'){ telaPronta(e.src); }   // CIAS e PowerPoint
     else if(e.modo==='cifra'){                        // ensaio do grupo (#27)
       fundo(e.fundo);
