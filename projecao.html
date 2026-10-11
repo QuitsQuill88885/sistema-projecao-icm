@@ -163,13 +163,17 @@ html,body{height:100%;background:#000;overflow:hidden;
 .e-mapa #lou-txt{top:16%;height:78%}
 /* ---- MULTI-VERSÍCULO: vários juntos, referência dourada + texto branco itálico ---- */
 #bib-multi{font-family:'Sistema A3',sans-serif;flex-direction:column;align-items:center;
-           justify-content:center;text-align:left;padding:0 6% 0 8%}
-.e-limpo #bib-multi{top:20%;height:77%}
+           justify-content:center;text-align:left;padding:0 4% 0 5%}
+/* 3.0.6 (ordem dele, 11/10): "aumentar explodiu tudo" com vários versículos. Medido (sonda_multi.py): na 3.0.4 o A+
+   DIMINUÍA (3 versículos: 5,00% -> 3,23% da altura) e, com a bissecção, ficava parado. A caixa começava em 20%, mas no
+   estilo limpo a referência de cima nem aparece aqui (cada versículo traz a sua): agora ela usa a tela de 6% a 96%,
+   e o A+ aperta o respiro entre linhas e versículos (--vm-lh, --vm-gap) para a letra ter de onde crescer. */
+.e-limpo #bib-multi{top:6%;height:90%}
 .e-mapa #bib-multi{top:28%;height:69%}
 #bib-multi .fitw{align-items:flex-start;gap:0}
-#bib-multi .vm-ref{color:#f5d76e;font-weight:900;display:block;margin-top:.5em;line-height:1.1}
+#bib-multi .vm-ref{color:#f5d76e;font-weight:900;display:block;margin-top:var(--vm-gap,.5em);line-height:1.1}
 #bib-multi .vm-ref.first{margin-top:0}
-#bib-multi .vm-txt{color:#fff;font-family:'Sistema A4','Sistema A3',sans-serif;font-style:italic;display:block;line-height:1.18;margin-top:.05em}
+#bib-multi .vm-txt{color:#fff;font-family:'Sistema A4','Sistema A3',sans-serif;font-style:italic;display:block;line-height:var(--vm-lh,1.18);margin-top:.05em}
 </style></head>
 <body>
 <div id="tela" class="e-limpo">
@@ -418,6 +422,10 @@ function aplicar(e){
         const t=document.createElement('span'); t.className='vm-txt'; t.textContent=it.texto; w.appendChild(t);
       });
       // começa no tamanho natural do versículo e só DIMINUI conforme entram mais (nunca estoura)
+      // A+ pedido: o respiro cede espaço para a letra (nunca abaixo de 1,04 entre linhas e 0,2 entre versículos)
+      const es=Math.max(1, e.escala||1);
+      el.multi.style.setProperty('--vm-lh', Math.max(1.04, 1.18/Math.pow(es,0.6)).toFixed(3));
+      el.multi.style.setProperty('--vm-gap', Math.max(0.2, 0.5/Math.pow(es,1.5)).toFixed(3)+'em');
       el.multi.appendChild(w); fit(el.multi, e.tam||5.55, e.escala);
     }
     else if(e.modo==='louvor'){

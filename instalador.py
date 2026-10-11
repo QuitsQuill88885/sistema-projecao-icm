@@ -76,6 +76,22 @@ def limpar_sobras(pasta):
     return n
 
 
+def sincronizar_apresentacoes_de_fabrica(pacote):
+    """3.0.6 (ordem dele, 11/10): no Sistema ficam SÓ as apresentações que vêm no pacote. Instalar por cima só COPIA,
+    então as que mudaram de nome ou saíram (3.0.5: "(sem telas de espera)") continuariam na lista do PC da igreja.
+    Mexe só na pasta de FÁBRICA, dentro do programa; as que o operador importou moram em %APPDATA% e não se tocam."""
+    for sub in ("_internal", ""):
+        nova = os.path.join(pacote, sub, "apresentacoes")
+        velha = os.path.join(DESTINO, sub, "apresentacoes")
+        if not os.path.isdir(nova) or not os.path.isdir(velha):
+            continue
+        ficam = set(os.listdir(nova))
+        for nome in os.listdir(velha):
+            p = os.path.join(velha, nome)
+            if nome not in ficam and os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+
+
 def instalar(progresso):
     base = origem()
     pacote = os.path.join(base, "programa")          # a pasta do app vai embutida no instalador
@@ -105,6 +121,7 @@ def instalar(progresso):
         raise RuntimeError(
             "Não consegui substituir %d arquivo(s). Feche o Sistema e instale de novo. "
             "(primeiro: %s)" % (len(falhas), falhas[0][0]))
+    sincronizar_apresentacoes_de_fabrica(pacote)
 
     progresso(65, "Criando as suas pastas…")
     os.makedirs(DADOS, exist_ok=True)

@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.5"
+VERSAO = "3.0.6"
 
 PORTA = 8765
 
@@ -2741,7 +2741,10 @@ def listar_apresentacoes():
 
             continue
 
-        for nome in sorted(os.listdir(base)):
+        # o louvor toca ANTES da aula, então vem antes na lista (ordem dele 10/10 18h36). Até a 3.0.5 isso saía do
+        # alfabeto ("— Período" < "— Você"); com os nomes da 3.0.6 ("Louvores da Evangelização..." e "Evangelização...")
+        # o alfabeto inverteria, então a regra fica escrita.
+        for nome in sorted(os.listdir(base), key=lambda n: (not n.startswith("Louvores"), n)):
 
             pasta = os.path.join(base, nome)
 
