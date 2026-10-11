@@ -711,8 +711,11 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
   background:#0c1830;color:#7f96b8;font:inherit;font-size:11.5px;cursor:pointer;text-align:left}
 .chave::before{content:'';position:absolute;left:6px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;
   background:#3a4a66;transition:background .15s}
-.chave.on{color:#cfe9d6;border-color:#2c6b45}
-.chave.on::before{background:var(--verde)}
+.chave.on{color:#cfe9d6;border-color:#2c6b45;padding:5px 30px 5px 12px;text-align:right}
+/* 3.0.5: aviso de internet limitada (celular) antes de baixar */
+.aviso-limitada{background:#3a2c08;border:1px solid #8a6a1c;color:#f3d98a;border-radius:8px;padding:9px 11px;margin-bottom:12px;line-height:1.4}
+/* 3.0.5 (ordem dele): ligado = bolinha verde à DIREITA, como todo interruptor; à esquerda parecia desligado */
+.chave.on::before{background:var(--verde);left:auto;right:6px}
 /* a janela do assistente */
 .assist-box{width:min(560px,94vw);max-width:560px}
 .assist-escolhas{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px}

@@ -2390,7 +2390,11 @@ function renderApresentacoes() {
       '<span class="nome"><span class="ap-nome"></span><small class="ap-info"></small></span>';
     c.querySelector('.ap-nome').textContent = a.nome;
     c.querySelector('.ap-info').textContent = (a.demo ? 'Exemplo · ' : '') + a.slides.length + ' slides';
-    c.onclick = () => abrirSalva(a);
+    // o clique simples espera um tico (igual ao do louvor): sem isso, o 1º clique já abria a grade de slides
+    // e o 2º caía em cima de um slide qualquer e projetava ele (o teste pegou: projetou o 14)
+    c.onclick = () => { clearTimeout(c._t); c._t = setTimeout(() => abrirSalva(a), 230); };
+    // 2 cliques: abre E já projeta o 1º slide (e liga o telão, se estiver desligado) — "faz tudo isso automático"
+    c.ondblclick = () => { clearTimeout(c._t); abrirSalva(a); projetarSlide(0); };
     c.querySelector('.fa-del').onclick = ev => { ev.stopPropagation(); apagarApresentacao(a); };
     g.appendChild(c);
   });
@@ -2415,6 +2419,10 @@ function projetarSlide(i) {
   // tela pronta, igual à das CIAS: vai inteira e sem esticar. Apresentação da
   // Escola Bíblica em 4:3 estava sendo alargada até o 16:9 do telão.
   projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: ESMAECER });
+  // 3.0.5 (ordem dele 11/10, depois do culto): projetar slide com o telão desligado LIGA o telão.
+  // Ele entrava nos slides, avançava e "não projeta": tinha de sair e clicar em Ativar telão.
+  // A janela nova nasce mostrando est.ultimo, que o projetar() acima acabou de gravar.
+  if (!est.projetando) abrirProjecao();
   renderSlides(); aprAtualizar();
   const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
 }
@@ -3057,6 +3065,15 @@ function abrirAssistente(tipo) {
     return inicio();
   }
 }
+// 3.0.5: na internet do CELULAR (conexão limitada no Windows), o botão avisa ANTES de baixar.
+// O PC da igreja gastou 9 GB do celular dele num dia (11/10/2026).
+async function avisoConexao(quanto) {
+  let c = null;
+  try { c = await fetch('/api/conexao').then(x => x.json()); } catch (e) {}
+  if (!c || !c.limitada) return '';
+  return '<div class="aviso-limitada">⚠ Você está numa <b>internet limitada</b> (celular ou plano com franquia). ' +
+         'Isto vai gastar <b>' + quanto + '</b> do pacote de dados.</div>';
+}
 async function verificarAtualizacao(silenciosa) {
   const st = $('#atu-status');
   if (!silenciosa && st) st.textContent = 'Procurando…';
@@ -3103,7 +3120,8 @@ async function verificarAtualizacao(silenciosa) {
   }
   if (st) st.textContent = 'Existe a versão ' + r.nova + ' (você está na ' + r.atual + ').';
   if (silenciosa) { toast('Há uma versão nova do Sistema (' + r.nova + ') — veja em Configurações › Sistema.'); return; }
-  confirmar('Existe uma versão nova (<b>' + r.nova + '</b>). Atualizar agora?<br><br>' +
+  const lim = await avisoConexao('cerca de 85 MB');
+  confirmar(lim + 'Existe uma versão nova (<b>' + r.nova + '</b>). Atualizar agora?<br><br>' +
             'O Sistema vai fechar e reabrir sozinho. Suas coisas não são apagadas, ' +
             'e as animações e cifras não baixam de novo.', async () => {
     await fetch('/api/atualizar', { method: 'POST', body: '{}' });
@@ -3128,8 +3146,9 @@ function ligarCompletar() {
   fetch('/api/conteudo').then(r => r.json()).then(r => {
     if (r && r.falta) linha.hidden = false;
   }).catch(() => {});
-  b.onclick = () => {
-    confirmar('Baixar as animações das CIAS, as cifras e os cadernos de melodia '
+  b.onclick = async () => {
+    const lim = await avisoConexao('cerca de 590 MB');
+    confirmar(lim + 'Baixar as animações das CIAS, as cifras e os cadernos de melodia '
               + '(cerca de <b>590 MB</b>)?<br><br>Precisa de internet. O Sistema '
               + 'continua funcionando normalmente enquanto baixa.', async () => {
       await fetch('/api/conteudo', { method: 'POST', body: '{}' });

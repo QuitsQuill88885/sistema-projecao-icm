@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.4"
+VERSAO = "3.0.5"
 
 PORTA = 8765
 
@@ -1561,6 +1561,35 @@ def baixar_se_recuperando(url, destino, avisar):
         return baixar_retomando(url, destino, avisar)
 
 
+# 3.0.5: o PC da igreja na internet do CELULAR dele gastou mais de 9 GB num dia (11/10/2026).
+# O Sistema nunca baixa nada grande sem clique, mas o botão tem de AVISAR antes, quando o Windows
+# diz que a conexão é limitada (Configurações > Rede > "Conexão limitada"; o hotspot do iPhone
+# costuma vir marcado assim). Pergunta ao próprio Windows (WinRT, sem biblioteca nova), 60 s de cache.
+_CONEXAO = {"t": 0.0, "r": {"limitada": False, "sabe": False}}
+_PS_CONEXAO = (
+    "[void][Windows.Networking.Connectivity.NetworkInformation,Windows.Networking.Connectivity,ContentType=WindowsRuntime];"
+    "$p=[Windows.Networking.Connectivity.NetworkInformation]::GetInternetConnectionProfile();"
+    "if($p){$c=$p.GetConnectionCost();'' + [int]$c.NetworkCostType + '|' + $c.Roaming + '|' + $c.OverDataLimit}else{'sem'}")
+
+
+def conexao_limitada():
+    """{"limitada": bool, "sabe": bool}. NetworkCostType: 0 desconhecido, 1 sem limite, 2 fixo (franquia), 3 variável (paga por MB)."""
+    if time.time() - _CONEXAO["t"] < 60:
+        return _CONEXAO["r"]
+    r = {"limitada": False, "sabe": False}
+    if os.name == "nt":
+        try:
+            s = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", _PS_CONEXAO],
+                               capture_output=True, text=True, timeout=8, **SEM_JANELA).stdout.strip()
+            if s and s != "sem":
+                tipo, roaming, estourou = s.split("|")[:3]
+                r = {"limitada": tipo in ("2", "3") or roaming == "True" or estourou == "True", "sabe": tipo != "0"}
+        except Exception:
+            pass
+    _CONEXAO.update({"t": time.time(), "r": r})
+    return r
+
+
 def _atualizar_thread():
 
     """Baixa o instalador mais novo e entrega a ele o serviço.
@@ -2977,6 +3006,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.path.startswith("/api/atualizar"):       # andamento da atualização
 
             return self._json({"ok": True, **ATUALIZA})
+
+        if self.path.startswith("/api/conexao"):         # 3.0.5: a internet é "limitada" (celular)?
+
+            return self._json({"ok": True, **conexao_limitada()})
 
         if self.path.startswith("/api/pendrives"):
 
