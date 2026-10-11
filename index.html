@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=49">
+<link rel="stylesheet" href="app.css?v=50">
 </head><body>
 <div id="app">
   <header>
@@ -19,7 +19,7 @@
       <button class="tab" data-aba="timer"><span class="ico" data-i="timer"></span>Timer</button>
       <button class="tab" data-aba="relogio"><span class="ico" data-i="relogio"></span>Relógio</button>
       <button class="tab" data-aba="texto"><span class="ico" data-i="texto"></span>Texto</button>
-      <button class="tab" data-aba="slides"><span class="ico" data-i="slides"></span>Slides</button>
+      <button class="tab" data-aba="slides"><span class="ico" data-i="slides"></span>Apresentações</button>
       <button class="tab" data-aba="fundos"><span class="ico" data-i="fundos"></span>Fundos</button>
     </nav>
     <button id="btn-estilo" class="estilo-btn"><span class="ico" data-i="estilo"></span><span id="estilo-nome">Estilo: Limpo</span></button>
@@ -154,7 +154,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=48"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=50"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -364,61 +364,58 @@
           <div class="pn-lista" id="pn-cultos"></div>
         </section>
         <section class="menu-sec" data-sec="sistema">
-          <p class="dica">Ajustes gerais e restauração.</p>
-          <div class="reset-row"><div><b>Apresentação inicial</b><small>Rever como o Sistema funciona e reconfigurar a igreja.</small></div>
-            <button class="big-btn" id="btn-rever">Ver de novo</button></div>
-          <h3 class="menu-h3">Louvores das CIAS</h3>
-          <!-- De fábrica LIGADO: o louvor de criança se apresenta com a tela
-               animada, e é assim que a igreja está acostumada a ver. Desligando
-               aqui, ele abre no texto comum, e a animação continua a um toque de
-               distância no botão ao lado da lista de slides. -->
-          <div class="reset-row"><div><b>Abrir com a tela animada</b><small>Louvor das CIAS já entra no telão com a animação, sem você pedir. Desligado, ele abre como texto e você liga na hora, no botão <b>Animação</b>.</small></div>
-            <button class="big-btn" id="btn-anim-auto">Ligado</button></div>
-          <h3 class="menu-h3">Atualizações</h3>
-          <div class="reset-row" id="linha-completar" hidden><div><b>Completar o Sistema</b><small id="comp-status">Baixa as animações das CIAS, as cifras e os cadernos de melodia (≈ 590 MB). Este botão só aparece porque elas ainda não estão neste computador.</small></div>
+          <!-- PÁGINA SISTEMA, 2ª proposta (ordem dele, 10/10/2026 15h20-15h29): "umas 4 opções no
+               máximo, de botões", cada uma abre um ASSISTENTE que guia passo a passo (como o
+               IObit: escolher → aviso → confirmação → feito, com Voltar e Cancelar). "As setinhas
+               do submenu são ridículas" e o "Ligado" no topo destoava: no topo, só o Completar. -->
+          <div class="reset-row destaque" id="linha-completar" hidden><div><b>Completar o Sistema</b><small id="comp-status">Baixa as animações das CIAS, as cifras e os cadernos de melodia (≈ 590 MB). Este botão só aparece porque elas ainda não estão neste computador.</small></div>
             <button class="big-btn verde" id="btn-completar">Completar</button></div>
-          <div class="reset-row"><div><b>Buscar atualizações</b><small id="atu-status">Procura a versão mais nova na internet. Suas coisas nunca são apagadas, e o conteúdo pesado não baixa de novo.</small></div>
-            <button class="big-btn" id="btn-atualizar">Buscar</button></div>
-          <div class="reset-row"><div><b>Procurar atualização sozinho ao abrir</b><small>Se houver internet, o Sistema avisa quando existir versão nova. Nada se instala sem você mandar.</small></div>
-            <button class="big-btn" id="btn-atu-auto">Ligado</button></div>
-          <h3 class="menu-h3">Levar para outro computador</h3>
-          <div class="reset-row"><div><b>Exportar para um pendrive</b><small id="usb-status">Grava o instalador, as animações, cifras, melodias e as suas configurações — pronto para instalar lá.</small></div>
-            <button class="big-btn" id="btn-usb">Exportar</button></div>
-          <h3 class="menu-h3">Fale com o desenvolvedor</h3>
-          <div class="reset-row"><div><b>Achou um defeito ou tem uma ideia?</b><small id="contato-mail">samuelsaxdiesel@gmail.com</small></div>
-            <button class="big-btn" id="btn-contato">Copiar e-mail</button></div>
-          <h3 class="menu-h3">Voltar ao padrão</h3>
-          <div class="reset-row"><div><b>Fundos e apresentação de exemplo</b><small>Traz de volta os que vieram com o Sistema e foram apagados. Os que você adicionou continuam.</small></div>
-            <button class="big-btn" data-reset="fundos">Restaurar</button></div>
-          <div class="reset-row"><div><b>Tamanhos de letra</b><small>Volta A−/A+ ao padrão em tudo.</small></div>
-            <button class="big-btn" data-reset="tamanhos">Restaurar</button></div>
-          <div class="reset-row"><div><b>Meus louvores</b><small>Apaga os louvores que você adicionou.</small></div>
-            <button class="big-btn" data-reset="louvores">Restaurar</button></div>
-          <div class="reset-row"><div><b>Apresentações</b><small>Apaga os PowerPoints e PDFs já importados.</small></div>
-            <button class="big-btn" data-reset="slides">Restaurar</button></div>
-          <div class="reset-row perigo"><div><b>Tudo</b><small>Devolve o Sistema ao estado de fábrica: apaga as suas configurações, o histórico, os louvores e fundos que você adicionou. O programa fecha e abre sozinho.</small></div>
-            <button class="big-btn vermelho" data-reset="tudo">Restaurar tudo</button></div>
-          <h3 class="menu-h3">Tirar do computador</h3>
-          <div class="reset-row perigo"><div><b>Desinstalar o Sistema</b><small id="desinst-status">Remove o programa e os atalhos. Você escolhe se as suas coisas — louvores, fundos, animações, cifras — ficam ou vão junto.</small></div>
-            <button class="big-btn vermelho" id="btn-desinstalar">Desinstalar</button></div>
-        
-          <h3 class="menu-h3">Sobre o Sistema</h3>
-          <div class="cred-bloco">
-            <p><b>Sistema</b> — projeção para igrejas.<br>
-               Desenvolvido por <b>Samuel Mariano Ribeiro</b>, 2026.</p>
-            <div id="cred-extra" style="display:none">
-              <p>O código é livre: pode ser copiado, modificado e usado por qualquer
-                 igreja, inclusive comercialmente. A única condição é que o nome do
-                 autor continue citado. Código sob licença MIT, conteúdo sob
-                 Creative Commons Atribuição 4.0.</p>
-              <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
-                 fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
-                 licença.</p>
-              <p>Fontes: <b>Outfit</b> (Rodrigo Fuenzalida) e <b>Bebas Neue</b>
-                 (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
-                 com o programa.</p>
+
+          <div class="sis-botoes">
+            <button class="sis-bt" id="sis-bt-atualizar" data-assist="atualizar"><b>Atualizar</b><small id="sis-bt-atu-txt">Versão nova, busca automática e pendrive</small></button>
+            <button class="sis-bt" data-assist="restaurar"><b>Restaurar</b><small>Trazer de volta o que veio com o Sistema</small></button>
+            <button class="sis-bt perigo" data-assist="desinstalar"><b>Desinstalar</b><small>Tirar o Sistema deste computador</small></button>
+            <button class="sis-bt" data-assist="sobre"><b>Sobre o Sistema</b><small>Quem fez, licença e contato</small></button>
+          </div>
+
+          <div class="sis-pref">
+            <span>Louvores das CIAS abrem com a tela animada</span>
+            <button class="chave" id="btn-anim-auto" title="Desligado, o louvor das crianças abre como texto e você liga na hora, no botão Animação.">Ligado</button>
+          </div>
+
+          <p class="sis-assina">Sistema <span id="sis-versao"></span> · desenvolvido por <b>Samuel Mariano Ribeiro</b></p>
+
+          <!-- os painéis que o assistente mostra: guardados aqui, com os mesmos ids de sempre -->
+          <div id="sis-painel-atualizar" class="sis-painel" hidden>
+            <div class="reset-row"><div><b>Verificar atualização</b><small id="atu-status">Procura a versão mais nova na internet. Suas coisas nunca são apagadas, e o conteúdo pesado não baixa de novo.</small></div>
+              <button class="big-btn" id="btn-atualizar">Verificar</button></div>
+            <div class="reset-row"><div><b>Procurar atualização sozinho ao abrir</b><small>Se houver internet, o Sistema avisa quando existir versão nova. Nada se instala sem você mandar.</small></div>
+              <button class="big-btn" id="btn-atu-auto">Ligado</button></div>
+            <div class="reset-row"><div><b>Levar para outro computador</b><small id="usb-status">Grava num pendrive o instalador, as animações, cifras, melodias e as suas configurações — pronto para instalar lá.</small></div>
+              <button class="big-btn" id="btn-usb">Exportar</button></div>
+          </div>
+          <div id="sis-painel-sobre" class="sis-painel" hidden>
+            <div class="cred-bloco">
+              <p><b>Sistema</b> — projeção para igrejas.<br>
+                 Desenvolvido por <b>Samuel Mariano Ribeiro</b>, 2026.</p>
+              <div id="cred-extra" style="display:none">
+                <p>O código é livre: pode ser copiado, modificado e usado por qualquer
+                   igreja, inclusive comercialmente. A única condição é que o nome do
+                   autor continue citado. Código sob licença MIT, conteúdo sob
+                   Creative Commons Atribuição 4.0.</p>
+                <p>As letras dos louvores, o texto bíblico, as cifras e as artes de
+                   fundo pertencem à Igreja Cristã Maranata e não fazem parte dessa
+                   licença.</p>
+                <p>Fontes: <b>Outfit</b> (Rodrigo Fuenzalida) e <b>Bebas Neue</b>
+                   (Dharma Type), ambas sob SIL Open Font License, distribuídas junto
+                   com o programa.</p>
+              </div>
+              <button id="btn-cred-mais" class="cred-mais-btn">ver mais ▾</button>
             </div>
-            <button id="btn-cred-mais" class="cred-mais-btn">ver mais ▾</button>
+            <div class="reset-row"><div><b>Apresentação inicial</b><small>Rever como o Sistema funciona e reconfigurar a igreja.</small></div>
+              <button class="big-btn" id="btn-rever">Ver de novo</button></div>
+            <div class="reset-row"><div><b>Achou um defeito ou tem uma ideia?</b><small id="contato-mail">samuelsaxdiesel@gmail.com</small></div>
+              <button class="big-btn" id="btn-contato">Copiar e-mail</button></div>
           </div>
 </section>
       </div>
@@ -474,13 +471,13 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=48"></script>
-<script src="dados/repetidos.js?v=48"></script>
-<script src="dados/repeticoes.js?v=48"></script>
+<script src="dados/louvores.js?v=50"></script>
+<script src="dados/repetidos.js?v=50"></script>
+<script src="dados/repeticoes.js?v=50"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=48"></script>
+<script src="dados/galeria.js?v=50"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=48"></script>
-<script src="app.js?v=49"></script>
+<script src="icones.js?v=50"></script>
+<script src="app.js?v=50"></script>
 </body></html>

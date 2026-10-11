@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "2.9.18"
+VERSAO = "3.0.0"
 
 PORTA = 8765
 
@@ -1684,6 +1684,100 @@ def conteudo_falta():
 
 
 
+ARQ_MARCA_CONTEUDO = "conteudo_versao.txt"
+
+
+
+
+
+def marca_animacoes(pasta):
+
+    """Assinatura das animações: nome e tamanho de cada arquivo, num md5 só.
+
+    BURACO (10/10/2026, ordem dele: "atualiza conforme a versão de sistema que ele tem"):
+
+    o Atualizar baixa só o instalador LEVE, e as animações das CIAS viajam à parte, no
+
+    Conteudo.zip — quem tem a versão completa nunca recebia animação nova pelo Atualizar.
+
+    Cada release publica esta marca (conteudo_versao.txt); o Sistema compara com a dele."""
+
+    # Conta SÓ o que o indice.json usa (e o próprio índice): o Completar abre o zip POR CIMA
+
+    # e não apaga arquivo velho que saiu — contar a pasta inteira deixaria a marca diferente
+
+    # para sempre, e o Sistema ofereceria baixar de novo a cada abertura.
+
+    import hashlib
+
+    try:
+
+        with open(os.path.join(pasta, "indice.json"), encoding="utf-8") as f:
+
+            indice = json.load(f)
+
+    except Exception:
+
+        return ""
+
+    nomes = {"indice.json"}
+
+    for v in indice.values():
+
+        nomes.update(v if isinstance(v, list) else [v])
+
+    def tam(f):
+
+        try: return os.path.getsize(os.path.join(pasta, f))
+
+        except OSError: return -1
+
+    linhas = "".join("%s:%d\n" % (f, tam(f)) for f in sorted(nomes))
+
+    return hashlib.md5(linhas.encode("utf-8")).hexdigest()
+
+
+
+
+
+def animacoes_novas(ler_marca_da_nuvem=None):
+
+    """True se a nuvem tem animações diferentes das deste computador — só para quem tem a
+
+    versão COMPLETA (quem tem a leve continua leve: o "Completar" é escolha dele)."""
+
+    if conteudo_falta():
+
+        return False
+
+    if ler_marca_da_nuvem is None:
+
+        def ler_marca_da_nuvem():
+
+            import urllib.request
+
+            url = ("https://github.com/%s/%s/releases/latest/download/%s"
+
+                   % (DONO_GITHUB, REPO_GITHUB, ARQ_MARCA_CONTEUDO))
+
+            with urllib.request.urlopen(url, timeout=8) as r:
+
+                return r.read(200).decode("ascii", "ignore").strip()
+
+    try:
+
+        nuvem = ler_marca_da_nuvem()
+
+    except Exception:
+
+        return False                      # sem internet: nada a oferecer, sem erro na tela
+
+    return bool(nuvem) and nuvem != marca_animacoes(pasta_usuario("animacoes"))
+
+
+
+
+
 def _completar_thread():
 
     """Baixa o Conteudo.zip da nuvem e abre direto nos dados do usuário.
@@ -2741,6 +2835,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 idade = time.time() - ESTADO.get("ts", 0) if ESTADO.get("ts") else 999
 
                 return self._json({"ok": True, "estado": dict(ESTADO), "idade": round(idade, 1)})
+
+        # ANTES de "/api/animacoes": aquela rota começa igual e engoliria esta
+
+        if self.path.startswith("/api/animacoes-novas"):   # a completa tem animação nova na nuvem?
+
+            return self._json({"ok": True, "novas": animacoes_novas()})
 
         if self.path.startswith("/api/apresentacoes"):   # as salvas + a demo que vem junto
 

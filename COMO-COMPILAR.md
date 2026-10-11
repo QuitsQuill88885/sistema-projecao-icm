@@ -95,8 +95,12 @@ fim confere que nenhum backup entrou e que o banco de cifras e mesmo o novo.
 ```bash
 gh release create vX.Y.Z --title "..." --notes-file notas.md \
   "dist/Instalar-o-Sistema.exe" "dist/Baixar-o-Sistema.exe" \
-  "dist/Instalar-o-Sistema-completo.exe" "../../Pacote completo/Conteudo.zip"
+  "dist/Instalar-o-Sistema-completo.exe" "../../Pacote completo/Conteudo.zip" \
+  "../../Pacote completo/conteudo_versao.txt"
 ```
+O `conteudo_versao.txt` (sai do `refazer_conteudo_zip.py`) é a marca das animações: é por
+ele que quem tem a versão COMPLETA descobre, pelo Atualizar, que há animação nova
+(10/10/2026). Sem ele na release, ninguém é avisado.
 
 A release pode existir com o arquivo pela metade. Conferir os quatro enderecos:
 

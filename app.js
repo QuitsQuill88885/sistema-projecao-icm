@@ -873,6 +873,11 @@ function numerosLouvor(s, i) {
     .map(o => o.num === 'AV' ? 'AV' : numLouvor(o)).filter(Boolean);
   return (s._nums = nums.filter((x, k) => nums.indexOf(x) === k).join(' '));
 }
+// O NÚMERO DA LISTA DA IGREJA que não é o do Sistema (10/10/2026): a lista de outubro
+// pede "242 Eu clamo, eu oro", que no Sistema é o AV 24 579. Digitar o número da lista
+// também acha o louvor, DEPOIS dos que têm aquele número de verdade (o 242 da Coletânea
+// e o do AV 24 continuam aparecendo primeiro).
+const OUTRO_NUMERO = { 'Avulsos 2024|579': [242] };
 function renderListaLouvores(filtro) {
   const cont = $('#lista-louvores'); cont.innerHTML = '';
   const R = repetidos(), ja = new Set();
@@ -896,8 +901,9 @@ function renderListaLouvores(filtro) {
     if (ja.has(i)) return;
     if (f) {
       if (soNumero !== null) {                     // busca por número: igualdade
-        if (numInt(s) !== soNumero) return;
-        pontos = 1000;
+        if (numInt(s) === soNumero) pontos = 1000;
+        else if ((OUTRO_NUMERO[s.col + '|' + s.num] || []).includes(soNumero)) pontos = 900;
+        else return;
       } else {
         pontos = pontuarLouvor(s, alvo, palavras);
         if (!pontos) return;
@@ -1358,7 +1364,8 @@ function pintarAnimAuto() {
   const b = $('#btn-anim-auto'); if (!b) return;
   const on = animAuto();
   b.textContent = on ? 'Ligado' : 'Desligado';
-  b.classList.toggle('verde', on);
+  // na página Sistema ela é uma CHAVE discreta (o "Ligado" verde no topo destoava, 10/10/2026)
+  b.classList.toggle(b.classList.contains('chave') ? 'on' : 'verde', on);
 }
 function alternarAnimAuto() {
   const novo = !animAuto();
@@ -2952,10 +2959,93 @@ function ligarAtualizacao() {
 // o botão "Atualizar" da página Sistema veste o mesmo ouro da linha quando o Sistema
 // está atualizado E completo — "quase um brasão de poder" (palavra dele, 10/10/2026)
 function marcarMelhorVersao(sim) {
-  const g = $('#grupo-atualizar'); if (!g) return;
+  const g = $('#sis-bt-atualizar'); if (!g) return;
   g.classList.toggle('melhor', sim);
-  const s = g.querySelector('summary small');
+  const s = $('#sis-bt-atu-txt');
   if (s) s.textContent = sim ? 'Você está com a melhor versão do Sistema' : 'Versão nova, busca automática e pendrive';
+}
+/* ---------- ASSISTENTE DA PÁGINA SISTEMA (ordem dele, 10/10/2026 15h29) ----------
+   Cada botão abre uma janela que guia passo a passo, "para ele não fazer besteira, ou
+   desistir, ou realmente desinstalar" — escolher → aviso → confirmação → feito, com
+   Voltar e Cancelar em cada passo (o jeito do IObit). Atualizar e Sobre mostram o painel
+   de sempre (os mesmos botões e ids), que sobe para a janela e volta ao fechar. */
+function abrirAssistente(tipo) {
+  const ov = document.createElement('div'); ov.className = 'ajuda-overlay assist-ov';
+  ov.innerHTML = '<div class="ajuda-box assist-box"><div class="assist-corpo"></div></div>';
+  document.body.appendChild(ov);
+  const corpo = ov.querySelector('.assist-corpo');
+  let emprestado = null;                       // painel que subiu para a janela
+  const devolver = () => { if (emprestado) { emprestado.hidden = true; $('.menu-sec[data-sec="sistema"]').appendChild(emprestado); emprestado = null; } };
+  const fechar = () => { devolver(); ov.remove(); };
+  ov.onclick = e => { if (e.target === ov) fechar(); };
+  // um passo: título, texto, opções grandes (escolhas) e botões de baixo
+  const passo = (tit, html, escolhas, botoes) => {
+    devolver();
+    corpo.innerHTML = '<h3>' + tit + '</h3>' + (html ? '<p>' + html + '</p>' : '') +
+      '<div class="assist-escolhas"></div><div class="ajuda-btns"></div>';
+    const ce = corpo.querySelector('.assist-escolhas'), cb = corpo.querySelector('.ajuda-btns');
+    (escolhas || []).forEach(o => {
+      const b = document.createElement('button'); b.className = 'sis-op' + (o.perigo ? ' perigo' : '');
+      b.innerHTML = '<b></b><small></small>'; b.querySelector('b').textContent = o.rot; b.querySelector('small').textContent = o.sub;
+      b.onclick = o.faz; ce.appendChild(b);
+    });
+    (botoes || []).forEach(o => {
+      const b = document.createElement('button'); b.className = 'big-btn' + (o.cls ? ' ' + o.cls : '');
+      b.textContent = o.rot; b.onclick = o.faz; cb.appendChild(b);
+    });
+    const c = document.createElement('button'); c.className = 'big-btn'; c.textContent = o_fechar(botoes) ? 'Fechar' : 'Cancelar';
+    c.onclick = fechar; cb.appendChild(c);
+  };
+  const o_fechar = botoes => !botoes || !botoes.length;
+  const painel = (tit, id) => {
+    passo(tit, '', [], []);
+    const p = $('#' + id); if (!p) return;
+    p.hidden = false; corpo.insertBefore(p, corpo.querySelector('.ajuda-btns')); emprestado = p;
+  };
+  const feito = (tit, txt) => passo(tit, txt, [], []);
+  if (tipo === 'atualizar') return painel('Atualizar', 'sis-painel-atualizar');
+  if (tipo === 'sobre') return painel('Sobre o Sistema', 'sis-painel-sobre');
+  if (tipo === 'restaurar') {
+    const inicio = () => passo('Restaurar', 'O que você quer trazer de volta?', [
+      { rot: 'O que foi apagado', sub: 'Fundos e a apresentação de exemplo que vieram com o Sistema. O que você acrescentou fica.', faz: apagados },
+      { rot: 'Tamanhos de letra', sub: 'Volta A−/A+ ao padrão em tudo.', faz: tamanhos },
+      { rot: 'Tudo', sub: 'O Sistema volta a ser como acabou de ser instalado.', perigo: true, faz: tudo },
+    ], []);
+    const voltar = { rot: '‹ Voltar', faz: () => inicio() };
+    function apagados() {
+      passo('Restaurar o que foi apagado', 'Os fundos e a apresentação de exemplo que vieram com o Sistema e foram apagados voltam.<br><br><b>O que você acrescentou continua lá.</b>', [],
+        [voltar, { rot: 'Restaurar', cls: 'verde', faz: () => { aplicarReset('apagados'); feito('Pronto', 'O que veio com o Sistema voltou. O que você acrescentou continua lá.'); } }]);
+    }
+    function tamanhos() {
+      passo('Restaurar os tamanhos de letra', 'Os tamanhos de louvor, Bíblia e texto voltam ao padrão (A−/A+).', [],
+        [voltar, { rot: 'Restaurar', cls: 'verde', faz: () => { aplicarReset('tamanhos'); feito('Pronto', 'Os tamanhos de letra voltaram ao padrão.'); } }]);
+    }
+    function tudo() {
+      passo('Restaurar tudo', 'Você perde o que acrescentou: os <b>louvores, fundos e apresentações</b> que trouxe, as <b>listas</b>, o <b>histórico dos cultos</b> e os <b>dados da igreja</b>. As animações, cifras e melodias ficam.', [],
+        [voltar, { rot: 'Continuar', cls: 'vermelho', faz: () =>
+          passo('Tem certeza?', '<b>Isso não tem volta.</b> O Sistema volta a ser como acabou de ser instalado, fecha e abre sozinho.', [],
+            [{ rot: '‹ Voltar', faz: tudo }, { rot: 'Sim, restaurar tudo', cls: 'vermelho', faz: () => { fechar(); aplicarReset('tudo'); } }]) }]);
+    }
+    return inicio();
+  }
+  if (tipo === 'desinstalar') {
+    const inicio = () => passo('Desinstalar', 'Antes de tirar o Sistema deste computador: o que fazer com as suas coisas?', [
+      { rot: 'Manter os meus arquivos', sub: 'Louvores, fundos, apresentações, listas, animações e cifras ficam guardados. Uma instalação nova os encontra.', faz: manter },
+      { rot: 'Apagar tudo', sub: 'Remove o programa e as suas coisas, inclusive animações, cifras e melodias (cerca de 590 MB).', perigo: true, faz: apagar },
+    ], []);
+    const voltar = { rot: '‹ Voltar', faz: () => inicio() };
+    function manter() {
+      passo('Desinstalar e manter os meus arquivos', 'O programa e os atalhos saem deste computador. <b>As suas coisas ficam guardadas.</b> O Sistema fecha agora.', [],
+        [voltar, { rot: 'Desinstalar', cls: 'vermelho', faz: () => { feito('Desinstalando…', 'O Sistema vai fechar agora.'); desinstalarAgora(false); } }]);
+    }
+    function apagar() {
+      passo('Desinstalar e apagar tudo', 'Saem o programa, os atalhos <b>e</b> as suas coisas: louvores e fundos que você adicionou, apresentações, listas, histórico e as animações, cifras e melodias.', [],
+        [voltar, { rot: 'Continuar', cls: 'vermelho', faz: () =>
+          passo('Tem certeza?', '<b>Isso não tem volta.</b> Depois, só baixando de novo ou trazendo o pendrive.', [],
+            [{ rot: '‹ Voltar', faz: apagar }, { rot: 'Sim, apagar tudo', cls: 'vermelho', faz: () => { feito('Desinstalando…', 'O Sistema vai fechar agora.'); desinstalarAgora(true); } }]) }]);
+    }
+    return inicio();
+  }
 }
 async function verificarAtualizacao(silenciosa) {
   const st = $('#atu-status');
@@ -2967,6 +3057,19 @@ async function verificarAtualizacao(silenciosa) {
     return;
   }
   if (!r.tem) {
+    // quem tem a versão COMPLETA também recebe animação nova (10/10/2026): o Atualizar só
+    // traz o instalador leve, então as animações novas chegam pela mesma linha do Completar
+    let anim = null;
+    try { anim = await fetch('/api/animacoes-novas').then(x => x.json()); } catch (e) {}
+    if (anim && anim.novas) {
+      const lc = $('#linha-completar'), cs = $('#comp-status');
+      if (lc) lc.hidden = false;
+      if (cs) cs.textContent = 'Há animações novas das CIAS na nuvem. Clique para baixar (cerca de 320 MB); o resto do Sistema já está atualizado.';
+      if (st) st.textContent = 'Você está na versão mais nova (' + r.atual + '). Faltam só as animações novas das CIAS — veja o botão Completar.';
+      if (silenciosa) toast('Há animações novas das CIAS — veja em Configurações › Sistema.');
+      marcarMelhorVersao(false);
+      return;
+    }
     // a melhor versão de todas — atualizada E completa — merece o dourado:
     // é a sensação de plano PRO, só que de graça
     let tudo = null;
@@ -3165,6 +3268,7 @@ function ligarEventos() {
   };
   $$('[data-ir]').forEach(b => b.onclick = () => menuSecao(b.dataset.ir));
   $$('[data-reset]').forEach(b => b.onclick = () => resetar(b.dataset.reset));
+  $$('[data-assist]').forEach(b => b.onclick = () => abrirAssistente(b.dataset.assist));
   const bm = $('#btn-cred-mais');
   if (bm) bm.onclick = () => {
     const ex = $('#cred-extra'), aberto = ex.style.display !== 'none';

@@ -204,7 +204,21 @@ def main():
         os.rename(ZIP, ant)
     os.rename(tmp, ZIP)
     print("pronto: %s (%.1f MB)" % (os.path.basename(ZIP), os.path.getsize(ZIP) / 1048576))
+    escreve_marca()
     return 0
+
+
+def escreve_marca():
+    """conteudo_versao.txt ao lado do zip: a marca das animacoes, que vai na release junto
+    com o Conteudo.zip. E por ela que a versao COMPLETA sabe que ha animacao nova (10/10/2026)."""
+    import importlib.util
+    app = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    spec = importlib.util.spec_from_file_location("sistema_marca", os.path.join(app, "sistema.py"))
+    s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)
+    marca = s.marca_animacoes(os.path.join(os.path.dirname(ZIP), "Conteudo", "animacoes"))
+    with open(os.path.join(os.path.dirname(ZIP), "conteudo_versao.txt"), "w", encoding="ascii") as f:
+        f.write(marca + "\n")
+    print("marca das animacoes:", marca)
 
 
 if __name__ == "__main__":
