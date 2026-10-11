@@ -2010,7 +2010,7 @@ function projetarSelecaoAtual() {
   if (est.fila.length) { projetarItemLista(0); return; }
   toast('Escolha um louvor ou versículo para projetar.');
 }
-function preto() { est.live = { tipo: 'preto' }; projetar({ modo: 'preto', transicao: false }); }
+function preto() { est.live = { tipo: 'preto' }; projetar({ modo: 'preto', transicao: false }); aprAtualizar(); }
 function toggleFreeze() {
   if (!est.freeze) est.telaCongelada = est.ultimo;   // guarda o quadro que fica preso no telão
   est.freeze = !est.freeze;
@@ -2408,11 +2408,87 @@ function projetarSlide(i) {
   // tela pronta, igual à das CIAS: vai inteira e sem esticar. Apresentação da
   // Escola Bíblica em 4:3 estava sendo alargada até o 16:9 do telão.
   projetar({ modo: 'slide', src: SLIDES.lista[i], transicao: true, fade: ESMAECER });
-  renderSlides();
+  renderSlides(); aprAtualizar();
   const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
 }
 function slideProximo() { if (SLIDES.lista && est.slidePos < SLIDES.lista.length - 1) projetarSlide(est.slidePos + 1); }
 function slideAnterior() { if (SLIDES.lista && est.slidePos > 0) projetarSlide(est.slidePos - 1); }
+
+// ================= MODO APRESENTADOR =================
+// Pedido da Cris (professora das crianças), 10/10/2026 21h15, com a foto do Modo
+// Apresentador do PowerPoint no Lenovo da igreja: "literalmente assim dentro do sistema".
+// O telão segue só com o slide; aqui o operador vê o atual (com o GIF andando), o
+// seguinte, o cronômetro, o relógio, "Slide X de N" e as setas grandes.
+const APR = { t0: 0, acum: 0, rodando: false, timer: null };
+function aprAberto() { const a = $('#apr'); return !!a && !a.classList.contains('oculto'); }
+function aprTempo() {
+  const ms = APR.acum + (APR.rodando ? Date.now() - APR.t0 : 0), s = Math.floor(ms / 1000);
+  $('#apr-tempo').textContent = Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  const d = new Date(); $('#apr-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+function aprAtualizar() {
+  if (!aprAberto() || !SLIDES.lista) return;
+  const n = SLIDES.lista.length, i = Math.max(0, est.slidePos);
+  const at = $('#apr-atual'), sg = $('#apr-seg');
+  if (at.getAttribute('src') !== SLIDES.lista[i]) at.src = SLIDES.lista[i];
+  const tem = i + 1 < n;
+  sg.hidden = !tem; $('#apr-seg-fim').hidden = tem;
+  if (tem && sg.getAttribute('src') !== SLIDES.lista[i + 1]) sg.src = SLIDES.lista[i + 1];
+  $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n;
+  $('#apr-barra').style.width = (100 * (i + 1) / n) + '%';
+  $('#apr-ant').disabled = i <= 0; $('#apr-prox').disabled = i >= n - 1;
+  const preto = !!(est.live && est.live.tipo === 'preto');
+  $('#apr').classList.toggle('preto', preto); $('#apr-bt-preto').classList.toggle('on', preto);
+  $('#apr-grade').querySelectorAll('div').forEach((c, k) => c.classList.toggle('sel', k === i));
+}
+function abrirApresentador() {
+  if (!SLIDES.lista || !SLIDES.lista.length) return;
+  $('#apr-nome').textContent = SLIDES.nome || '';
+  $('#apr').classList.remove('oculto');
+  APR.acum = 0; APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸';
+  clearInterval(APR.timer); APR.timer = setInterval(aprTempo, 500); aprTempo();
+  $('#apr-grade').hidden = true; $('#apr-grade').innerHTML = '';
+  // abre projetando: o slide em que o operador estava, ou o primeiro
+  // (slidePos -1 = acabou de abrir esta apresentacao: o telao ainda pode estar no slide de OUTRA)
+  if (est.slidePos < 0 || !(est.live && est.live.tipo === 'slide')) projetarSlide(Math.max(0, est.slidePos)); else aprAtualizar();
+}
+function fecharApresentador() { $('#apr').classList.add('oculto'); clearInterval(APR.timer); }
+// com a tela preta no ar, a seta devolve o slide (como no PowerPoint) em vez de ficar parada
+function aprPasso(d) {
+  if (est.live && est.live.tipo === 'preto') { projetarSlide(Math.max(0, est.slidePos)); return; }
+  if (d > 0) slideProximo(); else slideAnterior();
+}
+function aprPreto() {
+  if (est.live && est.live.tipo === 'preto') projetarSlide(Math.max(0, est.slidePos)); else preto();
+  aprAtualizar();
+}
+function aprTodos() {
+  const g = $('#apr-grade');
+  if (!g.hidden) { g.hidden = true; $('#apr-todos').classList.remove('on'); return; }
+  g.innerHTML = '';
+  SLIDES.lista.forEach((src, k) => {
+    const c = document.createElement('div');
+    c.innerHTML = '<img src="' + src + '" alt="" loading="lazy"><span>' + (k + 1) + '</span>';
+    c.onclick = () => projetarSlide(k);
+    g.appendChild(c);
+  });
+  g.hidden = false; $('#apr-todos').classList.add('on'); aprAtualizar();
+}
+function ligarApresentador() {
+  if (!$('#apr')) return;
+  $('#ap-apresentador').onclick = abrirApresentador;
+  $('#apr-fim').onclick = () => { fecharApresentador(); descanso(); };
+  $('#apr-ant').onclick = () => aprPasso(-1);
+  $('#apr-prox').onclick = () => aprPasso(+1);
+  $('#apr-bt-preto').onclick = aprPreto;
+  $('#apr-todos').onclick = aprTodos;
+  $('#apr-pausa').onclick = () => {
+    if (APR.rodando) { APR.acum += Date.now() - APR.t0; APR.rodando = false; $('#apr-pausa').textContent = '▶'; }
+    else { APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸'; }
+    aprTempo();
+  };
+  $('#apr-zera').onclick = () => { APR.acum = 0; APR.t0 = Date.now(); aprTempo(); };
+}
 
 // ================= MENU ☰ CONFIGURAÇÕES =================
 const DIAS_NOME = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -3041,7 +3117,7 @@ function ligarEventos() {
     if (emEspera) projetarSelecaoAtual();
     else { descanso(); toast('Tela de espera no telão.'); }
   };
-  $('#btn-proximo').onclick = proximo; $('#btn-anterior').onclick = anterior;
+  $('#btn-proximo').onclick = proximo; $('#btn-anterior').onclick = anterior; ligarApresentador();
   $('#btn-menor').onclick = () => ajustarTam(-0.3); $('#btn-maior').onclick = () => ajustarTam(+0.3);
   $('#tam-label').onclick = tamPadrao;                      // clicar no rótulo volta ao padrão
   $('#btn-congelar').onclick = toggleFreeze;   // "Parar de projetar" já faz o papel da espera
@@ -3099,6 +3175,16 @@ function ligarEventos() {
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
     // a cifra aberta também segura as teclas: ali a seta rola a folha. Se ela
     // passasse adiante, o telão trocaria de slide com o operador olhando a cifra.
+    // o Modo Apresentador segura as teclas do PowerPoint: ←/→/espaço/PgUp/PgDn passam,
+    // B é tela preta, Esc fecha o painel (o telão continua no slide)
+    if (aprAberto()) {
+      const k = e.key;
+      if (k === 'Escape') { e.preventDefault(); fecharApresentador(); }
+      else if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter') { e.preventDefault(); aprPasso(+1); }
+      else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); aprPasso(-1); }
+      else if (k.toLowerCase() === 'b') { e.preventDefault(); aprPreto(); }
+      return;
+    }
     const cif = $('#cifra-ov');
     if (cif && !cif.classList.contains('oculto')) {
       if (e.key === 'Escape') { fecharCifra(); return; }

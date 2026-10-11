@@ -642,3 +642,43 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 .sis-assina b{color:#a9bcd8;font-weight:600}
 /* negrito DENTRO do texto miúdo fica na linha (o .reset-row b é bloco: quebrava "Animação" e sobrava um ponto solto) */
 .reset-row small b{display:inline;font-size:inherit;margin:0}
+
+/* ===== MODO APRESENTADOR (pedido da Cris, 10/10/2026): a tela do operador igual a do PowerPoint ===== */
+.apr-abrir{margin-left:auto;background:var(--ouro);border-color:var(--ouro);color:#1a1a1a;font-weight:700}
+.apr{position:fixed;inset:0;z-index:900;background:#111;color:#eee;display:flex;flex-direction:column;font-size:14px}
+.apr.oculto{display:none}
+.apr-topo{display:flex;align-items:center;gap:18px;padding:8px 16px;background:#1b1b1b;border-bottom:1px solid #333}
+.apr-fim{background:#2a2a2a;border:1px solid #444;border-radius:6px;padding:7px 14px;font-weight:600}
+.apr-fim:hover{background:var(--vermelho)}
+.apr-nome{flex:1;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apr-crono{display:flex;align-items:center;gap:6px}
+.apr-crono b{font-size:24px;font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.apr-crono button{background:#2a2a2a;border-radius:6px;width:34px;height:30px;font-size:15px}
+.apr-crono button:hover{background:#3a3a3a}
+.apr-hora{font-size:24px;font-variant-numeric:tabular-nums;padding-left:14px;border-left:1px solid #333}
+.apr-meio{flex:1;display:flex;gap:16px;padding:14px 16px;min-height:0}
+.apr-esq{flex:1.9;display:flex;flex-direction:column;gap:10px;min-width:0}
+.apr-dir{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.apr-atual{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.apr-atual img{border:2px solid #333;background:#000}
+.apr-atual img,.apr-seg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.apr-preto{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);color:var(--ouro);font-weight:700;font-size:18px}
+.apr.preto .apr-preto{display:flex}
+.apr-nav{display:flex;align-items:center;gap:14px}
+.apr-seta{width:84px;height:56px;border-radius:10px;background:#2a2a2a;font-size:26px}
+.apr-seta:hover{background:var(--azul2)}
+.apr-seta:disabled{opacity:.3;cursor:default}
+.apr-conta{flex:1;text-align:center;font-size:17px}
+.apr-barra{height:6px;background:#333;border-radius:3px;margin-top:6px;overflow:hidden}
+.apr-barra i{display:block;height:100%;width:0;background:var(--ouro);transition:width .2s}
+.apr-ferr{display:flex;gap:10px;justify-content:center}
+.apr-ferr button{background:#2a2a2a;border:1px solid #3a3a3a;border-radius:8px;padding:8px 16px}
+.apr-ferr button:hover,.apr-ferr button.on{background:var(--hover)}
+.apr-rot{opacity:.75;font-size:15px}
+.apr-seg{aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;border:1px solid #333;border-radius:4px;color:#888}
+.apr-todos{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;align-content:start}
+.apr-todos div{position:relative;cursor:pointer;border:2px solid transparent;border-radius:4px;background:#000}
+.apr-todos div.sel{border-color:var(--ouro)}
+.apr-todos img{width:100%;aspect-ratio:16/9;object-fit:contain;display:block}
+.apr-todos span{position:absolute;left:4px;bottom:2px;font-size:11px;text-shadow:0 0 3px #000}
+@media (max-width:760px){.apr-meio{flex-direction:column}.apr-hora,.apr-nome{display:none}}
