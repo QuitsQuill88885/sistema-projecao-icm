@@ -132,6 +132,35 @@
             <b id="ap-nome"></b>
             <button class="fcat apr-abrir" id="ap-apresentador" title="Tela do operador igual ao Modo Apresentador do PowerPoint">▶ Modo apresentador</button>
           </div>
+          <!-- MODO APRESENTADOR, no jeito do Sistema (3.0.5, ordem dele depois do culto de 11/10): fica DENTRO desta
+               aba e não cobre a tela; o menu de cima continua livre (Bíblia ou louvor no meio e volta). Sem grade e sem
+               anotações: "o nosso PowerPoint é mais simples, para não causar dúvida". O telão segue só com o slide. -->
+          <div id="apr" class="apr oculto">
+            <div class="apr-topo">
+              <button class="apr-fim" id="apr-fim">Terminar apresentação</button>
+              <span class="apr-nome" id="apr-nome"></span>
+              <span class="apr-crono"><b id="apr-tempo">0:00:00</b>
+                <button id="apr-pausa" title="Pausar / continuar o cronômetro">⏸</button>
+                <button id="apr-zera" title="Reiniciar o cronômetro">↺</button></span>
+              <span class="apr-hora" id="apr-hora">--:--</span>
+            </div>
+            <div class="apr-meio">
+              <div class="apr-esq">
+                <div class="apr-rot">No telão</div>
+                <div class="apr-atual"><img id="apr-atual" alt=""><div class="apr-preto" id="apr-preto-aviso">TELA PRETA — aperte → ou B para voltar</div></div>
+              </div>
+              <div class="apr-dir">
+                <div class="apr-rot">Próximo</div>
+                <div class="apr-seg"><img id="apr-seg" alt=""><span id="apr-seg-fim" hidden>Fim da apresentação</span></div>
+              </div>
+            </div>
+            <div class="apr-nav">
+              <button class="apr-seta" id="apr-ant" title="Voltar (←)">◀ Voltar</button>
+              <div class="apr-conta"><span id="apr-conta">Slide 1 de 1</span><div class="apr-barra"><i id="apr-barra"></i></div></div>
+              <button id="apr-bt-preto" class="apr-preto-bt" title="Tela preta no telão (B)">■ Tela preta</button>
+              <button class="apr-seta" id="apr-prox" title="Avançar (→)">Avançar ▶</button>
+            </div>
+          </div>
           <span class="sl-status" id="sl-status"></span>
           <div class="grid-fundos" id="ap-grade"></div>
           <div class="sl-grade" id="sl-grade"></div>
@@ -420,42 +449,6 @@
 </section>
       </div>
     </aside>
-  </div>
-</div>
-<!-- MODO APRESENTADOR (pedido da Cris, 10/10/2026 21h15: "literalmente assim dentro do sistema",
-     a foto do Modo Apresentador do PowerPoint). O telão continua só com o slide; isto é a tela do operador. -->
-<div id="apr" class="apr oculto">
-  <div class="apr-topo">
-    <button class="apr-fim" id="apr-fim">Terminar apresentação</button>
-    <span class="apr-nome" id="apr-nome"></span>
-    <span class="apr-crono"><b id="apr-tempo">0:00:00</b>
-      <button id="apr-pausa" title="Pausar / continuar o cronômetro">⏸</button>
-      <button id="apr-zera" title="Reiniciar o cronômetro">↺</button></span>
-    <span class="apr-hora" id="apr-hora">--:--</span>
-  </div>
-  <div class="apr-meio">
-    <div class="apr-esq">
-      <div class="apr-atual"><img id="apr-atual" alt=""><div class="apr-preto" id="apr-preto-aviso">TELA PRETA — aperte → ou B para voltar</div></div>
-      <div class="apr-nav">
-        <button class="apr-seta" id="apr-ant" title="Slide anterior (←)">◀</button>
-        <div class="apr-conta"><span id="apr-conta">Slide 1 de 1</span><div class="apr-barra"><i id="apr-barra"></i></div></div>
-        <button class="apr-seta" id="apr-prox" title="Próximo slide (→)">▶</button>
-      </div>
-      <div class="apr-ferr">
-        <button id="apr-todos" title="Ver todos os slides">▦ Todos os slides</button>
-        <button id="apr-bt-preto" title="Tela preta no telão (B)">■ Tela preta</button>
-      </div>
-    </div>
-    <div class="apr-dir">
-      <div class="apr-rot">Slide seguinte</div>
-      <div class="apr-seg"><img id="apr-seg" alt=""><span id="apr-seg-fim" hidden>Fim da apresentação</span></div>
-      <div class="apr-todos" id="apr-grade" hidden></div>
-      <div class="apr-notas-caixa" id="apr-notas-caixa">
-        <div class="apr-rot">Anotações
-          <span class="apr-notas-tam"><button id="apr-notas-menos" title="Letra menor">A−</button><button id="apr-notas-mais" title="Letra maior">A+</button></span></div>
-        <div class="apr-notas vazia" id="apr-notas">Sem anotações</div>
-      </div>
-    </div>
   </div>
 </div>
 <div id="toast"></div>

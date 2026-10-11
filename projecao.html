@@ -335,12 +335,18 @@ function fit(box, cqh, escala, crescer, linhasRef){
   const cs0 = getComputedStyle(box);
   const larg = box.clientWidth - parseFloat(cs0.paddingLeft||0) - parseFloat(cs0.paddingRight||0);
   const cabe = ()=> w.scrollHeight - box.clientHeight <= 1 && w.scrollWidth - larg <= 1;
-  for(let i=0;i<20;i++){                       // encolhe até caber — nunca desiste no meio
-    if(cabe()) break;
-    const r = Math.min(box.clientHeight/w.scrollHeight, larg/w.scrollWidth) * 0.98;
-    px *= (r < 1 ? r : 0.94);
-    if(px < 6){ px = 6; box.style.fontSize = px+'px'; break; }
-    box.style.fontSize = px+'px';
+  /* 3.0.5 — "AUMENTAR DIMINUÍA" (ordem dele, 11/10): o versículo já encostando nas laterais, o A+ deixava a letra
+     MENOR. Causa: com a letra maior o texto quebra em MAIS linhas, e o encolher-na-proporção (altura/altura) passava
+     do ponto e caía abaixo do tamanho de antes. Agora: busca, por bissecção, o MAIOR tamanho que cabe entre 6 px e o
+     pedido. Pedido maior = intervalo maior = resultado nunca menor. Continua nunca cortando. */
+  if(!cabe()){
+    let lo = 6, hi = px;
+    for(let i=0;i<16 && hi - lo > 0.5;i++){
+      const meio = (lo + hi) / 2;
+      box.style.fontSize = meio+'px';
+      if(cabe()) lo = meio; else hi = meio;
+    }
+    px = lo; box.style.fontSize = px+'px';
   }
   // Uma linha "quebrou" quando ela virou duas: aviso com a frase partida no meio
   // ("Culto de Senhoras —" numa linha e "19:30" na outra) fica feio, mesmo cabendo.

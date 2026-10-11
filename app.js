@@ -2254,7 +2254,8 @@ function atualizarAgora() {
   atualizarProjBtn();   // a barra de estado acompanha o CONTEÚDO, não só abrir/fechar
 }
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1800); }
-function trocarAba(aba) { est.aba = aba; $$('.tab').forEach(t => t.classList.toggle('ativo', t.dataset.aba === aba)); $$('.view').forEach(v => v.classList.toggle('ativo', v.dataset.aba === aba)); }
+function trocarAba(aba) { est.aba = aba; $$('.tab').forEach(t => t.classList.toggle('ativo', t.dataset.aba === aba)); $$('.view').forEach(v => v.classList.toggle('ativo', v.dataset.aba === aba));
+  if (aba === 'slides') aprAtualizar(); }   // 3.0.5: de volta da Bíblia/louvor, o painel mostra o que está no ar
 
 function listaFundos() {
   return [{ arquivo: FB.descanso, nome: 'Descanso (Maranata)', cat: 'Cultos' },
@@ -2435,7 +2436,8 @@ function slideAnterior() { if (SLIDES.lista && est.slidePos > 0) projetarSlide(e
 // O telão segue só com o slide; aqui o operador vê o atual (com o GIF andando), o
 // seguinte, o cronômetro, o relógio, "Slide X de N" e as setas grandes.
 const APR = { t0: 0, acum: 0, rodando: false, timer: null };
-function aprAberto() { const a = $('#apr'); return !!a && !a.classList.contains('oculto'); }
+// 3.0.5: o painel mora DENTRO da aba Apresentações; com outra aba na frente (Bíblia, louvor) as teclas são dela
+function aprAberto() { const a = $('#apr'); return !!a && !a.classList.contains('oculto') && est.aba === 'slides'; }
 function aprTempo() {
   const ms = APR.acum + (APR.rodando ? Date.now() - APR.t0 : 0), s = Math.floor(ms / 1000);
   $('#apr-tempo').textContent = Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
@@ -2450,27 +2452,22 @@ function aprAtualizar() {
   sg.hidden = !tem; $('#apr-seg-fim').hidden = tem;
   if (tem && sg.getAttribute('src') !== SLIDES.lista[i + 1]) sg.src = SLIDES.lista[i + 1];
   $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n;
-  const nota = ((SLIDES.notas || [])[i] || '').trim(), cx = $('#apr-notas');   // 3.0.3: as anotações do pptx
-  cx.textContent = nota || 'Sem anotações'; cx.classList.toggle('vazia', !nota);
-  $('#apr-notas-caixa').hidden = !$('#apr-grade').hidden;
   $('#apr-barra').style.width = (100 * (i + 1) / n) + '%';
   $('#apr-ant').disabled = i <= 0; $('#apr-prox').disabled = i >= n - 1;
   const preto = !!(est.live && est.live.tipo === 'preto');
   $('#apr').classList.toggle('preto', preto); $('#apr-bt-preto').classList.toggle('on', preto);
-  $('#apr-grade').querySelectorAll('div').forEach((c, k) => c.classList.toggle('sel', k === i));
 }
 function abrirApresentador() {
   if (!SLIDES.lista || !SLIDES.lista.length) return;
   $('#apr-nome').textContent = SLIDES.nome || '';
-  $('#apr').classList.remove('oculto');
+  $('#apr').classList.remove('oculto'); $('#apr').closest('.card').classList.add('com-apr');
   APR.acum = 0; APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸';
   clearInterval(APR.timer); APR.timer = setInterval(aprTempo, 500); aprTempo();
-  $('#apr-grade').hidden = true; $('#apr-grade').innerHTML = '';
   // abre projetando: o slide em que o operador estava, ou o primeiro
   // (slidePos -1 = acabou de abrir esta apresentacao: o telao ainda pode estar no slide de OUTRA)
   if (est.slidePos < 0 || !(est.live && est.live.tipo === 'slide')) projetarSlide(Math.max(0, est.slidePos)); else aprAtualizar();
 }
-function fecharApresentador() { $('#apr').classList.add('oculto'); clearInterval(APR.timer); }
+function fecharApresentador() { $('#apr').classList.add('oculto'); $('#apr').closest('.card').classList.remove('com-apr'); clearInterval(APR.timer); }
 // com a tela preta no ar, a seta devolve o slide (como no PowerPoint) em vez de ficar parada
 function aprPasso(d) {
   if (est.live && est.live.tipo === 'preto') { projetarSlide(Math.max(0, est.slidePos)); return; }
@@ -2480,18 +2477,6 @@ function aprPreto() {
   if (est.live && est.live.tipo === 'preto') projetarSlide(Math.max(0, est.slidePos)); else preto();
   aprAtualizar();
 }
-function aprTodos() {
-  const g = $('#apr-grade');
-  if (!g.hidden) { g.hidden = true; $('#apr-todos').classList.remove('on'); aprAtualizar(); return; }
-  g.innerHTML = '';
-  SLIDES.lista.forEach((src, k) => {
-    const c = document.createElement('div');
-    c.innerHTML = '<img src="' + src + '" alt="" loading="lazy"><span>' + (k + 1) + '</span>';
-    c.onclick = () => projetarSlide(k);
-    g.appendChild(c);
-  });
-  g.hidden = false; $('#apr-todos').classList.add('on'); aprAtualizar();
-}
 function ligarApresentador() {
   if (!$('#apr')) return;
   $('#ap-apresentador').onclick = abrirApresentador;
@@ -2499,14 +2484,6 @@ function ligarApresentador() {
   $('#apr-ant').onclick = () => aprPasso(-1);
   $('#apr-prox').onclick = () => aprPasso(+1);
   $('#apr-bt-preto').onclick = aprPreto;
-  $('#apr-todos').onclick = aprTodos;
-  // A−/A+ das anotações, como no PowerPoint; o tamanho fica guardado neste computador
-  const tamNotas = px => { px = Math.max(12, Math.min(48, px)); $('#apr').style.setProperty('--apr-notas', px + 'px');
-    try { localStorage.setItem('icm_apr_notas_px', String(px)); } catch (e) {} return px; };
-  let pxNotas = 20; try { pxNotas = parseInt(localStorage.getItem('icm_apr_notas_px'), 10) || 20; } catch (e) {}
-  pxNotas = tamNotas(pxNotas);
-  $('#apr-notas-menos').onclick = () => { pxNotas = tamNotas(pxNotas - 2); };
-  $('#apr-notas-mais').onclick = () => { pxNotas = tamNotas(pxNotas + 2); };
   $('#apr-pausa').onclick = () => {
     if (APR.rodando) { APR.acum += Date.now() - APR.t0; APR.rodando = false; $('#apr-pausa').textContent = '▶'; }
     else { APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸'; }
@@ -3269,7 +3246,7 @@ function ligarEventos() {
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
   const bl = $('#btn-limpar'); if (bl) bl.onclick = limparLista;
   const sa = $('#sl-abrir'); if (sa) sa.onclick = abrirApresentacao;
-  const av = $('#ap-voltar'); if (av) av.onclick = () => { SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides(''); };
+  const av = $('#ap-voltar'); if (av) av.onclick = () => { fecharApresentador(); SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides(''); };
   carregarApresentacoes();
   // ---- menu ☰ ----
   $('#btn-menu').onclick = abrirMenu;
