@@ -676,6 +676,12 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 .apr-ferr button:hover,.apr-ferr button.on{background:var(--hover)}
 .apr-rot{opacity:.75;font-size:15px}
 .apr-seg{aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;border:1px solid #333;border-radius:4px;color:#888}
+/* 3.0.3: as ANOTAÇÕES do slide atual, embaixo do seguinte, como no Modo Apresentador do PowerPoint */
+.apr-notas-caixa{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.apr-notas-caixa .apr-rot{display:flex;justify-content:space-between;align-items:center}
+.apr-notas-tam button{background:none;border:1px solid #444;color:inherit;border-radius:4px;padding:1px 7px;margin-left:4px;cursor:pointer;font:inherit;font-size:13px}
+.apr-notas{flex:1;overflow:auto;white-space:pre-wrap;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px;font-size:var(--apr-notas,20px);line-height:1.35}
+.apr-notas.vazia{color:#777;font-style:italic}
 .apr-todos{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;align-content:start}
 .apr-todos div{position:relative;cursor:pointer;border:2px solid transparent;border-radius:4px;background:#000}
 .apr-todos div.sel{border-color:var(--ouro)}

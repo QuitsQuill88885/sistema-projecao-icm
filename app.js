@@ -2334,7 +2334,7 @@ function renderFundosLiso() {
   });
 }
 // ================= SLIDES (PowerPoint / PDF) =================
-let SLIDES = [];   // {nome, lista:[url]}
+let SLIDES = [];   // {nome, lista:[url], notas:[texto]}
 function statusSlides(txt, erro) { const e = $('#sl-status'); if (e) { e.textContent = txt || ''; e.className = 'sl-status' + (erro ? ' erro' : ''); } }
 async function abrirApresentacao() {
   statusSlides('Escolhendo o arquivo…');
@@ -2346,7 +2346,7 @@ async function abrirApresentacao() {
     const r2 = nativo() ? await window.pywebview.api.importar(r1.caminho)
                         : await fetch('/api/importar', { method: 'POST', body: JSON.stringify({ caminho: r1.caminho }) }).then(r => r.json());
     if (!r2.ok) { statusSlides(r2.erro || 'Não foi possível abrir este arquivo.', true); return; }
-    SLIDES = { nome: r2.nome, lista: r2.slides };
+    SLIDES = { nome: r2.nome, lista: r2.slides, notas: r2.notas || [] };
     est.slidePos = -1;
     renderSlides(); statusSlides(r2.slides.length + ' slides prontos — clique em um para projetar.');
     carregarApresentacoes();            // ela fica salva: aparece na grade da próxima vez
@@ -2363,7 +2363,7 @@ function carregarApresentacoes() {
     .then(r => { APRES = r.lista || []; renderApresentacoes(); }).catch(() => {});
 }
 function abrirSalva(a) {
-  SLIDES = { nome: a.nome, lista: a.slides }; est.slidePos = -1;
+  SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [] }; est.slidePos = -1;
   renderSlides(); statusSlides(a.slides.length + ' slides — clique em um para projetar.');
 }
 function apagarApresentacao(a) {
@@ -2442,6 +2442,9 @@ function aprAtualizar() {
   sg.hidden = !tem; $('#apr-seg-fim').hidden = tem;
   if (tem && sg.getAttribute('src') !== SLIDES.lista[i + 1]) sg.src = SLIDES.lista[i + 1];
   $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n;
+  const nota = ((SLIDES.notas || [])[i] || '').trim(), cx = $('#apr-notas');   // 3.0.3: as anotações do pptx
+  cx.textContent = nota || 'Sem anotações'; cx.classList.toggle('vazia', !nota);
+  $('#apr-notas-caixa').hidden = !$('#apr-grade').hidden;
   $('#apr-barra').style.width = (100 * (i + 1) / n) + '%';
   $('#apr-ant').disabled = i <= 0; $('#apr-prox').disabled = i >= n - 1;
   const preto = !!(est.live && est.live.tipo === 'preto');
@@ -2471,7 +2474,7 @@ function aprPreto() {
 }
 function aprTodos() {
   const g = $('#apr-grade');
-  if (!g.hidden) { g.hidden = true; $('#apr-todos').classList.remove('on'); return; }
+  if (!g.hidden) { g.hidden = true; $('#apr-todos').classList.remove('on'); aprAtualizar(); return; }
   g.innerHTML = '';
   SLIDES.lista.forEach((src, k) => {
     const c = document.createElement('div');
@@ -2489,6 +2492,13 @@ function ligarApresentador() {
   $('#apr-prox').onclick = () => aprPasso(+1);
   $('#apr-bt-preto').onclick = aprPreto;
   $('#apr-todos').onclick = aprTodos;
+  // A−/A+ das anotações, como no PowerPoint; o tamanho fica guardado neste computador
+  const tamNotas = px => { px = Math.max(12, Math.min(48, px)); $('#apr').style.setProperty('--apr-notas', px + 'px');
+    try { localStorage.setItem('icm_apr_notas_px', String(px)); } catch (e) {} return px; };
+  let pxNotas = 20; try { pxNotas = parseInt(localStorage.getItem('icm_apr_notas_px'), 10) || 20; } catch (e) {}
+  pxNotas = tamNotas(pxNotas);
+  $('#apr-notas-menos').onclick = () => { pxNotas = tamNotas(pxNotas - 2); };
+  $('#apr-notas-mais').onclick = () => { pxNotas = tamNotas(pxNotas + 2); };
   $('#apr-pausa').onclick = () => {
     if (APR.rodando) { APR.acum += Date.now() - APR.t0; APR.rodando = false; $('#apr-pausa').textContent = '▶'; }
     else { APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸'; }

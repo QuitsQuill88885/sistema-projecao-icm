@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.2"
+VERSAO = "3.0.3"
 
 PORTA = 8765
 
@@ -2596,7 +2596,69 @@ def importar(caminho):
 
     rel = [quote("slides_importados/" + os.path.relpath(p, SAIDA).replace("\\", "/")) for p in imgs]
 
-    return {"ok": True, "nome": nome, "slides": rel}
+    notas = []
+    if ext in (".pptx", ".ppsx"):
+        try:
+            notas = notas_do_pptx(caminho)
+            if any(notas):
+                with open(os.path.join(destino, ARQ_NOTAS), "w", encoding="utf-8") as f:
+                    json.dump(notas, f, ensure_ascii=False)
+        except Exception:
+            notas = []                      # nota é ajuda do operador: falhar aqui não derruba a importação
+
+    return {"ok": True, "nome": nome, "slides": rel, "notas": _alinha_notas(notas, len(rel))}
+
+
+# ===== NOTAS DO APRESENTADOR (3.0.3): as "anotações" de cada slide do PowerPoint =====
+# Pedido dele (11/10/2026 09h30): o Modo Apresentador "idêntico ao PowerPoint" — e o PowerPoint
+# mostra, embaixo do slide seguinte, as anotações do slide atual.
+ARQ_NOTAS = "notas.json"
+
+
+def notas_do_pptx(caminho):
+    """Lista com o texto das anotações de cada slide, na ORDEM DA APRESENTAÇÃO ("" = sem nota).
+    Lê direto do pptx (é um zip): não precisa do PowerPoint."""
+    import zipfile, posixpath
+    import xml.etree.ElementTree as ET
+    P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
+    A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+    R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+    REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+    def rels(z, parte):
+        nome = posixpath.join(posixpath.dirname(parte), "_rels", posixpath.basename(parte) + ".rels")
+        if nome not in z.namelist():
+            return []
+        return [(r.get("Id"), r.get("Type", ""), posixpath.normpath(posixpath.join(posixpath.dirname(parte), r.get("Target", ""))))
+                for r in ET.fromstring(z.read(nome)).iter(REL + "Relationship")]
+    with zipfile.ZipFile(caminho) as z:
+        alvo = {i: t for i, _, t in rels(z, "ppt/presentation.xml")}
+        ordem = [alvo.get(s.get(R + "id")) for s in ET.fromstring(z.read("ppt/presentation.xml")).iter(P + "sldId")]
+        notas = []
+        for sl in ordem:
+            texto = ""
+            nota = [t for _, tipo, t in rels(z, sl or "") if tipo.endswith("/notesSlide")] if sl else []
+            if nota and nota[0] in z.namelist():
+                for sp in ET.fromstring(z.read(nota[0])).iter(P + "sp"):
+                    ph = sp.find(".//" + P + "ph")
+                    if ph is None or ph.get("type") != "body":
+                        continue           # só o corpo da anotação (fora: número do slide, miniatura)
+                    texto = "\n".join("".join(t.text or "" for t in par.iter(A + "t")) for par in sp.iter(A + "p")).strip()
+            notas.append(texto)
+        return notas
+
+
+def _alinha_notas(notas, n):
+    """Uma nota por tela: completa com "" ou corta para o número de telas."""
+    notas = list(notas or [])[:n]
+    return notas + [""] * (n - len(notas))
+
+
+def _notas_da_pasta(pasta, n):
+    try:
+        with open(os.path.join(pasta, ARQ_NOTAS), encoding="utf-8") as f:
+            return _alinha_notas([str(x) for x in json.load(f)], n)
+    except Exception:
+        return [""] * n
 
 
 
@@ -2660,7 +2722,9 @@ def listar_apresentacoes():
 
                 lista.append({"nome": nome, "demo": demo, "slides": [
 
-                    quote(prefixo + os.path.relpath(p, base).replace("\\", "/")) for p in telas]})
+                    quote(prefixo + os.path.relpath(p, base).replace("\\", "/")) for p in telas],
+
+                    "notas": _notas_da_pasta(pasta, len(telas))})
 
     return lista
 
