@@ -11,6 +11,9 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 VERSAO = "3.0.6"
+# 0.0.0.0 = o celular controla pela rede. SISTEMA_SO_LOCAL=1 (so as PROVAS usam) abre so em 127.0.0.1: cada instalacao
+# de teste roda de uma pasta nova, e o Firewall do Windows perguntava "Permitir?" na tela da casa (11/10 14h11).
+ENDERECO_REDE = "127.0.0.1" if os.environ.get("SISTEMA_SO_LOCAL") else "0.0.0.0"
 
 PORTA = 8765
 
@@ -3708,7 +3711,7 @@ def subir_porta_segura(pasta):
 
         ctx.load_cert_chain(cert, chave)
 
-        srv = socketserver.ThreadingTCPServer(("0.0.0.0", p), Handler)
+        srv = socketserver.ThreadingTCPServer((ENDERECO_REDE, p), Handler)
 
         srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
 
@@ -3900,7 +3903,7 @@ def main():
 
     # 0.0.0.0 = aceita também o celular na mesma rede (hotspot ou wi-fi da igreja)
 
-    srv = socketserver.ThreadingTCPServer(("0.0.0.0", porta), Handler)
+    srv = socketserver.ThreadingTCPServer((ENDERECO_REDE, porta), Handler)
 
     marcar_splash(0.25)                        # porta achada e servidor criado
 
