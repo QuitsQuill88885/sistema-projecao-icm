@@ -643,61 +643,105 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 /* negrito DENTRO do texto miúdo fica na linha (o .reset-row b é bloco: quebrava "Animação" e sobrava um ponto solto) */
 .reset-row small b{display:inline;font-size:inherit;margin:0}
 
-/* ===== MODO APRESENTADOR (pedido da Cris, 10/10/2026): a tela do operador igual a do PowerPoint ===== */
-.apr-abrir{margin-left:auto;background:var(--ouro);border-color:var(--ouro);color:#1a1a1a;font-weight:700}
-/* 3.0.5: DENTRO do cartão de Apresentações (não cobre a tela; o menu de cima fica livre) */
-.apr{position:relative;margin-top:10px;background:#111;color:#eee;display:flex;flex-direction:column;font-size:14px;
-  border:1px solid #333;border-radius:10px;overflow:hidden}
-.card.com-apr #sl-grade,.card.com-apr #ap-dica,.card.com-apr #ap-apresentador,.card.com-apr #sl-status,.apr .apr-nome{display:none}
-.apr .apr-topo{justify-content:space-between}
-.apr .apr-meio{height:min(46vh,430px)}
-.apr .apr-esq,.apr .apr-dir{flex:1}
-.apr .apr-nav{padding:10px 16px 14px}
-.apr .apr-seta{width:auto;padding:0 18px;font-size:18px;font-weight:600}
-.apr-preto-bt{background:#2a2a2a;border:1px solid #3a3a3a;border-radius:8px;padding:8px 14px;color:inherit;font:inherit;cursor:pointer}
-.apr-preto-bt.on,.apr-preto-bt:hover{background:var(--hover)}
+/* ===== MODO APRESENTAÇÃO — tela nova aprovada por ele em 12/10/2026 ("Limpo B") =====
+   Os números vêm da maquete (Conhecimento/esbocos_apresentador_1210, css6/css7/css8): coluna de 236 px, trilho
+   de 46 px; a 1366x768 o grande tem 490 px com a coluna e 640 sem ela, os laterais 112 e 136. Em tela maior o
+   palco cresce na mesma proporção (cqw = % da largura útil do palco, sem o padding); navegador antigo fica com os px da maquete. */
+.view[data-aba="slides"].apr-on>.card{display:none}
+.apr{position:absolute;inset:0;z-index:2;overflow:hidden;color:var(--txt);
+  background:radial-gradient(ellipse at 50% 50%,#18305a 0%,#0b1526 70%)}
 .apr.oculto{display:none}
-.apr-topo{display:flex;align-items:center;gap:18px;padding:8px 16px;background:#1b1b1b;border-bottom:1px solid #333}
-.apr-fim{background:#2a2a2a;border:1px solid #444;border-radius:6px;padding:7px 14px;font-weight:600}
-.apr-fim:hover{background:var(--vermelho)}
-.apr-nome{flex:1;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.apr-crono{display:flex;align-items:center;gap:6px}
-.apr-crono b{font-size:24px;font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
-.apr-crono button{background:#2a2a2a;border-radius:6px;width:34px;height:30px;font-size:15px}
-.apr-crono button:hover{background:#3a3a3a}
-.apr-hora{font-size:24px;font-variant-numeric:tabular-nums;padding-left:14px;border-left:1px solid #333}
-.apr-meio{flex:1;display:flex;gap:16px;padding:14px 16px;min-height:0}
-.apr-esq{flex:1.9;display:flex;flex-direction:column;gap:10px;min-width:0}
-.apr-dir{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
-.apr-atual{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
-.apr-atual img{border:2px solid #333;background:#000}
-.apr-atual img,.apr-seg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-.apr-preto{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);color:var(--ouro);font-weight:700;font-size:18px}
+/* palco: anterior | NO TELÃO AGORA | próximo, no meio (vertical e horizontal); reenquadra em 0,25 s */
+.apr-palco{position:absolute;top:0;bottom:0;right:0;left:236px;display:flex;align-items:center;justify-content:center;
+  gap:18px;padding:0 12px;transition:left .25s ease-out;container-type:size}
+.apr.escondida .apr-palco{left:46px}
+.apr-grande{flex:none;position:relative;width:490px;width:min(64.64cqw,calc((100cqh - 90px) * 16 / 9));transition:width .25s ease-out}
+.apr.escondida .apr-grande{width:640px;width:min(67.51cqw,calc((100cqh - 90px) * 16 / 9))}
+.apr-lado{flex:none;position:relative;cursor:pointer;width:112px;width:14.78cqw;transition:width .25s ease-out}
+.apr.escondida .apr-lado{width:136px;width:14.35cqw}
+.apr-q{position:relative}
+.apr-q img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;border-radius:inherit}
+.apr-grande .apr-q{border-radius:10px;outline:3px solid var(--ouro);outline-offset:3px;box-shadow:0 18px 60px #000c}
+.apr-lado .apr-q{border-radius:6px;box-shadow:0 6px 18px #0009}
+.apr-tag{position:absolute;top:-22px;left:-30px;right:-30px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;
+  color:#9fb0cc;text-align:center;white-space:nowrap}
+.apr-grande .apr-tag{color:var(--ouro);font-weight:600}
+.apr-lado.ant img{opacity:.38;filter:saturate(.6)}
+.apr-lado.px .apr-tag{color:#e6eefb}
+.apr-hint{position:absolute;inset:0;border-radius:6px;display:none;align-items:center;justify-content:center;flex-direction:column;
+  gap:2px;background:#0b1526b0;border:2px solid var(--ouro);font-size:12px;font-weight:600;color:var(--ouro);text-align:center;line-height:1.2}
+.apr-hint big .ico{font-size:24px}
+.apr-lado:hover .apr-hint{display:flex}
+.apr-lado.vazio{visibility:hidden}
+.apr-lado.fim{cursor:default}
+.apr-lado.fim .apr-hint{display:none}
+.apr-fim-q{display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;padding:6px;border-radius:6px;
+  border:1px dashed var(--borda);background:#0b1526;color:#8396b6;font-size:11px;text-align:center}
+.apr-fim-q[hidden]{display:none}
+.apr-preto{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border-radius:inherit;
+  background:rgba(0,0,0,.86);color:var(--ouro);font-weight:700;font-size:17px;letter-spacing:.3px}
 .apr.preto .apr-preto{display:flex}
-.apr-nav{display:flex;align-items:center;gap:14px}
-.apr-seta{width:84px;height:56px;border-radius:10px;background:#2a2a2a;font-size:26px}
-.apr-seta:hover{background:var(--azul2)}
-.apr-seta:disabled{opacity:.3;cursor:default}
-.apr-conta{flex:1;text-align:center;font-size:17px}
-.apr-barra{height:6px;background:#333;border-radius:3px;margin-top:6px;overflow:hidden}
-.apr-barra i{display:block;height:100%;width:0;background:var(--ouro);transition:width .2s}
-.apr-ferr{display:flex;gap:10px;justify-content:center}
-.apr-ferr button{background:#2a2a2a;border:1px solid #3a3a3a;border-radius:8px;padding:8px 16px}
-.apr-ferr button:hover,.apr-ferr button.on{background:var(--hover)}
-.apr-rot{opacity:.75;font-size:15px}
-.apr-seg{aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;border:1px solid #333;border-radius:4px;color:#888}
-/* 3.0.3: as ANOTAÇÕES do slide atual, embaixo do seguinte, como no Modo Apresentador do PowerPoint */
-.apr-notas-caixa{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
-.apr-notas-caixa .apr-rot{display:flex;justify-content:space-between;align-items:center}
-.apr-notas-tam button{background:none;border:1px solid #444;color:inherit;border-radius:4px;padding:1px 7px;margin-left:4px;cursor:pointer;font:inherit;font-size:13px}
-.apr-notas{flex:1;overflow:auto;white-space:pre-wrap;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px;font-size:var(--apr-notas,20px);line-height:1.35}
-.apr-notas.vazia{color:#777;font-style:italic}
-.apr-todos{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;align-content:start}
-.apr-todos div{position:relative;cursor:pointer;border:2px solid transparent;border-radius:4px;background:#000}
-.apr-todos div.sel{border-color:var(--ouro)}
-.apr-todos img{width:100%;aspect-ratio:16/9;object-fit:contain;display:block}
-.apr-todos span{position:absolute;left:4px;bottom:2px;font-size:11px;text-shadow:0 0 3px #000}
-@media (max-width:760px){.apr-meio{flex-direction:column}.apr-hora,.apr-nome{display:none}}
+/* coluna de slides: faz parte da tela (não cobre o palco) */
+.apr-col{position:absolute;left:0;top:0;bottom:0;width:236px;z-index:10;display:flex;flex-direction:column;
+  background:var(--painel);border-right:1px solid var(--borda);transition:transform .25s ease-out}
+.apr.escondida .apr-col{transform:translateX(-102%)}
+.apr-ctopo{display:flex;flex-direction:column;gap:9px;padding:10px 10px 9px;border-bottom:1px solid var(--borda)}
+.apr-lk{align-self:flex-start;display:flex;align-items:center;gap:4px;margin-left:-3px;padding:2px 7px 2px 2px;border-radius:6px;
+  background:none;font-size:12.5px;font-weight:600;color:#9fb0cc}
+.apr-lk .ico{font-size:15px}
+.apr-lk:hover{color:#fff;background:#ffffff10}
+.apr-l1{display:flex;align-items:center;gap:6px}
+.apr-nm{flex:1;min-width:0;font-size:13px;line-height:1.25;font-weight:600;color:#eaf0fb;overflow-wrap:anywhere}
+.apr-ib{flex:none;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:none;color:#8fa2c2}
+.apr-ib .ico{font-size:17px}
+.apr-ib:hover{background:#ffffff10;color:#dfe8f7}
+.apr-ib.on,.apr-ib.on:hover{color:var(--ouro)}
+.apr-achar{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#0a1526;border:1px solid var(--borda);
+  font-size:12.5px;color:#7f90ad;cursor:text}
+.apr-achar:focus-within{border-color:var(--ouro)}
+.apr-achar .ico{font-size:14px;color:#7f90ad}
+.apr-achar input,.apr-achar input:focus{flex:1;min-width:0;width:auto;padding:0;margin:0;border:none;border-radius:0;background:none;
+  font:inherit;font-size:12.5px;color:#fff;outline:none;box-shadow:none}
+.apr-achar input::placeholder{color:#7f90ad}
+.apr-lista{position:relative;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 6px 10px 6px;display:flex;
+  flex-direction:column;gap:9px;scrollbar-width:thin;scrollbar-color:#ffffff30 transparent}
+.apr-lista::-webkit-scrollbar{width:6px}
+.apr-lista::-webkit-scrollbar-thumb{background:#ffffff30;border-radius:3px}
+.apr-th{flex:none;display:flex;gap:6px;align-items:flex-start;transition:opacity .15s}
+.apr-th b{width:20px;flex:none;text-align:right;font-size:11px;color:#9fb0cc;padding-top:2px}
+.apr-th .im{position:relative;width:172px;margin-left:8px;border-radius:5px;border:2px solid transparent;cursor:pointer;
+  transition:width .15s,margin .15s}
+.apr-th .im img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;border-radius:3px;background:#000}
+.apr-th.passou .im{opacity:.5}
+.apr-th.on .im{border-color:var(--ouro)}
+.apr-th.on b{color:var(--ouro);font-weight:700}
+.apr-th:hover .im{width:194px;margin-left:0;border-color:#fff;box-shadow:0 8px 24px #000a;opacity:1}
+.apr-th:hover .im::after{content:'clique: projetar';position:absolute;right:5px;bottom:5px;font-size:10.5px;color:#fff;
+  background:#000c;padding:1px 6px;border-radius:4px}
+.apr-th.achou .im{box-shadow:0 0 0 3px var(--ouro)}
+.apr-th.fora{opacity:.28}
+.apr-sem{font-size:12px;line-height:1.35;color:#9fb0cc;padding:2px 6px 4px}
+.apr-sem[hidden]{display:none}
+/* escondida: sobra o trilho, sempre à vista e escrito */
+.apr-trilho{position:absolute;left:0;top:0;bottom:0;width:46px;z-index:9;display:none;flex-direction:column;align-items:center;
+  gap:12px;padding-top:14px;background:var(--painel);border-right:1px solid var(--borda);cursor:pointer}
+.apr.escondida .apr-trilho{display:flex}
+.apr-ic3{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--painel2);border:1px solid var(--borda);color:#dfe8f7}
+.apr-ic3 .ico{font-size:17px}
+.apr-trilho b{writing-mode:vertical-rl;transform:rotate(180deg);font-size:13px;font-weight:600;letter-spacing:.4px;color:#dfe8f7}
+.apr-trilho:hover .apr-ic3{background:var(--hover);border-color:var(--ouro);color:var(--ouro)}
+/* número digitado (número + Enter pula para o slide) */
+.apr-num{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;text-align:center;padding:14px 26px;
+  border-radius:14px;background:#0b1526ee;border:1px solid var(--ouro);box-shadow:0 10px 40px #000}
+.apr-num[hidden]{display:none}
+.apr-num big{display:block;font-size:44px;font-weight:700;line-height:1;color:var(--ouro);font-variant-numeric:tabular-nums}
+.apr-num small{font-size:12.5px;color:#c8d3e6}
+/* a apresentação na lista do culto: UM item, com "agora · 9/22" enquanto está no ar */
+.fila-item .rot .ico{font-size:13px;margin-right:4px;vertical-align:-2px}
+.fila-agora{margin-left:auto;flex:none;font-size:11px;color:#9fe3b9;white-space:nowrap}
+.fila-agora i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3ecf7a;margin-right:4px;vertical-align:1px}
+.fila-agora+.fila-btns{margin-left:6px}
 /* PÁGINA SISTEMA, 2ª proposta (10/10/2026): 4 BOTÕES de verdade que abrem um assistente */
 .sis-botoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .sis-bt,.sis-op{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;cursor:pointer;

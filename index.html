@@ -126,44 +126,44 @@
           <h2>Apresentações</h2>
           <!-- igual à página de Fundos (ordem dele, 10/10/2026): quadradinhos com miniatura,
                apagáveis, e o "+" para trazer uma nova. A da Evangelização vem junto como exemplo. -->
-          <div class="dica" id="ap-dica">Clique numa apresentação para abrir os slides e projete com <b>Voltar</b> e <b>Avançar</b>, como um louvor. Ao passar o mouse, remova a que não usa mais. Para trazer uma nova, clique em <b>+</b> (PowerPoint, PDF ou imagem).</div>
-          <div class="row ap-topo" id="ap-topo" hidden>
-            <button class="fcat" id="ap-voltar">‹ Todas as apresentações</button>
-            <b id="ap-nome"></b>
-            <button class="fcat apr-abrir" id="ap-apresentador" title="Tela do operador igual ao Modo Apresentador do PowerPoint">▶ Modo apresentador</button>
-          </div>
-          <!-- MODO APRESENTADOR, no jeito do Sistema (3.0.5, ordem dele depois do culto de 11/10): fica DENTRO desta
-               aba e não cobre a tela; o menu de cima continua livre (Bíblia ou louvor no meio e volta). Sem grade e sem
-               anotações: "o nosso PowerPoint é mais simples, para não causar dúvida". O telão segue só com o slide. -->
-          <div id="apr" class="apr oculto">
-            <div class="apr-topo">
-              <button class="apr-fim" id="apr-fim">Terminar apresentação</button>
-              <span class="apr-nome" id="apr-nome"></span>
-              <span class="apr-crono"><b id="apr-tempo">0:00:00</b>
-                <button id="apr-pausa" title="Pausar / continuar o cronômetro">⏸</button>
-                <button id="apr-zera" title="Reiniciar o cronômetro">↺</button></span>
-              <span class="apr-hora" id="apr-hora">--:--</span>
-            </div>
-            <div class="apr-meio">
-              <div class="apr-esq">
-                <div class="apr-rot">No telão</div>
-                <div class="apr-atual"><img id="apr-atual" alt=""><div class="apr-preto" id="apr-preto-aviso">TELA PRETA — aperte → ou B para voltar</div></div>
-              </div>
-              <div class="apr-dir">
-                <div class="apr-rot">Próximo</div>
-                <div class="apr-seg"><img id="apr-seg" alt=""><span id="apr-seg-fim" hidden>Fim da apresentação</span></div>
-              </div>
-            </div>
-            <div class="apr-nav">
-              <button class="apr-seta" id="apr-ant" title="Voltar (←)">◀ Voltar</button>
-              <div class="apr-conta"><span id="apr-conta">Slide 1 de 1</span><div class="apr-barra"><i id="apr-barra"></i></div></div>
-              <button id="apr-bt-preto" class="apr-preto-bt" title="Tela preta no telão (B)">■ Tela preta</button>
-              <button class="apr-seta" id="apr-prox" title="Avançar (→)">Avançar ▶</button>
-            </div>
-          </div>
+          <div class="dica" id="ap-dica">Clique numa apresentação: ela abre <b>já no telão</b>, no slide 1, como um louvor. Ao passar o mouse, remova a que não usa mais. Para trazer uma nova, clique em <b>+</b> (PowerPoint, PDF ou imagem).</div>
           <span class="sl-status" id="sl-status"></span>
           <div class="grid-fundos" id="ap-grade"></div>
-          <div class="sl-grade" id="sl-grade"></div>
+        </div>
+        <!-- MODO APRESENTAÇÃO (tela nova aprovada por ele em 12/10/2026, "Limpo B"): ocupa a área da aba inteira
+             e não cobre nada; o painel da direita e o menu de cima ficam como sempre. À esquerda, a coluna de
+             slides (escondível, com alfinete); no meio, o palco: anterior | NO TELÃO AGORA | próximo.
+             SAIU (queixas do culto de 11/10): o cronômetro, o relógio, as duas telas iguais e as dicas de teclado. -->
+        <div id="apr" class="apr oculto">
+          <div class="apr-palco" id="apr-palco">
+            <div class="apr-lado ant" id="apr-l-ant">
+              <div class="apr-tag" id="apr-tag-ant">anterior</div>
+              <div class="apr-q"><img id="apr-ant-img" alt=""></div>
+              <div class="apr-hint"><big><span class="ico" data-i="ant"></span></big>clique para<br>projetar</div>
+            </div>
+            <div class="apr-grande" id="apr-grande">
+              <div class="apr-tag">No telão agora · <span id="apr-conta">Slide 1 de 1</span></div>
+              <div class="apr-q"><img id="apr-atual" alt=""><div class="apr-preto">Tela preta no telão</div></div>
+            </div>
+            <div class="apr-lado px" id="apr-l-px">
+              <div class="apr-tag" id="apr-tag-px">próximo</div>
+              <div class="apr-q"><img id="apr-seg" alt=""><span class="apr-fim-q" id="apr-seg-fim" hidden>Fim da apresentação</span></div>
+              <div class="apr-hint"><big><span class="ico" data-i="prox"></span></big>clique para<br>projetar</div>
+            </div>
+          </div>
+          <div class="apr-trilho" id="apr-trilho" title="Mostrar slides"><span class="apr-ic3"><span class="ico" data-i="painelAbre"></span></span><b>Mostrar slides</b></div>
+          <div class="apr-col" id="apr-col">
+            <div class="apr-ctopo">
+              <button class="apr-lk" id="ap-voltar" title="Voltar às apresentações"><span class="ico" data-i="voltar"></span>Apresentações</button>
+              <div class="apr-l1"><b class="apr-nm" id="apr-nome"></b>
+                <button class="apr-ib" id="apr-esconder" title="Esconder slides"><span class="ico" data-i="painelFecha"></span></button>
+                <button class="apr-ib" id="apr-fixar" title="Coluna fixada"><span class="ico" data-i="alfinete"></span></button>
+              </div>
+              <label class="apr-achar"><span class="ico" data-i="busca"></span><input id="apr-busca" placeholder="nº ou palavra" autocomplete="off" spellcheck="false"></label>
+            </div>
+            <div class="apr-lista" id="apr-lista"></div>
+          </div>
+          <div class="apr-num" id="apr-num" hidden><big id="apr-num-n"></big><small id="apr-num-s"></small></div>
         </div>
       </div>
       <!-- FUNDOS -->

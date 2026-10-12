@@ -1682,6 +1682,12 @@ function idxDoItem(it) {   // resolve o índice pela CHAVE (o índice cru muda s
 }
 function projetarItemLista(i, aoFim) {
   const it = est.fila[i]; if (!it) return;
+  // a apresentação na lista: volta para ela, no slide onde parou (tela nova de 12/10/2026)
+  if (it.tipo === 'apres') {
+    const a = APRES.find(x => x.nome === it.nome);
+    if (!a) { toast('Esta apresentação não está mais disponível.'); return; }
+    trocarAba('slides'); entrarApresentacao(a, it.pos || 0); return;
+  }
   est.setPos = i; est.vistaFim = i; est.contAfter = 0; est.contAntes = 0; est.juntos = false;
   if (it.tipo === 'louvor') {
     const k = idxDoItem(it);
@@ -1770,6 +1776,7 @@ function soltarFila(to) {   // arrastar-e-soltar: move o item arrastado p/ a pos
   est.vistaFim = est.setPos;
   dragFrom = null; renderFila(); reprojetarVista();
 }
+function escHtml(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 function renderFila() {
   const cont = $('#fila-itens'); if (!cont) { marcarVersosNaFila(); return; } cont.innerHTML = '';
   const vFim = est.vistaFim != null ? est.vistaFim : est.setPos;
@@ -1792,11 +1799,14 @@ function renderFila() {
     const jaFoi = est.setPos >= 0 && i < est.setPos;
     const d = document.createElement('div');
     d.className = 'fila-item' + (naVista ? ' atual' : '') + (jaFoi ? ' ja-foi' : '') + (chkOn ? ' agrupado' : '');
-    const rot = it.tipo === 'louvor' ? it.rotulo : it.ref;
+    const rot = it.tipo === 'louvor' ? it.rotulo : it.tipo === 'apres' ? escHtml(it.nome) : it.ref;
     const chk = it.tipo === 'verso' ? '<span class="chk' + (chkOn ? ' on' : '') + '" title="Marcado = entra na projeção Juntos">' + (chkOn ? '✓' : '') + '</span>' : '';
+    // a apresentação é UM item: ícone de tela e, enquanto está no ar, "agora · 9/22"
+    const noArAp = it.tipo === 'apres' && est.live && est.live.tipo === 'slide' && SLIDES.nome === it.nome;
     d.innerHTML = chk + '<span class="fila-num">' + (i + 1) + '</span>' +
-      '<span class="rot" style="color:' + (it.tipo === 'louvor' ? '#bfe6ff' : '#f5d76e') + '">' +
-      (it.tipo === 'louvor' ? '♪ ' : '') + rot + '</span>' +
+      '<span class="rot" style="color:' + (it.tipo === 'louvor' ? '#bfe6ff' : it.tipo === 'apres' ? '#dfe8f7' : '#f5d76e') + '">' +
+      (it.tipo === 'louvor' ? '♪ ' : it.tipo === 'apres' ? '<span class="ico" data-i="slides"></span>' : '') + rot + '</span>' +
+      (noArAp ? '<small class="fila-agora"><i></i>agora · ' + (est.slidePos + 1) + '/' + SLIDES.lista.length + '</small>' : '') +
       '<span class="fila-btns"><button class="fb up" title="Subir">▲</button>' +
       '<button class="fb dn" title="Descer">▼</button><button class="fb x" title="Remover">✕</button></span>';
     // marcar o ✓ é um pedido EXPLÍCITO de projetar: vai pro telão mesmo com
@@ -1818,6 +1828,7 @@ function renderFila() {
     d.ondrop = ev => { ev.preventDefault(); soltarFila(i); };
     cont.appendChild(d);
   });
+  if (window.Icones && est.fila.some(x => x.tipo === 'apres')) Icones.aplicar(cont);
   const fd = $('#fila-dica'); if (fd) fd.style.display = est.fila.some(x => x.tipo === 'verso') ? '' : 'none';
   // rola a caixa até o item que está no ar. Na janela da igreja só cabem 3 ou 4
   // linhas: a partir do 4º item o realce saía da vista e o operador perdia a
@@ -1937,6 +1948,7 @@ function proximo() {
   if (noAr === 'cifra') { cifraPag(1); return; }        // ensaio: passa a página da cifra
   if (noAr === 'timer' || noAr === 'relogio' || noAr === 'texto' || noAr === 'fundo' || noAr === 'preto') return;
   if (est.setPos >= 0) {                      // navegando UM A UM pela LISTA (ordem que você montou)
+    if (est.fila[est.setPos] && est.fila[est.setPos].tipo === 'apres') return;   // apresentação fora do ar (ex.: Tela de espera): a seta não sai lendo a Bíblia
     if (est.live && est.live.tipo === 'louvor') { louvorProximo(); return; }
     // voltando dos versículos que ficaram ANTES do primeiro escolhido: desanda o
     // caminho até reencontrar a lista, em vez de seguir o capítulo para sempre
@@ -1967,6 +1979,7 @@ function anterior() {
   if (noAr === 'cifra') { cifraPag(-1); return; }
   if (noAr === 'timer' || noAr === 'relogio' || noAr === 'texto' || noAr === 'fundo' || noAr === 'preto') return;
   if (est.setPos >= 0) {
+    if (est.fila[est.setPos] && est.fila[est.setPos].tipo === 'apres') return;   // ver proximo()
     // voltando pro louvor anterior, cai no ÚLTIMO slide dele — recomeçar do
     // slide 1 obrigava a apertar Avançar 5, 6 vezes na frente da congregação
     const ant = vizinhoNaFila(-1);                       // anterior DO MESMO GRUPO
@@ -2347,9 +2360,8 @@ async function abrirApresentacao() {
     const r2 = nativo() ? await window.pywebview.api.importar(r1.caminho)
                         : await fetch('/api/importar', { method: 'POST', body: JSON.stringify({ caminho: r1.caminho }) }).then(r => r.json());
     if (!r2.ok) { statusSlides(r2.erro || 'Não foi possível abrir este arquivo.', true); return; }
-    SLIDES = { nome: r2.nome, lista: r2.slides, notas: r2.notas || [] };
-    est.slidePos = -1;
-    renderSlides(); statusSlides(r2.slides.length + ' slides prontos — clique em um para projetar.');
+    // tela nova (12/10/2026): ela entra na grade; o clique nela abre o modo apresentação já projetando
+    statusSlides(r2.slides.length + ' slides prontos — clique nela para projetar.');
     carregarApresentacoes();            // ela fica salva: aparece na grade da próxima vez
   } catch (e) {
     statusSlides('Esta função precisa do Sistema aberto pelo atalho (não pelo navegador).', true);
@@ -2363,10 +2375,6 @@ function carregarApresentacoes() {
   fetch('/api/apresentacoes').then(r => r.json())
     .then(r => { APRES = r.lista || []; renderApresentacoes(); }).catch(() => {});
 }
-function abrirSalva(a) {
-  SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [], mov: a.mov || {} }; est.slidePos = -1;
-  renderSlides(); statusSlides(a.slides.length + ' slides — clique em um para projetar.');
-}
 function apagarApresentacao(a) {
   const msg = a.demo
     ? 'Esconder <b>' + a.nome + '</b>?<br><br>Ela veio com o Sistema, então não some de verdade: volta em Configurações › Sistema › Restaurar.'
@@ -2374,15 +2382,12 @@ function apagarApresentacao(a) {
   confirmar(msg, async () => {
     if (a.demo) { if (!AP_OCULTAS.includes(a.nome)) AP_OCULTAS.push(a.nome); Guardar.gravar('icm_ap_ocultas', AP_OCULTAS); }
     else { try { await fetch('/api/apagar-apresentacao', { method: 'POST', body: JSON.stringify({ nome: a.nome }) }); } catch (e) {} }
-    if (SLIDES.nome === a.nome) { SLIDES = []; est.slidePos = -1; }
+    if (SLIDES.nome === a.nome) { if (aprLigado()) sairApresentacao(); SLIDES = []; est.slidePos = -1; }
     carregarApresentacoes(); renderSlides(); toast(a.demo ? 'Apresentação escondida.' : 'Apresentação apagada.');
   }, a.demo ? 'Sim, esconder' : 'Sim, apagar');
 }
 function renderApresentacoes() {
   const g = $('#ap-grade'); if (!g) return; g.innerHTML = '';
-  const aberta = !!(SLIDES.lista && SLIDES.lista.length);
-  g.hidden = aberta; $('#ap-topo').hidden = !aberta; $('#ap-dica').hidden = aberta;
-  if (aberta) { $('#ap-nome').textContent = SLIDES.nome || ''; return; }
   APRES.filter(a => !AP_OCULTAS.includes(a.nome)).forEach(a => {
     const c = document.createElement('div'); c.className = 'fundo-card';
     // "Exemplo" vai embaixo do nome: em cima da miniatura ele cobria o título do slide
@@ -2391,11 +2396,12 @@ function renderApresentacoes() {
       '<span class="nome"><span class="ap-nome"></span><small class="ap-info"></small></span>';
     c.querySelector('.ap-nome').textContent = a.nome;
     c.querySelector('.ap-info').textContent = (a.demo ? 'Exemplo · ' : '') + a.slides.length + ' slides';
-    // o clique simples espera um tico (igual ao do louvor): sem isso, o 1º clique já abria a grade de slides
-    // e o 2º caía em cima de um slide qualquer e projetava ele (o teste pegou: projetou o 14)
-    c.onclick = () => { clearTimeout(c._t); c._t = setTimeout(() => abrirSalva(a), 230); };
-    // 2 cliques: abre E já projeta o 1º slide (e liga o telão, se estiver desligado) — "faz tudo isso automático"
-    c.ondblclick = () => { clearTimeout(c._t); abrirSalva(a); projetarSlide(0); };
+    // TELA NOVA (12/10/2026, queixa 1 do culto: "cliquei 2x e não exibiu"): 1 clique já entra no modo
+    // apresentação PROJETANDO o slide 1 (e liga o telão, se estiver desligado), igual a um louvor.
+    // O clique simples espera um tico: sem isso, num duplo clique o 2º caía em cima da tela nova (numa
+    // miniatura ou no "próximo") e projetava outro slide. O duplo clique faz o mesmo que o simples.
+    c.onclick = () => { clearTimeout(c._t); c._t = setTimeout(() => entrarApresentacao(a, 0), 230); };
+    c.ondblclick = () => { clearTimeout(c._t); entrarApresentacao(a, 0); };
     c.querySelector('.fa-del').onclick = ev => { ev.stopPropagation(); apagarApresentacao(a); };
     g.appendChild(c);
   });
@@ -2403,17 +2409,8 @@ function renderApresentacoes() {
   add.innerHTML = '<div class="add-inner"><span class="plus">+</span><span>Abrir apresentação</span></div>';
   add.onclick = abrirApresentacao; g.appendChild(add);
 }
-function renderSlides() {
-  renderApresentacoes();
-  const g = $('#sl-grade'); if (!g) return; g.innerHTML = '';
-  if (!SLIDES.lista || !SLIDES.lista.length) return;
-  SLIDES.lista.forEach((src, i) => {
-    const c = document.createElement('div'); c.className = 'sl-card' + (est.slidePos === i ? ' sel' : '');
-    c.innerHTML = '<img src="' + src + '" alt=""><span>' + (i + 1) + '</span>';
-    c.onclick = () => projetarSlide(i);
-    g.appendChild(c);
-  });
-}
+// (a grade de miniaturas de antes virou a coluna de slides do modo apresentação: aprMontarLista)
+function renderSlides() { renderApresentacoes(); }
 // 3.0.7 — a animação DENTRO da tela (o (4/5), ordem dele 11/10 17h20): o slide com movimento tem cliques próprios
 // (o barco, o coração da filha de Jairo). passo 0 = o que roda sozinho ao entrar; a seta toca o clique seguinte e
 // só depois vai ao próximo slide; voltar desfaz o último clique, e do slide anterior volta ao FIM dele (o PowerPoint
@@ -2434,8 +2431,10 @@ function projetarSlide(i, passo) {
   // Ele entrava nos slides, avançava e "não projeta": tinha de sair e clicar em Ativar telão.
   // A janela nova nasce mostrando est.ultimo, que o projetar() acima acabou de gravar.
   if (!est.projetando) abrirProjecao();
-  renderSlides(); aprAtualizar();
-  const at = $('#sl-grade .sl-card.sel'); if (at) at.scrollIntoView({ block: 'nearest' });
+  // a apresentação na lista do culto guarda onde parou ("agora · 9/22"); voltar nela retoma dali
+  const fi = est.fila.find(x => x.tipo === 'apres' && x.nome === SLIDES.nome); if (fi) fi.pos = i;
+  aprAtualizar();
+  if (fi) renderFila();
 }
 function slideProximo() {
   if (!SLIDES.lista) return;
@@ -2450,46 +2449,107 @@ function slideAnterior() {
   if (i > 0) projetarSlide(i - 1, cliquesDoSlide(i - 1));
 }
 
-// ================= MODO APRESENTADOR =================
-// Pedido da Cris (professora das crianças), 10/10/2026 21h15, com a foto do Modo
-// Apresentador do PowerPoint no Lenovo da igreja: "literalmente assim dentro do sistema".
-// O telão segue só com o slide; aqui o operador vê o atual (com o GIF andando), o
-// seguinte, o cronômetro, o relógio, "Slide X de N" e as setas grandes.
-const APR = { t0: 0, acum: 0, rodando: false, timer: null };
-// 3.0.5: o painel mora DENTRO da aba Apresentações; com outra aba na frente (Bíblia, louvor) as teclas são dela
-function aprAberto() { const a = $('#apr'); return !!a && !a.classList.contains('oculto') && est.aba === 'slides'; }
-function aprTempo() {
-  const ms = APR.acum + (APR.rodando ? Date.now() - APR.t0 : 0), s = Math.floor(ms / 1000);
-  $('#apr-tempo').textContent = Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-  const d = new Date(); $('#apr-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+// ================= MODO APRESENTAÇÃO (tela nova, aprovada por ele em 12/10/2026: "Limpo B") =================
+// Queixas do culto de 11/10 que fizeram esta tela: 2 cliques na miniatura não projetavam e o modo apresentador
+// era um "botãozinho minúsculo"; as duas telas iguais lado a lado ("tá muito feio"); e o cronômetro que o Kevin
+// estranhou ("tem contagem regressiva essa bomba?"). Agora: o clique na apresentação já entra projetando o slide 1;
+// à esquerda a COLUNA de slides (faz parte da tela, não cobre nada; esconde num trilho "Mostrar slides"; com o
+// alfinete solto ela se recolhe sozinha depois que se escolhe um slide); no meio o PALCO, anterior | NO TELÃO
+// AGORA | próximo, e clicar no anterior ou no próximo PROJETA. Sem relógio, sem contagem, sem dica de teclado.
+// O painel da direita (prévia, setas, Tela de espera, Congelar, A−/A+, lista do culto) é o de sempre.
+const APR = { fixa: true, escondida: false, porMouse: false, tMouse: null, num: '', numT: null, achados: [] };
+// o modo mora DENTRO da aba Apresentações; com outra aba na frente (Bíblia, louvor) as teclas são dela
+function aprLigado() { const a = $('#apr'); return !!a && !a.classList.contains('oculto'); }
+function aprAberto() { return aprLigado() && est.aba === 'slides'; }
+function entrarApresentacao(a, pos) {
+  if (!a || !a.slides || !a.slides.length) return;
+  SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [], mov: a.mov || {}, textos: a.textos || [] };
+  est.slidePos = -1;
+  // a escolha da coluna (escondida? fixada?) é lembrada; lida aqui porque a config do Sistema chega depois da página
+  APR.fixa = Guardar.ler('icm_ap_fixa', true) !== false;
+  APR.escondida = Guardar.ler('icm_ap_escondida', false) === true;
+  APR.porMouse = false;
+  aprMontarLista();
+  $('#apr-busca').value = ''; aprBuscar('');
+  aprNumLimpa();
+  $('#apr').classList.remove('oculto');
+  $('.view[data-aba="slides"]').classList.add('apr-on');
+  aprPintarCol();
+  colocarNaFila(a.nome);
+  projetarSlide(clamp(pos || 0, 0, a.slides.length - 1));
 }
+// "‹ Apresentações" e o Esc: volta para a grade. O telão continua no slide (a Tela de espera é do painel), e as
+// setas do painel continuam passando esta apresentação enquanto ela estiver no ar.
+function sairApresentacao() {
+  const a = $('#apr'); if (!a) return;
+  a.classList.add('oculto'); $('.view[data-aba="slides"]').classList.remove('apr-on');
+  aprNumLimpa(); statusSlides('');
+  renderApresentacoes();
+}
+// ---- a lista do culto: a apresentação entra como UM item ("agora · 9/22") ----
+function colocarNaFila(nome) {
+  let k = est.fila.findIndex(x => x.tipo === 'apres' && x.nome === nome);
+  if (k < 0) { est.fila.push({ tipo: 'apres', nome, ref: nome, pos: 0 }); k = est.fila.length - 1; }
+  est.setPos = k; est.vistaFim = k; est.aguardando = false; est.contAfter = 0; est.contAntes = 0; est.juntos = false;
+  renderFila();
+}
+// ---- a coluna de slides ----
+function aprMontarLista() {
+  const l = $('#apr-lista'); if (!l) return; l.innerHTML = '';
+  (SLIDES.lista || []).forEach((src, i) => {
+    const d = document.createElement('div'); d.className = 'apr-th';
+    d.innerHTML = '<b>' + (i + 1) + '</b><div class="im"><img loading="lazy" alt=""></div>';
+    d.querySelector('img').src = src;
+    d.querySelector('.im').onclick = () => aprEscolher(i);
+    l.appendChild(d);
+  });
+  const s = document.createElement('div'); s.className = 'apr-sem'; s.id = 'apr-sem'; s.hidden = true; l.prepend(s);
+}
+function aprEscolher(i) {          // clique na miniatura (ou Enter na busca): projeta; solta, a coluna se recolhe
+  projetarSlide(i);
+  if (!APR.fixa) aprCol(true);
+}
+function aprCol(escondida, porMouse) {
+  APR.escondida = !!escondida; APR.porMouse = !escondida && !!porMouse;
+  Guardar.gravar('icm_ap_escondida', APR.escondida);
+  aprPintarCol();
+}
+function aprPintarCol() {
+  const a = $('#apr'); if (!a) return;
+  a.classList.toggle('escondida', APR.escondida);
+  const f = $('#apr-fixar'); f.classList.toggle('on', APR.fixa); f.title = APR.fixa ? 'Coluna fixada' : 'Fixar coluna';
+  if (!APR.escondida) aprRolar(clamp(est.slidePos, 0, (SLIDES.lista || [1]).length - 1));
+}
+// rola SÓ a coluna (scrollIntoView mexeria também na página, que fica atrás com a rolagem escondida)
+function aprRolar(i) {
+  const l = $('#apr-lista'), d = l && l.querySelectorAll('.apr-th')[i]; if (!d) return;
+  if (d.offsetTop < l.scrollTop || d.offsetTop + d.offsetHeight > l.scrollTop + l.clientHeight)
+    l.scrollTop = d.offsetTop - (l.clientHeight - d.offsetHeight) / 2;
+}
+// ---- o palco e a coluna acompanham o que está NO AR ----
+function aprSrc(img, src) { if (img.getAttribute('src') !== src) img.src = src; }
 function aprAtualizar() {
-  if (!aprAberto() || !SLIDES.lista) return;
-  const n = SLIDES.lista.length, i = Math.max(0, est.slidePos);
-  const at = $('#apr-atual'), sg = $('#apr-seg');
-  if (at.getAttribute('src') !== SLIDES.lista[i]) at.src = SLIDES.lista[i];
-  const tem = i + 1 < n;
-  sg.hidden = !tem; $('#apr-seg-fim').hidden = tem;
-  if (tem && sg.getAttribute('src') !== SLIDES.lista[i + 1]) sg.src = SLIDES.lista[i + 1];
-  // 3.0.7: o operador precisa saber que a próxima seta é uma ANIMAÇÃO deste slide, não o slide seguinte
-  const cl = cliquesDoSlide(i), falta = cl - (est.slidePasso || 0);
-  $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n + (falta > 0 ? ' · falta' + (falta > 1 ? 'm ' + falta + ' animações' : ' 1 animação') : '');
-  $('#apr-barra').style.width = (100 * (i + 1) / n) + '%';
-  $('#apr-ant').disabled = i <= 0 && !(est.slidePasso > 0); $('#apr-prox').disabled = i >= n - 1 && falta <= 0;
-  const preto = !!(est.live && est.live.tipo === 'preto');
-  $('#apr').classList.toggle('preto', preto); $('#apr-bt-preto').classList.toggle('on', preto);
-}
-function abrirApresentador() {
-  if (!SLIDES.lista || !SLIDES.lista.length) return;
+  if (!aprLigado() || !SLIDES.lista || !SLIDES.lista.length) return;
+  const n = SLIDES.lista.length, i = clamp(est.slidePos, 0, n - 1);
+  const passo = est.slidePasso || 0, falta = cliquesDoSlide(i) - passo;
   $('#apr-nome').textContent = SLIDES.nome || '';
-  $('#apr').classList.remove('oculto'); $('#apr').closest('.card').classList.add('com-apr');
-  APR.acum = 0; APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸';
-  clearInterval(APR.timer); APR.timer = setInterval(aprTempo, 500); aprTempo();
-  // abre projetando: o slide em que o operador estava, ou o primeiro
-  // (slidePos -1 = acabou de abrir esta apresentacao: o telao ainda pode estar no slide de OUTRA)
-  if (est.slidePos < 0 || !(est.live && est.live.tipo === 'slide')) projetarSlide(Math.max(0, est.slidePos)); else aprAtualizar();
+  aprSrc($('#apr-atual'), SLIDES.lista[i]);
+  // 3.0.7: o operador precisa saber que a próxima seta é uma ANIMAÇÃO deste slide, não o slide seguinte
+  $('#apr-conta').textContent = 'Slide ' + (i + 1) + ' de ' + n + (falta > 0 ? ' · falta' + (falta > 1 ? 'm ' + falta + ' animações' : ' 1 animação') : '');
+  // próximo: com animação pendente, o "próximo" é o clique DENTRO deste slide (o coração, o barco)
+  const px = $('#apr-l-px'), animPx = falta > 0, temPx = animPx || i + 1 < n;
+  px.classList.toggle('fim', !temPx);
+  $('#apr-seg').hidden = !temPx; $('#apr-seg-fim').hidden = temPx;
+  if (temPx) aprSrc($('#apr-seg'), SLIDES.lista[animPx ? i : i + 1]);
+  $('#apr-tag-px').textContent = animPx ? 'próximo: animação' : 'próximo';
+  const an = $('#apr-l-ant'), animAn = passo > 0, temAn = animAn || i > 0;
+  an.classList.toggle('vazio', !temAn);
+  if (temAn) aprSrc($('#apr-ant-img'), SLIDES.lista[animAn ? i : i - 1]);
+  $('#apr-tag-ant').textContent = animAn ? 'anterior: animação' : 'anterior';
+  $('#apr').classList.toggle('preto', !!(est.live && est.live.tipo === 'preto'));
+  $$('#apr-lista .apr-th').forEach((d, k) => { d.classList.toggle('on', k === i); d.classList.toggle('passou', k < i); });
+  if (!APR.escondida) aprRolar(i);
 }
-function fecharApresentador() { $('#apr').classList.add('oculto'); $('#apr').closest('.card').classList.remove('com-apr'); clearInterval(APR.timer); }
 // com a tela preta no ar, a seta devolve o slide (como no PowerPoint) em vez de ficar parada
 function aprPasso(d) {
   if (est.live && est.live.tipo === 'preto') { projetarSlide(Math.max(0, est.slidePos)); return; }
@@ -2499,19 +2559,92 @@ function aprPreto() {
   if (est.live && est.live.tipo === 'preto') projetarSlide(Math.max(0, est.slidePos)); else preto();
   aprAtualizar();
 }
+// ---- a busca "nº ou palavra": número vai direto; palavra procura no texto gravado de cada página ----
+function aprBuscar(q) {
+  const ths = $$('#apr-lista .apr-th'), t = semAcento(q).trim(), sem = $('#apr-sem');
+  APR.achados = [];
+  ths.forEach(d => d.classList.remove('achou', 'fora'));
+  if (sem) sem.hidden = true;
+  if (!t) return;
+  if (/^\d+$/.test(t)) {
+    const k = parseInt(t, 10) - 1;
+    if (k >= 0 && k < ths.length) { APR.achados = [k]; ths[k].classList.add('achou'); aprRolar(k); }
+    else if (sem) { sem.textContent = 'São ' + ths.length + ' slides.'; sem.hidden = false; }
+    return;
+  }
+  const textos = SLIDES.textos || [], palavras = t.split(/\s+/), junto = t.replace(/\s+/g, '');
+  ths.forEach((d, i) => {
+    const tx = semAcento(textos[i] || '');
+    // o texto lido da imagem às vezes cola as palavras ("FILHA DEJAIRO"): sem espaço também vale
+    const ok = !!tx && (palavras.every(p => tx.includes(p)) || tx.replace(/\s+/g, '').includes(junto));
+    if (ok) APR.achados.push(i);
+    d.classList.toggle('achou', ok); d.classList.toggle('fora', !ok);
+  });
+  if (APR.achados.length) aprRolar(APR.achados[0]);
+  else if (sem) {
+    // apresentação antiga, sem textos.json: a busca por número continua valendo
+    sem.textContent = textos.some(x => x) ? 'Nenhum slide com essa palavra.' : 'Esta apresentação não tem o texto gravado. Procure pelo número do slide.';
+    sem.hidden = false;
+  }
+}
+function aprBuscaIr() {
+  if (!APR.achados.length) return;
+  // Enter de novo vai ao próximo slide que tem a palavra
+  const i = APR.achados.filter(k => k > est.slidePos)[0];
+  const alvo = i === undefined ? APR.achados[0] : i;
+  const cx = $('#apr-busca');
+  if (/^\d+$/.test(cx.value.trim())) { cx.value = ''; aprBuscar(''); }
+  cx.blur();                       // as setas voltam a passar os slides
+  aprEscolher(alvo);
+}
+// ---- número + Enter pula para o slide, como no PowerPoint ----
+function aprNumLimpa() { APR.num = ''; clearTimeout(APR.numT); const b = $('#apr-num'); if (b) b.hidden = true; }
+function aprNumMostra() {
+  const b = $('#apr-num'); if (!APR.num) { aprNumLimpa(); return; }
+  const n = parseInt(APR.num, 10), t = SLIDES.lista.length;
+  $('#apr-num-n').textContent = APR.num;
+  $('#apr-num-s').textContent = n >= 1 && n <= t ? 'de ' + t : 'são ' + t + ' slides';
+  b.hidden = false;
+  clearTimeout(APR.numT); APR.numT = setTimeout(aprNumLimpa, 4000);
+}
+function aprNumIr() {
+  const n = parseInt(APR.num, 10); aprNumLimpa();
+  if (n >= 1 && n <= SLIDES.lista.length) projetarSlide(n - 1);
+}
+// as teclas do modo: devolve true quando a tecla foi dele
+function aprTecla(e) {
+  const k = e.key, ae = document.activeElement;
+  if (ae && ae.id === 'apr-busca') {
+    if (k === 'Enter') { e.preventDefault(); aprBuscaIr(); }
+    else if (k === 'Escape') { e.preventDefault(); if (ae.value) { ae.value = ''; aprBuscar(''); } else ae.blur(); }
+    return true;                   // o resto é digitação na busca
+  }
+  if (ae && ['INPUT', 'TEXTAREA', 'SELECT'].includes(ae.tagName)) return false;
+  if (e.ctrlKey || e.altKey || e.metaKey) return false;
+  if (/^[0-9]$/.test(k)) { e.preventDefault(); APR.num = (APR.num + k).slice(-3); aprNumMostra(); return true; }
+  if (k === 'Enter') { e.preventDefault(); if (APR.num) aprNumIr(); else aprPasso(+1); return true; }
+  if (k === 'Backspace' && APR.num) { e.preventDefault(); APR.num = APR.num.slice(0, -1); aprNumMostra(); return true; }
+  if (k === 'Escape') { e.preventDefault(); if (APR.num) aprNumLimpa(); else sairApresentacao(); return true; }
+  if (k === 'ArrowRight' || k === ' ' || k === 'PageDown') { e.preventDefault(); aprNumLimpa(); aprPasso(+1); return true; }
+  if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); aprNumLimpa(); aprPasso(-1); return true; }
+  if (k.toLowerCase() === 'b') { e.preventDefault(); aprPreto(); return true; }
+  return false;                    // F (congelar), P (espera), +/− seguem o jeito de sempre
+}
 function ligarApresentador() {
   if (!$('#apr')) return;
-  $('#ap-apresentador').onclick = abrirApresentador;
-  $('#apr-fim').onclick = () => { fecharApresentador(); descanso(); };
-  $('#apr-ant').onclick = () => aprPasso(-1);
-  $('#apr-prox').onclick = () => aprPasso(+1);
-  $('#apr-bt-preto').onclick = aprPreto;
-  $('#apr-pausa').onclick = () => {
-    if (APR.rodando) { APR.acum += Date.now() - APR.t0; APR.rodando = false; $('#apr-pausa').textContent = '▶'; }
-    else { APR.t0 = Date.now(); APR.rodando = true; $('#apr-pausa').textContent = '⏸'; }
-    aprTempo();
-  };
-  $('#apr-zera').onclick = () => { APR.acum = 0; APR.t0 = Date.now(); aprTempo(); };
+  $('#ap-voltar').onclick = sairApresentacao;
+  $('#apr-esconder').onclick = () => aprCol(true);
+  $('#apr-fixar').onclick = () => { APR.fixa = !APR.fixa; Guardar.gravar('icm_ap_fixa', APR.fixa); aprPintarCol(); };
+  const tr = $('#apr-trilho');
+  tr.onclick = () => { clearTimeout(APR.tMouse); aprCol(false); };
+  // encostar o mouse no trilho também abre (atalho; o clique é o caminho principal)
+  tr.onmouseenter = () => { clearTimeout(APR.tMouse); APR.tMouse = setTimeout(() => { if (APR.escondida) aprCol(false, true); }, 180); };
+  tr.onmouseleave = () => clearTimeout(APR.tMouse);
+  $('#apr-col').onmouseleave = () => { if (APR.porMouse && !APR.fixa) aprCol(true); };
+  // anti-burro: clicar no anterior ou no próximo PROJETA
+  $('#apr-l-ant').onclick = () => { if (!$('#apr-l-ant').classList.contains('vazio')) aprPasso(-1); };
+  $('#apr-l-px').onclick = () => { if (!$('#apr-l-px').classList.contains('fim')) aprPasso(+1); };
+  $('#apr-busca').oninput = e => aprBuscar(e.target.value);
 }
 
 // ================= MENU ☰ CONFIGURAÇÕES =================
@@ -2765,6 +2898,7 @@ function aplicarReset(o) {
   if (o === 'tamanhos' || o === 'tudo') { est.escalaLouvor = est.escalaVers = est.escalaTexto = 1; atualizarTamLabel(); fonteCifraPadrao(); }
   if (o === 'louvores' || o === 'tudo') { MEUS = []; salvarMeus(); recarregarLouvores(); renderMeus(); }
   if (o === 'slides' || o === 'tudo') {   // apaga as apresentações importadas
+    if (aprLigado()) sairApresentacao();
     SLIDES = []; est.slidePos = -1; statusSlides('');
     AP_OCULTAS = []; Guardar.gravar('icm_ap_ocultas', AP_OCULTAS);   // a de exemplo volta
     try { fetch('/api/limpar', { method: 'POST' }).then(carregarApresentacoes); } catch (e) {}
@@ -3268,7 +3402,6 @@ function ligarEventos() {
   const bg = $('#btn-guardar'); if (bg) bg.onclick = guardarVerso;
   const bl = $('#btn-limpar'); if (bl) bl.onclick = limparLista;
   const sa = $('#sl-abrir'); if (sa) sa.onclick = abrirApresentacao;
-  const av = $('#ap-voltar'); if (av) av.onclick = () => { fecharApresentador(); SLIDES = []; est.slidePos = -1; renderSlides(); statusSlides(''); };
   carregarApresentacoes();
   // ---- menu ☰ ----
   $('#btn-menu').onclick = abrirMenu;
@@ -3307,16 +3440,10 @@ function ligarEventos() {
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
     // a cifra aberta também segura as teclas: ali a seta rola a folha. Se ela
     // passasse adiante, o telão trocaria de slide com o operador olhando a cifra.
-    // o Modo Apresentador segura as teclas do PowerPoint: ←/→/espaço/PgUp/PgDn passam,
-    // B é tela preta, Esc fecha o painel (o telão continua no slide)
-    if (aprAberto()) {
-      const k = e.key;
-      if (k === 'Escape') { e.preventDefault(); fecharApresentador(); }
-      else if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter') { e.preventDefault(); aprPasso(+1); }
-      else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); aprPasso(-1); }
-      else if (k.toLowerCase() === 'b') { e.preventDefault(); aprPreto(); }
-      return;
-    }
+    // o modo apresentação segura as teclas do PowerPoint: →/espaço avançam, ← volta, número + Enter pula,
+    // B é tela preta, Esc volta para a lista (o telão continua no slide). Com uma janela aberta, nada disso.
+    if (aprAberto() && !document.querySelector('.ajuda-overlay, .menu-overlay:not(.oculto), .bv-overlay:not(.oculto)')
+        && aprTecla(e)) return;
     const cif = $('#cifra-ov');
     if (cif && !cif.classList.contains('oculto')) {
       if (e.key === 'Escape') { fecharCifra(); return; }

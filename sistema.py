@@ -2638,7 +2638,90 @@ def importar(caminho):
         except Exception:
             notas = []                      # nota é ajuda do operador: falhar aqui não derruba a importação
 
-    return {"ok": True, "nome": nome, "slides": rel, "notas": _alinha_notas(notas, len(rel))}
+    textos = gravar_textos(caminho, ext, destino, len(rel))
+
+    return {"ok": True, "nome": nome, "slides": rel, "notas": _alinha_notas(notas, len(rel)), "textos": textos}
+
+
+# ===== TEXTO DE CADA PÁGINA (nova tela de apresentação, 12/10/2026): a busca "nº ou palavra" =====
+# Palavra dele (12/10 01h38): "insano de tão bom, é a cara do sistema". O número vai direto à página;
+# a PALAVRA procura no texto que fica gravado aqui, na importação, num textos.json ao lado das telas.
+# PDF: o texto das páginas pelo mesmo motor que desenha as telas (pypdfium2, que já vai dentro do Sistema).
+# PowerPoint: o texto das formas de cada slide, lido do próprio pptx (é um zip; não precisa do PowerPoint).
+# Texto que está DENTRO de uma imagem não sai daqui: a apresentação continua achando a página pelo número.
+ARQ_TEXTOS = "textos.json"
+
+
+def textos_do_pptx(caminho):
+    """Lista com o texto das formas de cada slide, na ORDEM DA APRESENTAÇÃO ("" = slide sem texto)."""
+    import zipfile, posixpath
+    import xml.etree.ElementTree as ET
+    P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
+    A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+    R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+    REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+    with zipfile.ZipFile(caminho) as z:
+        nome_rels = "ppt/_rels/presentation.xml.rels"
+        alvo = {r.get("Id"): posixpath.normpath(posixpath.join("ppt", r.get("Target", "")))
+                for r in ET.fromstring(z.read(nome_rels)).iter(REL + "Relationship")} if nome_rels in z.namelist() else {}
+        textos = []
+        for s in ET.fromstring(z.read("ppt/presentation.xml")).iter(P + "sldId"):
+            parte = alvo.get(s.get(R + "id"))
+            if not parte or parte not in z.namelist():
+                textos.append("")
+                continue
+            xml = ET.fromstring(z.read(parte))
+            if xml.get("show") == "0":       # slide escondido: o PowerPoint não exporta tela dele
+                continue
+            linhas = ["".join(t.text or "" for t in par.iter(A + "t")).strip() for par in xml.iter(A + "p")]
+            textos.append("\n".join(l for l in linhas if l))
+        return textos
+
+
+def textos_do_pdf(caminho):
+    """Lista com o texto de cada página do PDF ("" = página só de imagem)."""
+    import pypdfium2 as pdfium
+    pdf = pdfium.PdfDocument(caminho)
+    textos = []
+    try:
+        for i in range(len(pdf)):
+            pg = pdf[i]
+            tp = pg.get_textpage()
+            try:
+                textos.append((tp.get_text_range() or "").replace("\r", "").strip())
+            finally:
+                tp.close()
+                pg.close()
+    finally:
+        pdf.close()
+    return textos
+
+
+def gravar_textos(caminho, ext, destino, n):
+    """Lê o texto de cada página e grava o textos.json. Falhar aqui NUNCA derruba a importação."""
+    try:
+        if ext in (".pptx", ".ppsx"):
+            textos = textos_do_pptx(caminho)
+        elif ext == ".pdf":
+            textos = textos_do_pdf(caminho)
+        else:
+            return [""] * n
+        textos = _alinha_notas(textos, n)
+        if any(textos):
+            with open(os.path.join(destino, ARQ_TEXTOS), "w", encoding="utf-8") as f:
+                json.dump(textos, f, ensure_ascii=False)
+        return textos
+    except Exception:
+        return [""] * n
+
+
+def _textos_da_pasta(pasta, n):
+    """As apresentações antigas, sem textos.json, voltam com "" em cada página (a busca por número segue valendo)."""
+    try:
+        with open(os.path.join(pasta, ARQ_TEXTOS), encoding="utf-8") as f:
+            return _alinha_notas([str(x) for x in json.load(f)], n)
+    except Exception:
+        return [""] * n
 
 
 # ===== NOTAS DO APRESENTADOR (3.0.3): as "anotações" de cada slide do PowerPoint =====
@@ -2785,6 +2868,7 @@ def listar_apresentacoes():
                     quote(prefixo + os.path.relpath(p, base).replace("\\", "/")) for p in telas],
 
                     "notas": _notas_da_pasta(pasta, len(telas)),
+                    "textos": _textos_da_pasta(pasta, len(telas)),
                     "mov": _movimento_da_pasta(pasta, quote(prefixo + nome + "/"), len(telas))})
 
     return lista

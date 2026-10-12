@@ -26,6 +26,12 @@
     congelar: S('<path d="M12 2v20M4 5l16 14M20 5L4 19M2 12h20"/>'),
     menu: S('<path d="M3 6h18M3 12h18M3 18h18"/>'),
     slides: S('<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M12 16.5v3M8.5 19.5h7"/>'),
+    // tela nova de apresentação (12/10/2026, "Limpo B"): lupa da busca, esconder/mostrar a coluna, alfinete, voltar
+    busca: S('<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.2-4.2"/>'),
+    painelFecha: S('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="M15.5 9.5L13 12l2.5 2.5"/>'),
+    painelAbre: S('<rect x="3" y="3.5" width="18" height="17" rx="2.5"/><path d="M9 3.5v17"/><path d="M13.5 9.5L16 12l-2.5 2.5"/>'),
+    alfinete: S('<path d="M12 17v4.5"/><path d="M8.5 3.5h7"/><path d="M9.5 3.5v5.2L6.5 13v1.5h11V13l-3-4.3V3.5"/>'),
+    voltar: S('<path d="M15 5l-7 7 7 7"/>'),
   };
   // SÍMBOLO DO SISTEMA: "S" com uma trombeta no canto inferior direito
   const MARCA = (tam) =>
