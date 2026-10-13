@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://quitsquill88885.github.io/sistema-projecao-icm/sitemap.xml
