@@ -20,6 +20,42 @@ def io_json_acrescimos():
     return json.load(io.open(CON, encoding="utf-8")).get("acrescimos", [])
 
 
+def _primeira_linha(slides):
+    try:
+        return slides[0]["linhas"][0]
+    except (IndexError, KeyError, TypeError):
+        return None
+
+
+def casa_conserto(c, lista):
+    """Devolve o indice do louvor onde o conserto c cai, ou None se o titulo nao existe.
+
+    13/10/2026: antes casava so por col|num|titulo e parava na 1a copia. Com TITULO
+    DUPLICADO (ex.: ES UM REMIDO DE DEUS nas posicoes 1564 e 1565; MARANATA dos Avulsos
+    1320/1321) o conserto da 2a copia caia na 1a e a apagava. Agora:
+      1) col|num|titulo; se so uma copia, e' ela (igual a antes, registros antigos valem);
+      2) se empatar, a 1a linha da letra (slides[0].linhas[0], a chave, que nunca muda):
+         campo opcional "primeira_linha" do registro, ou a 1a linha dos proprios slides;
+      3) se ainda empatar, a posicao no acervo (campo opcional "pos");
+      4) se mesmo assim nao der UMA copia, PARA com erro. Nunca escolhe a primeira calado.
+    """
+    cand = [i for i, l in enumerate(lista)
+            if str(l.get("num")) == str(c["num"]) and l.get("col") == c["col"]
+            and (l.get("titulo") or "").strip() == c["titulo"].strip()]
+    if len(cand) <= 1:
+        return cand[0] if cand else None
+    pl = c.get("primeira_linha") or _primeira_linha(c.get("slides"))
+    por_linha = [i for i in cand if _primeira_linha(lista[i].get("slides")) == pl]
+    if len(por_linha) == 1:
+        return por_linha[0]
+    resto = por_linha or cand
+    if c.get("pos") is not None and c["pos"] in resto:
+        return c["pos"]
+    raise SystemExit("ERRO: conserto de titulo duplicado %s|%s|%s casa com %d copias (posicoes %s) "
+                     "e nem a 1a linha nem a posicao desempatam. Nada foi gravado."
+                     % (c["col"], c["num"], c["titulo"], len(resto), resto))
+
+
 def main():
     consertos = json.load(io.open(CON, encoding="utf-8"))["consertos"]
     s = io.open(LJS, encoding="utf-8").read()
@@ -27,14 +63,11 @@ def main():
     L = json.loads(s[s.index("=") + 1:].strip().rstrip(";"))
     lista = L.get("louvores") if isinstance(L, dict) else L
     mudou = 0
-    for c in consertos:
-        for l in lista:
-            if (str(l.get("num")) == str(c["num"]) and l.get("col") == c["col"]
-                    and (l.get("titulo") or "").strip() == c["titulo"].strip()):
-                if l.get("slides") != c["slides"]:
-                    l["slides"] = c["slides"]
-                    mudou += 1
-                break
+    alvos = [casa_conserto(c, lista) for c in consertos]  # casa TUDO antes de mexer: erro nao deixa meio gravado
+    for c, i in zip(consertos, alvos):
+        if i is not None and lista[i].get("slides") != c["slides"]:
+            lista[i]["slides"] = c["slides"]
+            mudou += 1
     # ACRESCIMOS (26/09/2026): louvor que nao existe em livro nenhum desta maquina,
     # entrado de fonte de fora (acrescenta_louvor_de_fora.py). O gen_louvores.py nao
     # sabe dele, entao sem isto ele SUMIRIA na proxima regeneracao.
