@@ -2118,7 +2118,7 @@ async function abrirProjecao() {
     try { r = await window.pywebview.api.abrir_projecao(); } catch (e) {}
     setTimeout(() => { if (CANAL) try { CANAL.postMessage(est.ultimo); } catch (e) {} }, 900);
     if (r && r.externa) toast('Projetor detectado — projetando em tela cheia.');
-    else avisoSemProjetor();                       // uma só tela: explica o que fazer
+    else avisoSemProjetor(r && r.sumiu);           // uma só tela: explica o que fazer
     return;
   }
   if (projWin && !projWin.closed) { projWin.focus(); return; }
@@ -2155,12 +2155,16 @@ async function forcarTelaCheia() {
 const LOGO_WIN = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">' +
   '<path d="M2.4 5.1 10.3 4v7.5H2.4zM11.4 3.85 21.6 2.4v9.1h-10.2zM2.4 12.5h7.9V20L2.4 18.9zM11.4 12.5h10.2v9.1l-10.2-1.45z"/></svg>';
 // janela própria, uma tela só: avisa e ensina, sem deixar a projeção "cair na cara" calada
-function avisoSemProjetor() {
+// sumiu = o HDMI caiu com a projeção aberta (15/10/2026): o vigia do sistema.py
+// escondeu o telão para não cobrir esta tela, e o devolve ao projetor sozinho.
+function avisoSemProjetor(sumiu) {
   const ov = document.createElement('div'); ov.className = 'ajuda-overlay';
   ov.innerHTML =
     '<div class="ajuda-box" style="max-width:440px">' +
       '<h3>Projetor não encontrado</h3>' +
-      '<p>A projeção abriu <b>nesta tela</b> por enquanto.</p>' +
+      (sumiu
+        ? '<p>O projetor <b>perdeu o sinal</b>. A projeção está guardada e <b>volta sozinha</b> para ele assim que o sinal voltar.</p>'
+        : '<p>A projeção abriu <b>nesta tela</b> por enquanto.</p>') +
       '<p>Conecte o cabo do projetor (HDMI) e pressione ' +
         '<span class="teclas"><kbd class="win">' + LOGO_WIN + '<span>Windows</span></kbd>' +
         '<span class="mais">+</span><kbd>P</kbd></span>, escolhendo <b>Estender</b>.</p>' +

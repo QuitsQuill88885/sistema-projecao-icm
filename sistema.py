@@ -3433,17 +3433,76 @@ def monitores():
 
 
 
+def telao_externo(telas=None):
+
+    """O monitor do telão: o primeiro que não é o principal (o HDMI)."""
+
+    telas = monitores() if telas is None else telas
+
+    return next((m for m in telas if not m["principal"]), None)
+
+
+
+def janelas_do_processo(prefixo):
+
+    """As janelas DESTE programa cujo título começa com o prefixo (visíveis ou não)."""
+
+    import win32gui, win32process
+
+    achadas = []
+
+    def cada(h, _):
+
+        try:
+
+            if (win32process.GetWindowThreadProcessId(h)[1] == os.getpid()
+
+                    and win32gui.GetWindowText(h).startswith(prefixo)):
+
+                achadas.append(h)
+
+        except Exception:
+
+            pass
+
+        return True
+
+    win32gui.EnumWindows(cada, None)
+
+    return achadas
+
+
+
 
 
 class Ponte:
 
     """O que a tela do Sistema pode pedir ao Windows."""
 
+    # O VIGIA DO TELÃO (15/10/2026, culto de quinta: "do nada para de identificar o
+    # HDMI e joga a tela pra trás da tela de controle"). Quando o projetor ou a TV
+    # perde o sinal um instante, o Windows refaz o arranjo das telas e manda a
+    # janela da Projeção para o monitor principal, atrás do Sistema. O Sistema só
+    # escolhia o HDMI uma vez, ao abrir, e nunca mais olhava. Agora um vigia olha a
+    # cada VIGIA_SEG: HDMI sumiu -> esconde o telão (não fica atrás do controle nem
+    # cobre o controle depois); HDMI voltou ou a janela está na tela errada -> leva
+    # de volta ao HDMI em tela cheia. Mede e move pelo MESMO caminho do Windows
+    # (win32), sem a conta de escala do pywebview, que multiplica a posição pela
+    # escala da tela principal (125%/150% num notebook) e erra o HDMI.
+
+    VIGIA_SEG = 1.5
+
     def __init__(self):
 
         self.projecao = None
 
         self.url = ""
+
+        self._vigia = None
+
+        self._no_hdmi = False       # a Projeção foi aberta no HDMI (só então o vigia esconde quando ele some)
+
+        self._escondida = False     # quem escondeu foi o vigia (só ele mostra de novo)
 
 
 
@@ -3459,15 +3518,32 @@ class Ponte:
 
         if self.projecao is not None:
 
-            try: self.projecao.show(); return {"ok": True, "externa": True}
+            try:
+
+                if os.name == "nt" and self._no_hdmi and telao_externo() is None:
+
+                    # o HDMI sumiu e o vigia escondeu o telão: mostrar agora seria
+                    # cobrir a tela de controle. Ele volta sozinho quando o sinal voltar.
+
+                    return {"ok": True, "externa": False, "sumiu": True}
+
+                self.projecao.show()
+
+                self._escondida = False
+
+                return {"ok": True, "externa": self.por_no_telao() if os.name == "nt" else True}
 
             except Exception: self.projecao = None
 
         telas = monitores()
 
-        externa = next((m for m in telas if not m["principal"]), None)
+        externa = telao_externo(telas)
 
         alvo = externa or (telas[0] if telas else {"x": 0, "y": 0, "w": 1280, "h": 720})
+
+        self._no_hdmi = bool(externa)
+
+        self._escondida = False
 
         self.projecao = webview.create_window(
 
@@ -3479,13 +3555,119 @@ class Ponte:
 
         self.projecao.events.closed += self._fechou
 
+        self._ligar_vigia()
+
         return {"ok": True, "externa": bool(externa)}
+
+
+
+    def _ligar_vigia(self):
+
+        if os.name != "nt" or (self._vigia is not None and self._vigia.is_alive()):
+
+            return
+
+        def roda():
+
+            while self.projecao is not None:
+
+                try: self.por_no_telao()
+
+                except Exception: pass
+
+                time.sleep(self.VIGIA_SEG)
+
+        self._vigia = threading.Thread(target=roda, name="vigia-telao", daemon=True)
+
+        self._vigia.start()
+
+
+
+    def por_no_telao(self):
+
+        """Põe a janela da Projeção no HDMI se ela não estiver lá. True = está no HDMI."""
+
+        if os.name != "nt" or self.projecao is None:
+
+            return False
+
+        import win32gui, win32con
+
+        hs = janelas_do_processo("Proje")
+
+        if not hs:
+
+            return False                       # ainda nascendo
+
+        h = hs[0]
+
+        ext = telao_externo()
+
+        if ext is None:
+
+            # HDMI sumiu: o Windows jogou o telão para a tela principal. Esconde.
+
+            if self._no_hdmi and win32gui.IsWindowVisible(h):
+
+                win32gui.ShowWindow(h, win32con.SW_HIDE)
+
+                self._escondida = True
+
+            return False
+
+        x1, y1, x2, y2 = win32gui.GetWindowRect(h)
+
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+
+        no_lugar = (ext["x"] <= cx < ext["x"] + ext["w"] and ext["y"] <= cy < ext["y"] + ext["h"]
+
+                    and x2 - x1 >= ext["w"] * 0.95 and y2 - y1 >= ext["h"] * 0.95)
+
+        visivel = win32gui.IsWindowVisible(h)
+
+        if no_lugar and (visivel or not self._escondida):
+
+            return visivel
+
+        if not visivel and not self._escondida:
+
+            return False                       # escondida por outro motivo: não é com o vigia
+
+        # leva ao HDMI: tira do "maximizado" da tela velha e cobre o HDMI inteiro
+
+        win32gui.ShowWindow(h, win32con.SW_SHOWNOACTIVATE)
+
+        estilo = win32gui.GetWindowLong(h, win32con.GWL_STYLE)
+
+        if estilo & (win32con.WS_CAPTION | win32con.WS_THICKFRAME):
+
+            # foi aberta sem HDMI (janela comum): sem borda, como a tela cheia faz
+
+            win32gui.SetWindowLong(h, win32con.GWL_STYLE,
+
+                                   estilo & ~(win32con.WS_CAPTION | win32con.WS_THICKFRAME))
+
+        win32gui.SetWindowPos(h, 0, ext["x"], ext["y"], ext["w"], ext["h"],
+
+                              win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE
+
+                              | win32con.SWP_FRAMECHANGED | win32con.SWP_SHOWWINDOW)
+
+        self._no_hdmi = True
+
+        self._escondida = False
+
+        return True
 
 
 
     def _fechou(self):
 
         self.projecao = None
+
+        self._no_hdmi = False
+
+        self._escondida = False
 
 
 
