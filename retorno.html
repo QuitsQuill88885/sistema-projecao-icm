@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retorno — ICM Iperó</title>
+<!--
+  A TV DE RETORNO (pedido dele, 15/10/2026, para a Evangelização de Crianças de 25/10).
+  Um segundo computador (o Vaio) abre esta página pela rede, apontando para o PC
+  principal: http://<PC>:<porta>/retorno.html. Nada se instala no Vaio.
+
+  Enquanto o telão mostra uma parte do louvor, aqui aparece o GESTINHO daquela
+  parte, para a irmã que puxa os gestos. Fora do louvor, o quadro "padrão cinema":
+  o próximo louvor, o versículo e a hora.
+
+  De onde vem cada coisa (tudo já existia no Sistema; esta página só LÊ):
+    /api/estado  -> o que está no ar (tipo, louvor, slide, slidepp, a Lista inteira e a posição)
+    /api/tela    -> a letra da tela no ar (reserva quando o gesto ainda não foi ligado)
+    dados/louvores.js -> para saber a CHAVE do louvor (num|titulo|1a linha)
+    dados/gestos.js   -> a tabela de gestos: window.GESTOS = {
+        "louvor:<chave>": { "<tela>": {"img": "gestos/....png", "louvor": "TITULO"} },
+        "apres:<nome da apresentação>": { "<slide>": {"img": "...", "louvor": "TITULO"} } }
+-->
+<style>
+  :root { --fundo:#05070d; --texto:#f4f1e8; --apagado:#8a93a6; --ouro:#f2c14e; --verde:#5bd18b; --vermelho:#ff6b6b; }
+  html, body { margin:0; height:100%; background:var(--fundo); color:var(--texto);
+    font-family: "Segoe UI", "Ubuntu", "Noto Sans", Arial, sans-serif; overflow:hidden; }
+  #topo { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between;
+    align-items:center; padding:1.2vh 2.5vw; font-size:3.2vh; color:var(--apagado); }
+  #topo b { color:var(--texto); }
+  #sinal { font-size:2.4vh; }
+  #sinal.ok { color:var(--verde); } #sinal.mal { color:var(--vermelho); }
+  .tela { position:fixed; inset:7vh 0 0 0; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .tela.on { display:flex; }
+  #g-img { max-width:92vw; max-height:70vh; object-fit:contain; border-radius:2vh; background:#fff; }
+  #g-parte { margin-top:2vh; font-size:4vh; color:var(--ouro); letter-spacing:.05em; }
+  #g-letra { font-size:6.2vh; line-height:1.25; font-weight:600; max-width:92vw; }
+  #g-letra .rot { display:block; font-size:3.4vh; color:var(--ouro); margin-bottom:1.5vh; }
+  #c-hora { font-size:16vh; font-weight:200; letter-spacing:.04em; font-variant-numeric:tabular-nums; }
+  .c-rot { font-size:3.2vh; color:var(--apagado); text-transform:uppercase; letter-spacing:.3em; margin-top:4vh; }
+  #c-prox { font-size:7.5vh; font-weight:700; color:var(--ouro); max-width:92vw; }
+  #c-vers { font-size:5vh; max-width:88vw; }
+</style>
+</head>
+<body>
+<div id="topo"><span id="t-oque">Retorno</span><span id="sinal">procurando o computador principal…</span></div>
+
+<!-- durante o louvor: o gesto (ou a letra, enquanto o gesto não foi ligado) -->
+<section class="tela" id="gesto">
+  <img id="g-img" alt="">
+  <div id="g-letra"></div>
+  <div id="g-parte"></div>
+</section>
+
+<!-- fora do louvor: padrão cinema -->
+<section class="tela on" id="cinema">
+  <div id="c-hora">--:--</div>
+  <div class="c-rot" id="c-prox-rot">Próximo louvor</div>
+  <div id="c-prox">—</div>
+  <div class="c-rot" id="c-vers-rot">Versículo</div>
+  <div id="c-vers">—</div>
+</section>
+
+<script src="dados/louvores.js"></script>
+<script>window.GESTOS = window.GESTOS || {};</script>
+<script src="dados/gestos.js" onerror="void 0"></script>
+<script>
+const $ = s => document.querySelector(s);
+const LOUV = window.LOUVORES || [];
+const G = () => window.GESTOS || {};
+let telaN = -1, telaPayload = null, ultimoVers = '';
+
+function chaveLouvor(s) {      // a MESMA chave do app.js (num|titulo|1a linha da 1a tela)
+  return (s.num || '') + '|' + s.titulo + '|' + ((s.slides[0] && s.slides[0].linhas[0]) || '');
+}
+function limpa(t) { return String(t || '').replace(/\u0001[^\u0001]*\u0001/g, '').trim(); }
+function mostra(id) {
+  for (const el of document.querySelectorAll('.tela')) el.classList.toggle('on', el.id === id);
+}
+
+// O gesto da tela no ar, se a tabela tiver. Devolve {img, louvor, parte} ou null.
+function gestoDe(e) {
+  if (e.tipo === 'louvor' && LOUV[e.louvor]) {
+    const t = G()['louvor:' + chaveLouvor(LOUV[e.louvor])];
+    return t && t[String(e.slide)] || null;
+  }
+  if (e.tipo === 'slide') {
+    const ap = apresNoAr(e);
+    const t = ap && G()['apres:' + ap];
+    return t && t[String(e.slidepp)] || null;
+  }
+  return null;
+}
+function apresNoAr(e) {
+  const f = e.fila || [], it = f[e.pos];
+  return it && it.tipo === 'apres' ? it.rotulo : '';
+}
+
+// O PRÓXIMO LOUVOR: na apresentação, o próximo slide com gesto de OUTRO louvor;
+// fora dela, o próximo louvor da Lista de Projeção depois do que está no ar.
+function proximo(e) {
+  if (e.tipo === 'slide') {
+    const ap = apresNoAr(e), t = ap && G()['apres:' + ap];
+    if (t) {
+      const atual = (t[String(e.slidepp)] || {}).louvor || '';
+      const ns = Object.keys(t).map(Number).filter(n => n > e.slidepp).sort((a, b) => a - b);
+      for (const n of ns) if (t[n].louvor && t[n].louvor !== atual) return t[n].louvor;
+    }
+  }
+  const f = e.fila || [];
+  for (let i = (e.pos == null ? -1 : e.pos) + 1; i < f.length; i++)
+    if (f[i].tipo === 'louvor') return f[i].rotulo;
+  return '';
+}
+function versiculo(e) {
+  const f = e.fila || [];
+  for (let i = Math.max(0, e.pos || 0); i < f.length; i++)
+    if (f[i].tipo === 'verso' || f[i].tipo === 'biblia') return f[i].rotulo;
+  return ultimoVers;
+}
+
+function hora() {
+  const d = new Date();
+  $('#c-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+async function puxaTela() {
+  try {
+    const r = await fetch('/api/tela?n=' + telaN, { cache: 'no-store' }).then(r => r.json());
+    if (r.payload) { telaN = r.n; telaPayload = r.payload; }
+    if (telaPayload && telaPayload.modo === 'biblia' && telaPayload.ref) ultimoVers = telaPayload.ref;
+  } catch (e) {}
+}
+
+async function ciclo() {
+  let r = null;
+  try { r = await fetch('/api/estado', { cache: 'no-store' }).then(r => r.json()); } catch (e) {}
+  const sinal = $('#sinal');
+  if (!r || !r.ok) { sinal.textContent = 'sem sinal do computador principal'; sinal.className = 'mal'; return; }
+  if (r.idade > 10) { sinal.textContent = 'o Sistema do computador principal parou de responder'; sinal.className = 'mal'; }
+  else { sinal.textContent = 'ligado ao computador principal'; sinal.className = 'ok'; }
+  const e = r.estado || {};
+  await puxaTela();
+  const g = gestoDe(e);
+  const noLouvor = e.tipo === 'louvor' || (e.tipo === 'slide' && g);
+  if (noLouvor && e.projetando !== false) {
+    const tit = g && g.louvor || (LOUV[e.louvor] && e.tipo === 'louvor' ? LOUV[e.louvor].titulo : '');
+    $('#t-oque').innerHTML = tit ? '<b>' + tit + '</b>' : 'Louvor';
+    if (g && g.img) {
+      $('#g-img').src = g.img; $('#g-img').style.display = '';
+      $('#g-letra').style.display = 'none';
+      $('#g-parte').textContent = g.parte || '';
+    } else {
+      // gesto ainda não ligado: a letra da tela, grande, para a irmã acompanhar
+      $('#g-img').style.display = 'none';
+      const p = telaPayload || {};
+      $('#g-letra').style.display = '';
+      $('#g-letra').innerHTML = (p.label ? '<span class="rot">' + p.label + '</span>' : '') +
+        (p.linhas || []).map(limpa).join('<br>');
+      $('#g-parte').textContent = p.pos ? 'tela ' + p.pos + ' de ' + p.de : '';
+    }
+    mostra('gesto');
+  } else {
+    $('#t-oque').textContent = e.agora ? limpa(e.agora) : 'Retorno';
+    const px = proximo(e), vs = versiculo(e);
+    $('#c-prox').textContent = px || '—';
+    $('#c-prox-rot').style.visibility = px ? '' : 'hidden';
+    $('#c-vers').textContent = vs || '';
+    $('#c-vers-rot').style.visibility = vs ? '' : 'hidden';
+    mostra('cinema');
+  }
+}
+hora(); setInterval(hora, 1000);
+ciclo(); setInterval(ciclo, 500);
+</script>
+</body>
+</html>
