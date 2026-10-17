@@ -3649,6 +3649,9 @@ function ligarControleCelular() {
         // posição do que está no ar — o celular usa para acender o item certo
         // mesmo quando quem avançou foi o computador ou a Lista de Projeção
         louvor: est.louvorIdx, slide: est.louvorSlide, slidepp: est.slidePos,
+        // a TV de retorno (retorno.html) acha os gestos pelo NOME da apresentação no ar —
+        // aberta pela galeria, ela não está na Lista, e a posição da Lista não diria qual é
+        apres: (SLIDES && SLIDES.nome) || '',
         // O TAMANHO DA LETRA VAI PARA O CELULAR. No computador existe o rótulo
         // "Padrão / +8%" ao lado do A−/A+, e foi justamente o A+/A− que o
         // primeiro operador da igreja descobriu sozinho e mais gostou. No

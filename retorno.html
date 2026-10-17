@@ -92,6 +92,7 @@ function gestoDe(e) {
   return null;
 }
 function apresNoAr(e) {
+  if (e.apres) return e.apres;          // o painel publica o nome (aberta pela galeria também)
   const f = e.fila || [], it = f[e.pos];
   return it && it.tipo === 'apres' ? it.rotulo : '';
 }
