@@ -2,7 +2,7 @@
 import os as _os_spec
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes'), ('apresentacoes', 'apresentacoes')]
+datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), ('controle.html', '.'), ('retorno.html', '.'), ('app.js', '.'), ('app.css', '.'), ('icones.js', '.'), ('sistema.png', '.'), ('sistema.ico', '.'), ('afinador.js', '.'), ('manifest.json', '.'), ('cacert.pem', '.'), ('fundos', 'fundos'), ('fontes', 'fontes'), ('apresentacoes', 'apresentacoes'), ('gestos', 'gestos')]
 
 # A PASTA dados VAI ARQUIVO POR ARQUIVO, NUNCA INTEIRA.
 # Em 31/08/2026 descobri 44 MB de backups meus (louvores_backup_*, *_antes_*)
@@ -13,7 +13,7 @@ datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), 
 import os as _os
 _DADOS = ['biblia.js', 'consertos_louvores.json', 'fundos.js', 'galeria.js',
           'louvores.js', 'repeticoes.js', 'repetidos.js', 'sugestoes.js', 'temas.js',
-          'tipologia.js']
+          'tipologia.js', 'gestos.js']
 for _nome in _DADOS:
     _cam = _os.path.join(SPECPATH, 'dados', _nome)
     if not _os.path.isfile(_cam):
