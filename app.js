@@ -2111,14 +2111,45 @@ async function detectarTelas() {   // esforça-se ao máximo p/ achar a 2ª tela
     return { externa: ext, permissao: 'ok' };
   } catch (e) { return { externa: null, permissao: 'negada' }; }
 }
+// 17/10 (vídeo dele 0:25, "jogou cuspinho na minha tela... ele não verificou"): com UMA tela só, o Sistema
+// pergunta ANTES de abrir, em vez de abrir a projeção por cima do operador e só depois avisar.
+let projAquiMesmo = false;
+function perguntarSemProjetor() {
+  const ov = document.createElement('div'); ov.className = 'ajuda-overlay';
+  ov.innerHTML =
+    '<div class="ajuda-box" style="max-width:450px">' +
+      '<h3>Nenhum projetor ligado</h3>' +
+      '<p>Este computador está com <b>uma tela só</b>. Para não cobrir a sua tela, a projeção ainda <b>não abriu</b>.</p>' +
+      '<p>Conecte o cabo do projetor (HDMI) e pressione ' +
+        '<span class="teclas"><kbd class="win">' + LOGO_WIN + '<span>Windows</span></kbd>' +
+        '<span class="mais">+</span><kbd>P</kbd></span>, escolhendo <b>Estender</b>. Depois clique em <b>Procurar novamente</b>.</p>' +
+      '<div class="ajuda-btns">' +
+        '<button class="big-btn verde" id="aj-retry">Procurar novamente</button>' +
+        '<button class="big-btn" id="aj-aqui">Abrir aqui mesmo (ensaio)</button>' +
+        '<button class="big-btn" id="aj-ok">Cancelar</button>' +
+      '</div></div>';
+  document.body.appendChild(ov);
+  const fecha = () => ov.remove();
+  ov.querySelector('#aj-ok').onclick = fecha;
+  ov.onclick = e => { if (e.target === ov) fecha(); };
+  ov.querySelector('#aj-retry').onclick = () => { fecha(); setTimeout(abrirProjecao, 200); };
+  ov.querySelector('#aj-aqui').onclick = () => { fecha(); projAquiMesmo = true; abrirProjecao(); };
+}
 async function abrirProjecao() {
   if (nativo()) {                        // janela PRÓPRIA do Sistema (sem navegador)
+    const aqui = projAquiMesmo; projAquiMesmo = false;
+    if (!aqui) {
+      let telas = null;
+      try { telas = await window.pywebview.api.monitores(); } catch (e) {}
+      if (Array.isArray(telas) && telas.length < 2) { perguntarSemProjetor(); return; }
+    }
     est.projetando = true; atualizarProjBtn();     // marca ANTES: a janela já vai nascer ao vivo
     let r = null;
     try { r = await window.pywebview.api.abrir_projecao(); } catch (e) {}
     setTimeout(() => { if (CANAL) try { CANAL.postMessage(est.ultimo); } catch (e) {} }, 900);
     if (r && r.externa) toast('Projetor detectado — projetando em tela cheia.');
-    else avisoSemProjetor(r && r.sumiu);           // uma só tela: explica o que fazer
+    else if (aqui) toast('Projeção aberta numa janela nesta tela (ensaio).');
+    else avisoSemProjetor(r && r.sumiu);           // a tela sumiu entre a pergunta e a abertura
     return;
   }
   if (projWin && !projWin.closed) { projWin.focus(); return; }
@@ -2470,8 +2501,10 @@ function entrarApresentacao(a, pos) {
   SLIDES = { nome: a.nome, lista: a.slides, notas: a.notas || [], mov: a.mov || {}, textos: a.textos || [] };
   est.slidePos = -1;
   // a escolha da coluna (escondida? fixada?) é lembrada; lida aqui porque a config do Sistema chega depois da página
-  APR.fixa = Guardar.ler('icm_ap_fixa', true) !== false;
-  APR.escondida = Guardar.ler('icm_ap_escondida', false) === true;
+  // 17/10 (vídeo dele): o natural é DESFIXADA — encostar o mouse abre, afastar recolhe; o alfinete fixa aberta.
+  // Chave nova: a antiga guardava "fixada" para todo mundo, e o natural mudou.
+  APR.fixa = Guardar.ler('icm_ap_fixa2', false) === true;
+  APR.escondida = !APR.fixa;
   APR.porMouse = false;
   aprMontarLista();
   $('#apr-busca').value = ''; aprBuscar('');
@@ -2521,7 +2554,7 @@ function aprCol(escondida, porMouse) {
 function aprPintarCol() {
   const a = $('#apr'); if (!a) return;
   a.classList.toggle('escondida', APR.escondida);
-  const f = $('#apr-fixar'); f.classList.toggle('on', APR.fixa); f.title = APR.fixa ? 'Coluna fixada' : 'Fixar coluna';
+  const f = $('#apr-fixar'); f.classList.toggle('on', APR.fixa); f.title = APR.fixa ? 'Coluna fixada — clique para soltar' : 'Fixar a coluna aberta';
   if (!APR.escondida) aprRolar(clamp(est.slidePos, 0, (SLIDES.lista || [1]).length - 1));
 }
 // rola SÓ a coluna (scrollIntoView mexeria também na página, que fica atrás com a rolagem escondida)
@@ -2631,16 +2664,36 @@ function aprTecla(e) {
   if (k === 'Escape') { e.preventDefault(); if (APR.num) aprNumLimpa(); else sairApresentacao(); return true; }
   if (k === 'ArrowRight' || k === ' ' || k === 'PageDown') { e.preventDefault(); aprNumLimpa(); aprPasso(+1); return true; }
   if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); aprNumLimpa(); aprPasso(-1); return true; }
+  // ↓/↑ (vídeo dele 17/10, "o antiburro: funciona do jeito que a pessoa tentar"): a coluna de slides é vertical,
+  // então ↓ é o próximo e ↑ o anterior. Com o mouse em cima da Lista de projeção, as setas são dela (próximo louvor).
+  if ((k === 'ArrowDown' || k === 'ArrowUp') && !document.querySelector('#painel:hover')) {
+    e.preventDefault(); aprNumLimpa(); aprPasso(k === 'ArrowDown' ? +1 : -1); return true;
+  }
   if (k.toLowerCase() === 'b') { e.preventDefault(); aprPreto(); return true; }
   return false;                    // F (congelar), P (espera), +/− seguem o jeito de sempre
 }
 function ligarApresentador() {
   if (!$('#apr')) return;
   $('#ap-voltar').onclick = sairApresentacao;
-  $('#apr-esconder').onclick = () => aprCol(true);
-  $('#apr-fixar').onclick = () => { APR.fixa = !APR.fixa; Guardar.gravar('icm_ap_fixa', APR.fixa); aprPintarCol(); };
+  // UM botão só (vídeo dele 17/10: "por que tem um botão de fixar e um desfixar? nem eu entendi"): o alfinete.
+  // Fixou, a coluna fica aberta; soltou, ela volta a abrir quando o mouse encosta e recolhe quando ele sai.
+  $('#apr-esconder').hidden = true;
+  $('#apr-fixar').onclick = () => {
+    APR.fixa = !APR.fixa; Guardar.gravar('icm_ap_fixa2', APR.fixa);
+    if (APR.fixa) aprCol(false); else { APR.porMouse = true; aprPintarCol(); }   // soltou: recolhe quando o mouse sair
+  };
   const tr = $('#apr-trilho');
-  tr.onclick = () => { clearTimeout(APR.tMouse); aprCol(false); };
+  tr.onclick = () => { clearTimeout(APR.tMouse); aprCol(false, !APR.fixa); };
+  // a lista ANDA SOZINHA com o mouse perto da borda de baixo ou de cima (vídeo dele 17/10 2:51: "quem não conhece
+  // não sabe usar o scroll"); a rodinha, o clique e as setas continuam valendo
+  const li = $('#apr-lista'); let vel = 0, rodando = false;
+  const anda = () => { if (!vel) { rodando = false; return; } li.scrollTop += vel; requestAnimationFrame(anda); };
+  li.addEventListener('mousemove', ev => {
+    const r = li.getBoundingClientRect(), y = (ev.clientY - r.top) / r.height, borda = 0.18;
+    vel = y > 1 - borda ? Math.round(14 * (y - (1 - borda)) / borda) : y < borda ? -Math.round(14 * (borda - y) / borda) : 0;
+    if (vel && !rodando) { rodando = true; requestAnimationFrame(anda); }
+  });
+  li.addEventListener('mouseleave', () => { vel = 0; });
   // encostar o mouse no trilho também abre (atalho; o clique é o caminho principal)
   tr.onmouseenter = () => { clearTimeout(APR.tMouse); APR.tMouse = setTimeout(() => { if (APR.escondida) aprCol(false, true); }, 180); };
   tr.onmouseleave = () => clearTimeout(APR.tMouse);
@@ -3481,6 +3534,15 @@ function ligarEventos() {
       return;
     }
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+    // ↓/↑ andam pela LISTA DE PROJEÇÃO: ↓ projeta o próximo item, ↑ o anterior (vídeo dele 17/10 3:29,
+    // "pra baixo tem que fazer ele ir pro próximo louvor, pra cima voltar pro anterior. Até nisso o sistema não pode falhar")
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && est.fila && est.fila.length) {
+      e.preventDefault();
+      const alvo = e.key === 'ArrowDown' ? Math.min(est.fila.length - 1, (est.setPos == null ? -1 : est.setPos) + 1)
+                                         : Math.max(0, (est.setPos == null ? 0 : est.setPos) - 1);
+      if (alvo !== est.setPos) projetarItemLista(alvo);
+      return;
+    }
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); proximo(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); anterior(); }
     else if (e.key === '+' || e.key === '=') ajustarTam(+0.3);
