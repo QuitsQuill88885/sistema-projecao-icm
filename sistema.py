@@ -3510,6 +3510,15 @@ class Ponte:
 
         return monitores()
 
+    def tela_cheia(self):
+        """F11 no painel (vídeo dele, 17/10): o WebView2 não repassa a tecla à janela, então o painel pede aqui."""
+        import webview
+        for j in webview.windows:
+            if (j.title or "").startswith("Sistema v"):
+                j.toggle_fullscreen()
+                return True
+        return False
+
 
 
     def abrir_projecao(self):

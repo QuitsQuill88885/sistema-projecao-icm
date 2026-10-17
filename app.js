@@ -3441,6 +3441,13 @@ function ligarEventos() {
     bm.textContent = aberto ? 'ver mais ▾' : 'ver menos ▴';
   };
   document.addEventListener('keydown', e => {
+    // F11 (vídeo dele, 17/10 1:49: "o F11 não funciona no Windows, não enche a tela"): o WebView2 não repassa
+    // a tecla para a janela; o painel pede ao Python, que alterna a tela cheia da janela do Sistema.
+    if (e.key === 'F11') {
+      e.preventDefault();
+      try { window.pywebview && pywebview.api.tela_cheia && pywebview.api.tela_cheia(); } catch (err) {}
+      return;
+    }
     // com uma janela aberta (menu, boas-vindas, confirmação) as teclas NÃO mexem no telão
     // a cifra aberta também segura as teclas: ali a seta rola a folha. Se ela
     // passasse adiante, o telão trocaria de slide com o operador olhando a cifra.
