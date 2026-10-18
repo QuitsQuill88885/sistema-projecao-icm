@@ -40,8 +40,9 @@
   #topo .nome { font-weight:700; color:#fff; white-space:nowrap; }
   #t-oque { color:var(--ouro); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
   #t-oque b { color:var(--ouro); }
-  #sinal { display:flex; align-items:center; gap:.8vw; padding:.7vh 1.4vw; border-radius:999px; font-size:2.1vh; font-weight:600;
-    background:var(--painel); border:1px solid var(--borda); color:var(--apagado); white-space:nowrap; }
+  /* 3.0.10 (do Vaio, 18/10): a pílula com folga da linha vermelha do cabeçalho */
+  #sinal { display:flex; align-items:center; gap:.8vw; padding:.55vh 1.2vw; border-radius:999px; font-size:1.9vh; line-height:1.1; font-weight:600;
+    background:var(--painel); border:1px solid var(--borda); color:var(--apagado); white-space:nowrap; transform:translateY(-.3vh); }
   #sinal::before { content:""; width:1.2vh; height:1.2vh; border-radius:50%; background:#6b7a93; }
   #sinal.ok { border-color:var(--verde); color:var(--texto); }
   #sinal.ok::before { background:var(--verde); box-shadow:0 0 0 .4vh #2e8b5740; }
@@ -77,6 +78,9 @@
   .seguir .gfig .gleg { font-size:3.6vh; }
   /* a prévia entre louvores: os gestos do próximo JÁ no lugar, com a marca de próximo */
   #gc-agora.previa .gcard { outline:.45vh dashed var(--ouro); outline-offset:.5vh; }
+  /* 3.0.10 (escolha dele, 18/10 12h14): o AGORA com borda DOURADA cheia = "no ar agora", como no painel. Anel de sombra,
+     não outline: alguns WebKit (o Vaio) desenham outline quadrado. O A SEGUIR continua verde tracejado. */
+  #gc-agora:not(.previa) .gcard { box-shadow:0 0 0 .45vh #f5d76e; }
   .gcard.so-img img { width:100%; height:100%; object-fit:contain; }
   .gcard.slide { background:#000; padding:0; overflow:hidden; display:flex; flex-direction:column; position:relative; }
   .gcard.slide img { position:relative; flex:1; min-height:0; width:100%; object-fit:contain; }
@@ -280,36 +284,59 @@ function aSeguir(e, g) {
 }
 
 // a grade de UM slide de gesto: as figuras recortadas com a legenda em texto (ou a imagem pronta, reserva)
+let GRADE_EL = null;      // o cartão que está sendo montado (o pinta() marca): AGORA e A SEGUIR têm tamanhos diferentes
 function grade(g, titulo) {
-  const r = grade_(g);
+  const r = grade_(g, titulo);
   if (r && titulo) r.html = '<div class="gtitulo">' + escH(titulo) + '</div>' + r.html;
   return r;
 }
-// quantas colunas: a que deixa a MENOR figura do slide o maior possível (3.0.10). Antes era fixo (2 figuras =
-// 2 colunas) e duas figuras largas lado a lado ficavam pequenas no cartão quase quadrado. Sem a proporção
-// (gestos.js antigo), cada figura conta como quadrada e sai o mesmo de antes.
-function colunas(grupos) {
-  const n = grupos.reduce((s, gr) => s + gr.imgs.length, 0);
-  const padrao = n <= 2 ? n : n <= 4 ? 2 : 3;
-  const card = document.querySelector('#gc-agora .gcard');
-  const W = card && card.clientWidth > 50 ? card.clientWidth * 0.94 : innerWidth * 0.5;
-  const H = card && card.clientHeight > 50 ? card.clientHeight * 0.9 : innerHeight * 0.75;
-  const gx = innerWidth * 0.01, gy = innerHeight * 0.014, leg = innerHeight * 0.095;
-  const nota = col => {
-    if (grupos.some(gr => gr.imgs.length > col)) return -1;
-    const lin = Math.ceil(n / col), cw = (W - (col - 1) * gx) / col, ch = (H - (lin - 1) * gy) / lin - leg;
-    if (ch <= 0) return -1;
-    let menor = Infinity;
-    for (const gr of grupos) {
-      for (const r of gr.rs) { const h = Math.min(ch, cw * r); menor = Math.min(menor, h * h / r); }   // área, 1 célula cada
-    }
-    return menor;
-  };
-  let melhor = padrao, nm = nota(padrao);
-  for (let c = 1; c <= Math.min(n, 3); c++) { const v = nota(c); if (v > nm * 1.15) { melhor = c; nm = v; } }
-  return melhor;
+// quantas linhas a legenda ocupa numa largura, com a letra de verdade (maiúscula, como o CSS mostra)
+function linhasDaLegenda(txt, px, larg) {
+  const c = linhasDaLegenda.c || (linhasDaLegenda.c = document.createElement('canvas').getContext('2d'));
+  c.font = '800 ' + px + 'px "Sistema A3", "Segoe UI", Arial, sans-serif';
+  let n = 1, linha = '';
+  for (const w of String(txt || '').toUpperCase().split(/\s+/).filter(Boolean)) {
+    const prova = linha ? linha + ' ' + w : w;
+    if (linha && c.measureText(prova).width > larg) { n++; linha = w; } else linha = prova;
+  }
+  return n;
 }
-function grade_(g) {
+// O PLANO DO CARTÃO (3.0.10): colunas, letra e linhas da legenda, calculados juntos.
+// - Cada figura é medida contra o tamanho que ela teria SOZINHA no cartão; vence o arranjo em que a figura mais
+//   prejudicada fica o maior possível (antes: colunas fixas, e duas figuras largas lado a lado ficavam pequenas; e com
+//   "a menor área" a mão estreita ganhava a linha toda e as outras ficavam miúdas, Louvores 26).
+// - A letra da legenda tem PISO: a do Louvores 8 (4vh no AGORA), que se lê de longe. Antes de encolher abaixo
+//   dele a legenda vai para 3 linhas, e o arranjo que precisa de letra menor perde pontos.
+// Sem a proporção (gestos.js antigo, remendo do Vaio), cada figura conta como quadrada.
+function planoDaGrade(grupos, titulo) {
+  const el = GRADE_EL, vh = innerHeight / 100, vw = innerWidth / 100;
+  const W = (el && el.clientWidth > 50 ? el.clientWidth : innerWidth * 0.5) - 2 * vw;
+  const H = (el && el.clientHeight > 50 ? el.clientHeight : innerHeight * 0.75) - 3.2 * vh - (titulo ? 7 * vh : 0);
+  const base = (el && el.closest('.seguir') ? 3.6 : 4) * vh, gx = vw, gy = 1.4 * vh;
+  const n = grupos.reduce((s, gr) => s + gr.imgs.length, 0);
+  const sozinha = r => { const h = Math.min(H - 2.14 * base - 8, W * r); return h * h / r; };
+  let melhor = null;
+  for (let col = 1; col <= Math.min(n, 3); col++) {
+    if (grupos.some(gr => gr.imgs.length > col)) continue;
+    let lin = 1, livre = col;
+    for (const gr of grupos) { if (gr.imgs.length > livre) { lin++; livre = col; } livre -= gr.imgs.length; }
+    const cw = (W - (col - 1) * gx) / col;
+    let px = base, L = 3;
+    for (px = base; px >= base * 0.55; px--) {
+      L = Math.max(...grupos.map(gr => linhasDaLegenda(gr.txt, px, cw * gr.imgs.length + (gr.imgs.length - 1) * gx - 4)));
+      if (L <= 3) break;
+    }
+    L = Math.min(L, 3);
+    const altImg = (H - (lin - 1) * gy) / lin - (L * 1.06 * px + 8);
+    if (altImg < 6 * vh) continue;
+    let pior = Infinity;
+    for (const gr of grupos) for (const r of gr.rs) { const h = Math.min(altImg, cw * r); pior = Math.min(pior, (h * h / r) / sozinha(r)); }
+    const nota = pior * Math.pow(Math.min(1, px / base), 2);
+    if (!melhor || nota > melhor.nota * 1.03) melhor = { col, lin, px, L, nota };
+  }
+  return melhor || { col: Math.min(n, 3), lin: Math.ceil(n / Math.min(n, 3)), px: base, L: 2 };
+}
+function grade_(g, titulo) {
   if (g && g.figs && g.figs.length) {
     // figuras SEGUIDAS com a mesma legenda (uma linha do livro com duas figuras: "Mensagens reveladas")
     // viram um grupo: as figuras lado a lado e a legenda uma vez só, embaixo das duas (3.0.10)
@@ -319,11 +346,11 @@ function grade_(g) {
       if (ult && ult.txt === f.txt && ult.imgs.length < 2) { ult.imgs.push(f.img); ult.rs.push(f.r || 1); }
       else grupos.push({ txt: f.txt, imgs: [f.img], rs: [f.r || 1] });
     }
-    const n = g.figs.length, col = colunas(grupos), lin = Math.ceil(n / col);
+    const p = planoDaGrade(grupos, titulo), col = p.col, lin = p.lin;
     const alt = 'height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
     const larg = k => 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ' * ' + k + ' + ' + (k - 1) + 'vw)';
     return { cls: '', css: '',
-             html: '<div class="ggrade">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
+             html: '<div class="ggrade" data-pxr="' + (p.px / innerHeight).toFixed(5) + '" data-lin="' + p.L + '">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
                gr.imgs.map(src => '<img src="' + src + '" alt="">').join('') + '</div><div class="gleg"><span>' + escH(gr.txt) + '</span></div></div>').join('') + '</div>' };
   }
   if (g && g.img) return { cls: 'so-img', css: '', html: '<img src="' + g.img + '" alt="">' };
@@ -344,17 +371,34 @@ function ajustaTitulos() {
     while (el.getBoundingClientRect().height > px * 1.1 * 2 + px * 0.6 && px > innerHeight * 0.025) { px -= 1; el.style.fontSize = px + 'px'; }
   }
 }
+// a legenda do gesto NUNCA corta (3.0.10, do Vaio: "SE QUERES TER DE CRISTO O" perdia o "PERDÃO"). Primeiro encolhe a
+// letra até o mínimo legível em 2 linhas (a figura manda); se não couber, passa a 3 linhas; só se nem assim couber,
+// continua encolhendo. Um tamanho e uma altura para todas, para as figuras ficarem alinhadas.
+// 3.0.10: CADA CARTÃO tem a sua letra (antes uma só para a tela inteira: a legenda comprida do A SEGUIR encolhia a do
+// AGORA, e o Louvores 12 e o 13, com o mesmo conteúdo, saíam com letras diferentes). Com plano (planoDaGrade), usa o
+// tamanho e as linhas dele e só confere na página; sem plano, o jeito do Vaio.
 function ajustaLegendas() {
-  const todas = [...document.querySelectorAll('#gesto .gleg')];
-  if (!todas.length) return;
-  todas.forEach(el => { el.style.fontSize = ''; });
-  const base = parseFloat(getComputedStyle(todas[0]).fontSize), minimo = innerHeight * 0.022;
-  let px = base;
-  const cabe = el => { const s = el.firstElementChild; return !s || s.getBoundingClientRect().height <= px * 1.06 * 2 + 2; };
-  while (px > minimo) {
-    todas.forEach(el => { el.style.fontSize = px + 'px'; });
-    if (todas.every(cabe)) break;
-    px -= 1;
+  const cartoes = new Map();
+  document.querySelectorAll('#gesto .gleg').forEach(el => {
+    const c = el.closest('.ggrade') || el.closest('.gcard');
+    if (!cartoes.has(c)) cartoes.set(c, []);
+    cartoes.get(c).push(el);
+  });
+  for (const [c, todas] of cartoes) {
+    todas.forEach(el => { el.style.fontSize = ''; el.style.height = ''; });
+    const cabe = (el, px, linhas) => { const s = el.firstElementChild; return !s || s.getBoundingClientRect().height <= px * 1.06 * linhas + 2; };
+    const poe = (px, linhas) => todas.forEach(el => { el.style.fontSize = px + 'px'; el.style.height = (1.06 * linhas + 0.02) + 'em'; });
+    if (c.dataset && c.dataset.pxr) {
+      const L = +c.dataset.lin || 2;
+      let px = +c.dataset.pxr * innerHeight;
+      for (; px > 8; px--) { poe(px, L); if (todas.every(el => cabe(el, px, L))) break; }
+      continue;
+    }
+    const base = parseFloat(getComputedStyle(todas[0]).fontSize), minimo = innerHeight * 0.022;
+    let feito = false;
+    for (let linhas = 2; linhas <= 3 && !feito; linhas++)
+      for (let px = base; px >= minimo; px -= 1) { poe(px, linhas); if (todas.every(el => cabe(el, px, linhas))) { feito = true; break; } }
+    if (!feito) for (let px = Math.floor(minimo); px >= 8; px -= 1) { poe(px, 3); if (todas.every(el => cabe(el, px, 3))) break; }
   }
 }
 // cada linha da grade fica da altura do desenho mais alto DELA (3.0.10): com figuras largas a célula tinha a altura
@@ -392,7 +436,7 @@ function pinta(el, chave, monta) {
   if (el.dataset.k === chave) return;
   const primeira = !el.dataset.k;
   el.dataset.k = chave;
-  const aplica = () => { const r = monta(); el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); ajustaTitulos(); ajustaGrade(); };
+  const aplica = () => { GRADE_EL = el; const r = monta(); GRADE_EL = null; el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); ajustaTitulos(); ajustaGrade(); };
   if (primeira) { aplica(); return; }
   el.classList.add('troca');
   setTimeout(() => { aplica(); requestAnimationFrame(() => el.classList.remove('troca')); setTimeout(() => el.classList.remove('troca'), 60); }, 180);
@@ -493,9 +537,24 @@ const APRS = {};
 fetch('/api/apresentacoes', { cache: 'no-store' }).then(r => r.json()).then(r => {
   (r.lista || []).forEach(a => { APRS[a.nome] = a.slides || []; });
 }).catch(() => {});
+// o fundo do slide. No AGORA, "um blur de verdade" (escolha dele, 18/10, opção A), sem gastar CPU: feito UMA vez por
+// slide, quando a imagem carrega, em passadas de redução e ampliação suavizadas, numa tela da metade do tamanho do
+// cartão. Nada roda ao vivo. No A SEGUIR fica o de antes (32x18 esticado), que é mais barato.
+function passoDesfoque(src, w, h) {
+  const c = document.createElement('canvas'); c.width = Math.max(1, w); c.height = Math.max(1, h);
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = true; try { x.imageSmoothingQuality = 'high'; } catch (e) {}
+  x.drawImage(src, 0, 0, c.width, c.height); return c;
+}
 function desfoca(img) {
   const c = img.parentNode && img.parentNode.querySelector('canvas.gfundo'); if (!c) return;
-  try { c.getContext('2d').drawImage(img, 0, 0, 32, 18); } catch (e) {}
+  try {
+    if (!c.closest('#gc-agora')) { c.width = 32; c.height = 18; c.getContext('2d').drawImage(img, 0, 0, 32, 18); return; }
+    const W = Math.max(64, Math.round((c.clientWidth || 384) / 2)), H = Math.max(36, Math.round((c.clientHeight || 216) / 2));
+    let w = img.naturalWidth || W * 4, h = img.naturalHeight || H * 4, cur = img;
+    while (w / 2 >= W / 12 && h / 2 >= H / 12) { w = Math.round(w / 2); h = Math.round(h / 2); cur = passoDesfoque(cur, w, h); }
+    while (w * 2 <= W) { w *= 2; h *= 2; cur = passoDesfoque(cur, w, h); }
+    c.width = W; c.height = H; const x = c.getContext('2d'); x.imageSmoothingEnabled = true; x.drawImage(cur, 0, 0, W, H);
+  } catch (e) {}
 }
 function slideCard(url, rotulo) {
   // o fundo "desfocado": o slide desenhado UMA vez numa tela de 32x18 e esticado (o navegador suaviza ao esticar).
