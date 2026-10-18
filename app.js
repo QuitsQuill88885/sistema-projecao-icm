@@ -101,7 +101,10 @@ const ESTILO_NOME = { limpo: 'Estilo Padrão', mapa: 'Estilo Mapa-múndi' };
 const CANAL = (function () { try { return new BroadcastChannel('sistema-projecao'); } catch (e) { return null; } })();
 if (CANAL) CANAL.onmessage = e => {   // mensagens vindas da janela de projeção
   const d = e.data; if (!d || !d.tipo) return;
-  if (d.tipo === 'proj-pronta') setTimeout(() => { try { CANAL.postMessage(est.ultimo); } catch (_) {} }, 120);
+  if (d.tipo === 'proj-pronta') setTimeout(() => { try {
+    CANAL.postMessage(est.ultimo);
+    if (est.telaoApoio) CANAL.postMessage({ tipo: 'papel', apoio: true });   // 3.0.9: telão reaberto depois do Trocar
+  } catch (_) {} }, 120);
   else if (d.tipo === 'cmd' && window.__cmdProj) window.__cmdProj(d.cmd);   // setas apertadas no telão
 };
 // ESMAECER: a duração do PowerPoint OFICIAL. Ordem dele (10/10/2026): esmaecer entre
@@ -2431,6 +2434,11 @@ function renderApresentacoes() {
       '<span class="nome"><span class="ap-nome"></span><small class="ap-info"></small></span>';
     c.querySelector('.ap-nome').textContent = a.nome;
     c.querySelector('.ap-info').textContent = (a.demo ? 'Exemplo · ' : '') + a.slides.length + ' slides';
+    // 3.0.9: a apresentação ESPECIAL (tem gestos para a TV de apoio) ganha a moldura e o broche "2 telas"
+    if (ehEspecial(a.nome)) {
+      c.classList.add('especial');
+      c.insertAdjacentHTML('afterbegin', '<span class="broche-2telas">' + ICO_2TELAS + '2 telas</span>');
+    }
     // TELA NOVA (12/10/2026, queixa 1 do culto: "cliquei 2x e não exibiu"): 1 clique já entra no modo
     // apresentação PROJETANDO o slide 1 (e liga o telão, se estiver desligado), igual a um louvor.
     // O clique simples espera um tico: sem isso, num duplo clique o 2º caía em cima da tela nova (numa
@@ -2514,6 +2522,7 @@ function entrarApresentacao(a, pos) {
   aprPintarCol();
   colocarNaFila(a.nome);
   projetarSlide(clamp(pos || 0, 0, a.slides.length - 1));
+  if (ehEspecial(a.nome)) abrirApoioLocal();   // 3.0.9: com 2 telas externas neste PC, a 2ª vira a TV de apoio
 }
 // "‹ Apresentações" e o Esc: volta para a grade. O telão continua no slide (a Tela de espera é do painel), e as
 // setas do painel continuam passando esta apresentação enquanto ela estiver no ar.
@@ -3736,6 +3745,133 @@ function ligarControleCelular() {
     } catch (e) {}
   }, 1000);
 }
+// ===================== 3.0.9: PROJETAR COM DUAS TELAS =====================
+// Pedido dele (17/10/2026, "estilo AirDrop"). A apresentação ESPECIAL (tem gestos no dados/gestos.js) ganha
+// o broche "2 telas". Quando outro computador abre o retorno.html deste PC (o Vaio, pelo modo gestos), um
+// CARTÃO NO CANTO pergunta "Projetar com duas telas?". Não é janela modal e não pega o foco do teclado: as
+// setas continuam passando slide com o cartão aberto. O "sim" fica lembrado no Python (apoios.json): se o
+// Wi-Fi piscar ou no culto seguinte, o par volta CALADO. O "1" gigante no telão só aparece quando o operador
+// aperta Sim, Identificar ou Trocar.
+const ICO_2TELAS = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="13" height="9" rx="1.5"/>' +
+  '<rect x="9" y="11" width="13" height="9" rx="1.5"/></svg>';
+let ESPECIAIS = new Set();
+function ehEspecial(nome) { return !!nome && ESPECIAIS.has(String(nome).normalize('NFC')); }
+async function carregarEspeciais() {
+  try {
+    const t = await fetch('dados/gestos.js', { cache: 'no-store' }).then(r => r.ok ? r.text() : '');
+    const s = new Set(); let m; const re = /"apres:([^"]+)"/g;
+    while ((m = re.exec(t))) s.add(m[1].normalize('NFC'));
+    ESPECIAIS = s;
+    renderApresentacoes();
+  } catch (e) {}
+}
+function abrirApoioLocal() {
+  try { if (nativo() && window.pywebview.api.abrir_apoio_local) window.pywebview.api.abrir_apoio_local(); } catch (e) {}
+}
+const DT = { lista: [], cartao: null, modo: '', chave: '', timer: null };
+function dtEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function dtTelao(n, rotulo) { try { if (CANAL) CANAL.postMessage({ tipo: 'identificar', n, rotulo, ms: 3000 }); } catch (e) {} }
+async function dtAcao(chave, acao) {
+  try {
+    const r = await fetch('/api/apoio', { method: 'POST', body: JSON.stringify({ chave, acao }) }).then(r => r.json());
+    if (r && r.ok && r.identificar > 0) {
+      // o telão mostra o número DELE: 1 enquanto este PC é o telão; 2 depois do Trocar
+      if (r.papel === 2) dtTelao(1, 'Telão'); else dtTelao(2, 'Tela de apoio · este computador');
+    }
+    dtPapel(r && r.ok && r.estado === 'aceito' && r.papel === 1);
+    return r;
+  } catch (e) { return null; }
+}
+function dtPapel(querApoio) {
+  querApoio = !!querApoio;
+  if (querApoio === !!est.telaoApoio) return;
+  est.telaoApoio = querApoio;
+  try { if (CANAL) CANAL.postMessage({ tipo: 'papel', apoio: querApoio }); } catch (e) {}
+}
+function dtFechar() {
+  clearTimeout(DT.timer);
+  if (DT.cartao) DT.cartao.remove();
+  DT.cartao = null; DT.modo = ''; DT.chave = '';
+}
+// modo: 'pergunta' (chegou agora) | 'pronto' (acabou de dizer sim / trocou) | 'gerenciar' (clicou na pílula)
+function dtCartao(a, modo) {
+  if (!DT.cartao) {
+    DT.cartao = document.createElement('div');
+    DT.cartao.id = 'dt-cartao';
+    DT.cartao.setAttribute('role', 'status');
+    document.body.appendChild(DT.cartao);
+  }
+  clearTimeout(DT.timer);
+  DT.modo = modo; DT.chave = a.chave;
+  const nome = '<b class="dt-nome">' + dtEsc(a.nome) + '</b>';
+  const telao = a.papel === 1 ? nome : '<b>este computador</b>';
+  const apoio = a.papel === 1 ? '<b>este computador</b>' : nome;
+  let corpo;
+  if (modo === 'pergunta') {
+    corpo = '<div class="dt-tit">Achamos outro computador na rede (' + dtEsc(a.nome) + ').</div>' +
+      '<div class="dt-txt">Projetar com duas telas?</div>' +
+      '<div class="dt-acoes"><button data-a="nao" class="big-btn">Agora não</button>' +
+      '<button data-a="sim" class="big-btn verde">Sim</button></div>';
+  } else {
+    corpo = '<div class="dt-tit">' + (modo === 'pronto' ? 'Olhe as TVs: cada uma mostra o seu número' : 'Duas telas') + '</div>' +
+      '<div class="dt-par"><span class="dt-n">1</span> Telão: ' + telao + '</div>' +
+      '<div class="dt-par"><span class="dt-n dois">2</span> Tela de apoio: ' + apoio + '</div>' +
+      '<div class="dt-acoes">' +
+      (modo === 'gerenciar' ? '<button data-a="desligar" class="big-btn">Desligar</button><button data-a="identificar" class="big-btn">Identificar</button>' : '') +
+      '<button data-a="trocar" class="big-btn">Trocar</button>' +
+      '<button data-a="ok" class="big-btn verde">' + (modo === 'pronto' ? 'Pronto' : 'Fechar') + '</button></div>';
+    DT.timer = setTimeout(dtFechar, 15000);
+  }
+  DT.cartao.innerHTML = '<div class="dt-ico">' + ICO_2TELAS.replace(/width="13" height="13"/, 'width="26" height="26"') + '</div>' +
+    '<div class="dt-corpo">' + corpo + '</div>';
+  DT.cartao.querySelectorAll('button').forEach(b => {
+    b.tabIndex = -1;                                    // nunca fica com o foco: Espaço/Enter continuam do painel
+    b.onmousedown = ev => ev.preventDefault();          // o clique não tira o foco de onde ele estava
+    b.onclick = async () => {
+      const ac = b.dataset.a;
+      if (ac === 'ok') return dtFechar();
+      const r = await dtAcao(a.chave, ac);
+      if (!r || !r.ok) { toast((r && r.erro) || 'O outro computador não respondeu.'); return dtFechar(); }
+      if (ac === 'nao' || ac === 'desligar') { dtFechar(); toast(ac === 'nao' ? 'Ok: uma tela só.' : 'Duas telas desligadas.'); }
+      else dtCartao(Object.assign({}, a, r), ac === 'identificar' ? 'gerenciar' : 'pronto');
+      dtPilula();
+    };
+  });
+}
+function dtPilula() {
+  let p = $('#dt-pilula');
+  const header = document.querySelector('header');
+  if (!p && header) {
+    p = document.createElement('button'); p.id = 'dt-pilula'; p.tabIndex = -1;
+    p.onmousedown = ev => ev.preventDefault();
+    p.onclick = () => { const a = DT.lista.find(x => x.estado === 'aceito'); if (a) dtCartao(a, 'gerenciar'); };
+    header.appendChild(p);   // depois do Estilo, no canto direito
+  }
+  if (!p) return;
+  const a = DT.lista.find(x => x.estado === 'aceito');
+  p.style.display = a ? '' : 'none';
+  if (a) {
+    p.className = a.online ? 'on' : 'fora';
+    p.innerHTML = '<span class="dt-bola"></span>' + ICO_2TELAS + '<span>2 telas · ' + dtEsc(a.nome) + (a.online ? '' : ' (fora do ar)') + '</span>';
+  }
+}
+function ligarDuasTelas() {
+  const passo = async () => {
+    try {
+      const r = await fetch('/api/apoios', { cache: 'no-store' }).then(r => r.json());
+      DT.lista = (r && r.apoios) || [];
+    } catch (e) { return; }
+    const ativo = DT.lista.find(a => a.estado === 'aceito' && a.online);
+    dtPapel(ativo && ativo.papel === 1);                 // o apoio caiu depois do Trocar: o telão volta a ser telão
+    const pend = DT.lista.find(a => a.estado === 'pendente' && a.online);
+    if (pend && !DT.cartao) dtCartao(pend, 'pergunta');
+    if (DT.modo === 'pergunta' && !DT.lista.some(a => a.chave === DT.chave && a.estado === 'pendente' && a.online)) dtFechar();
+    dtPilula();
+  };
+  passo(); setInterval(passo, 1500);
+}
+
 async function iniciar() {
   await Guardar.carregar();     // dados salvos ao lado do programa vêm primeiro (sobrevivem a atualizações)
   carregarDadosUsuario();
@@ -3755,6 +3891,7 @@ async function iniciar() {
   est.ultimo = { modo: 'fundo', fundo: esperaAtual(), estilo: est.estilo, transicao: false };
   previews.forEach(w => post(w, est.ultimo));
   ligarEventos(); atualizarProjBtn(); atualizarAgora();
+  carregarEspeciais(); ligarDuasTelas();   // 3.0.9
   abrirBemVindo(false);   // primeira vez: apresentação + configuração da igreja
 }
 document.addEventListener('DOMContentLoaded', iniciar);

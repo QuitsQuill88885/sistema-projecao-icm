@@ -40,6 +40,25 @@
   .c-rot { font-size:3.2vh; color:var(--apagado); text-transform:uppercase; letter-spacing:.3em; margin-top:4vh; }
   #c-prox { font-size:7.5vh; font-weight:700; color:var(--ouro); max-width:92vw; }
   #c-vers { font-size:5vh; max-width:88vw; }
+  /* 3.0.9: o espelho do telão (o próprio projecao.html, alimentado pelo /api/tela) */
+  #espelho { inset:0; z-index:5; background:#000; }
+  #esp-f { width:100%; height:100%; border:0; display:block; background:#000; }
+  body.sem-topo #topo { display:none; }
+  /* 3.0.9: o par com o computador da projeção */
+  #faixa { position:fixed; left:0; right:0; bottom:0; padding:1.4vh 2.5vw; font-size:2.6vh; text-align:center;
+    background:#16233ccc; color:var(--ouro); z-index:20; display:none; }
+  #dispensado .d-tit { font-size:5vh; max-width:80vw; }
+  #d-denovo { margin-top:4vh; font:600 2.8vh "Segoe UI", sans-serif; padding:1.4vh 3vw; border-radius:1vh;
+    border:1px solid #2c3d5c; background:#1e2d49; color:var(--texto); cursor:pointer; }
+  /* o quadradinho do "Identificar" do Windows, nas cores do Sistema (azul, borda e número em ouro) */
+  #ident { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    background:#05070d8c; opacity:0; transition:opacity .35s; pointer-events:none; }
+  #ident.on { opacity:1; }
+  #ident .q { width:46vh; height:46vh; border-radius:6vh; background:linear-gradient(160deg,#14487a,#0f2f5e);
+    border:.7vh solid #f5d76e; box-shadow:0 4vh 12vh #000c; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; }
+  #ident b { font-size:30vh; font-weight:800; line-height:1; color:#f5d76e; }
+  #ident span { font-size:3.6vh; color:#eaf0fb; margin-top:1.5vh; letter-spacing:.04em; }
 </style>
 </head>
 <body>
@@ -60,6 +79,19 @@
   <div class="c-rot" id="c-vers-rot">Versículo</div>
   <div id="c-vers">—</div>
 </section>
+
+<!-- 3.0.9: Bíblia, aviso, fundo, aula: o MESMO desenho do telão -->
+<section class="tela" id="espelho"><iframe id="esp-f" title="o que está no telão"></iframe></section>
+
+<!-- 3.0.9: o operador respondeu "não" à pergunta "Projetar com duas telas?" -->
+<section class="tela" id="dispensado">
+  <div class="d-tit">O operador preferiu projetar com uma tela só.</div>
+  <div class="c-rot">Esta TV fica de fora até o Sistema ser aberto de novo</div>
+  <button id="d-denovo">Pedir de novo</button>
+</section>
+
+<div id="faixa">Aguardando o operador responder no computador da projeção: “Projetar com duas telas?”</div>
+<div id="ident"><div class="q"><b id="ident-n">2</b><span id="ident-rot">Tela de apoio</span></div></div>
 
 <script src="dados/louvores.js"></script>
 <script>window.GESTOS = window.GESTOS || {};</script>
@@ -133,18 +165,94 @@ async function puxaTela() {
   } catch (e) {}
 }
 
+// ===== 3.0.9: PROJETAR COM DUAS TELAS =====
+// Esta TV se apresenta ao computador da projeção a cada ciclo (GET /api/apoio). Lá o painel pergunta ao
+// operador "Projetar com duas telas?". Enquanto ninguém responde, aqui tudo funciona como na 3.0.8, com
+// uma faixa embaixo. "local=1" = aberta pelo PRÓPRIO computador da projeção (2ª saída de vídeo, ou a
+// capa do telão depois do Trocar): não pergunta nada a ninguém.
+const QS = new URLSearchParams(location.search);
+const LOCAL = QS.has('local');
+const NOME = QS.get('nome') || '';
+let apoio = { estado: LOCAL ? 'aceito' : 'pendente', papel: 2, identificar: 0 };
+let identAte = 0, pedirDeNovo = false, espPronto = false, espN = -1;
+
+async function ola() {
+  if (LOCAL) return;
+  try {
+    const r = await fetch('/api/apoio?nome=' + encodeURIComponent(NOME) + (pedirDeNovo ? '&denovo=1' : ''),
+                          { cache: 'no-store' }).then(r => r.json());
+    if (r && r.ok) {
+      apoio = r; pedirDeNovo = false;
+      if (r.identificar > 0) identAte = Date.now() + r.identificar * 1000;
+    }
+  } catch (e) {}
+}
+$('#d-denovo').onclick = () => { pedirDeNovo = true; ola(); };
+
+function especial(nome) { return !!(nome && G()['apres:' + nome]); }
+
+// O que esta TV mostra: gesto/letra (louvor), cinema (espera, nada no ar) ou o espelho do telão.
+function modoDe(e, g) {
+  if (apoio.papel === 1) return 'espelho';                 // depois do Trocar, ESTA é o telão
+  if (e.projetando === false) return 'cinema';
+  if (e.tipo === 'louvor' || (e.tipo === 'slide' && g)) return 'gesto';
+  if (!e.tipo || e.tipo === 'descanso' || e.tipo === 'preto') return 'cinema';
+  if (e.tipo === 'slide' && especial(apresNoAr(e))) return 'cinema';   // a espera da apresentação de gestos: o próximo louvor
+  return 'espelho';
+}
+
+function alimentaEspelho() {
+  const f = $('#esp-f');
+  if (!f.getAttribute('src')) {          // só carrega o telão aqui na primeira vez que precisa (poupa o Vaio)
+    f.onload = () => { espPronto = true; espN = -1; alimentaEspelho(); };
+    f.src = 'projecao.html?espelho=1';
+    return;
+  }
+  if (!espPronto || !telaPayload || espN === telaN) return;
+  try {
+    f.contentWindow.postMessage(JSON.stringify(espN < 0 ? Object.assign({}, telaPayload, { transicao: false }) : telaPayload), '*');
+    espN = telaN;
+  } catch (e) {}
+}
+
+function mostraIdent() {
+  const on = Date.now() < identAte;
+  $('#ident').classList.toggle('on', on);
+  if (on) {
+    $('#ident-n').textContent = apoio.papel === 1 ? '1' : '2';
+    $('#ident-rot').textContent = (apoio.papel === 1 ? 'Telão' : 'Tela de apoio') + (apoio.nome && !LOCAL ? ' · ' + apoio.nome : '');
+  }
+}
+setInterval(mostraIdent, 150);
+
 async function ciclo() {
   let r = null;
   try { r = await fetch('/api/estado', { cache: 'no-store' }).then(r => r.json()); } catch (e) {}
   const sinal = $('#sinal');
-  if (!r || !r.ok) { sinal.textContent = 'sem sinal do computador principal'; sinal.className = 'mal'; return; }
+  if (!r || !r.ok) { sinal.textContent = 'sem sinal do computador principal'; sinal.className = 'mal';
+                     document.body.classList.remove('sem-topo'); return; }
   if (r.idade > 10) { sinal.textContent = 'o Sistema do computador principal parou de responder'; sinal.className = 'mal'; }
   else { sinal.textContent = 'ligado ao computador principal'; sinal.className = 'ok'; }
+  await ola();
+  $('#faixa').style.display = apoio.estado === 'pendente' ? 'block' : 'none';
+  if (apoio.estado === 'dispensado') {
+    document.body.classList.remove('sem-topo');
+    $('#t-oque').textContent = 'Retorno';
+    mostra('dispensado');
+    return;
+  }
   const e = r.estado || {};
   await puxaTela();
   const g = gestoDe(e);
-  const noLouvor = e.tipo === 'louvor' || (e.tipo === 'slide' && g);
-  if (noLouvor && e.projetando !== false) {
+  const modo = modoDe(e, g);
+  // no espelho a TV fica limpa como o telão; o topo só volta se o sinal cair
+  document.body.classList.toggle('sem-topo', modo === 'espelho' && sinal.className === 'ok');
+  if (modo === 'espelho') {
+    alimentaEspelho();
+    mostra('espelho');
+    return;
+  }
+  if (modo === 'gesto') {
     const tit = g && g.louvor || (LOUV[e.louvor] && e.tipo === 'louvor' ? LOUV[e.louvor].titulo : '');
     $('#t-oque').innerHTML = tit ? '<b>' + tit + '</b>' : 'Louvor';
     if (g && g.img) {

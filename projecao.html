@@ -614,8 +614,35 @@ function aplicar(e){
   else { render(); cam.classList.remove('oculto'); }
 }
 // janela PRÓPRIA do Sistema: recebe pelo canal (não existe "window.opener" aqui)
+/* 3.0.9: PROJETAR COM DUAS TELAS. Só a janela PRÓPRIA do telão obedece (a prévia do painel também ouve o canal).
+   identificar: o número gigante por alguns segundos, como o "Identificar" do Windows (só quando o operador
+   aperta Sim, Identificar ou Trocar; nunca sozinho no meio do louvor).
+   papel: depois do "Trocar", este HDMI vira a TV de APOIO: o retorno.html cobre o telão; desfazer tira a capa. */
+function duasTelas(d){
+  if(!(d && (d.tipo==='identificar' || d.tipo==='papel'))) return false;
+  if(location.search.indexOf('nativo=1')<0) return true;
+  if(d.tipo==='identificar'){
+    // o quadradinho do "Identificar" do Windows, nas cores do Sistema: azul, borda e número em ouro
+    let o=document.getElementById('ident-num');
+    if(!o){ o=document.createElement('div'); o.id='ident-num';
+      o.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#05070d8c;opacity:0;transition:opacity .35s;pointer-events:none;font-family:"Segoe UI",sans-serif';
+      document.body.appendChild(o); }
+    o.innerHTML='<div style="width:46vh;height:46vh;border-radius:6vh;background:linear-gradient(160deg,#14487a,#0f2f5e);border:.7vh solid #f5d76e;box-shadow:0 4vh 12vh #000c;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
+      '<div style="font-size:30vh;font-weight:800;line-height:1;color:#f5d76e">'+d.n+'</div>'+
+      '<div style="font-size:3.6vh;color:#eaf0fb;margin-top:1.5vh;letter-spacing:.04em">'+(d.rotulo||'')+'</div></div>';
+    requestAnimationFrame(()=>{ o.style.opacity='1'; }); clearTimeout(duasTelas.t);
+    duasTelas.t=setTimeout(()=>{ o.style.opacity='0'; }, d.ms||3000);
+  } else {
+    let f=document.getElementById('papel-apoio');
+    if(d.apoio && !f){ f=document.createElement('iframe'); f.id='papel-apoio'; f.src='retorno.html?local=1';
+      f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;z-index:9000;background:#05070d';
+      document.body.appendChild(f); }
+    if(!d.apoio && f) f.remove();
+  }
+  return true;
+}
 try{ const c=new BroadcastChannel('sistema-projecao');
-     c.onmessage = e => { try{ aplicar(typeof e.data==='string'?JSON.parse(e.data):e.data); }catch(_){} }; }catch(e){}
+     c.onmessage = e => { try{ const d=typeof e.data==='string'?JSON.parse(e.data):e.data; if(!duasTelas(d)) aplicar(d); }catch(_){} }; }catch(e){}
 window.addEventListener('message', ev=>{ try{
   const d = typeof ev.data==='string'?JSON.parse(ev.data):ev.data;
   if(d && d.tipo==='fullscreen'){ telaCheiaNoProjetor(); return; }

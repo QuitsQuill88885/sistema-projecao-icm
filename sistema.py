@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.8"
+VERSAO = "3.0.9"
 # 0.0.0.0 = o celular controla pela rede. SISTEMA_SO_LOCAL=1 (so as PROVAS usam) abre so em 127.0.0.1: cada instalacao
 # de teste roda de uma pasta nova, e o Firewall do Windows perguntava "Permitir?" na tela da casa (11/10 14h11).
 ENDERECO_REDE = "127.0.0.1" if os.environ.get("SISTEMA_SO_LOCAL") else "0.0.0.0"
@@ -74,6 +74,17 @@ ESTADO = {"agora": "Pronto.", "projetando": False, "congelado": False, "ts": tim
 TELA = {"payload": None, "n": 0}       # o que está no telão agora (para a prévia do celular)
 
 TRAVA = threading.Lock()
+
+# ===== 3.0.9: PROJETAR COM DUAS TELAS (pedido dele, 17/10/2026: "estilo AirDrop") =====
+# Um segundo computador (o Vaio) abre o retorno.html DESTE PC e se apresenta a cada segundo (GET /api/apoio).
+# O painel pergunta, num cartão no canto: "Projetar com duas telas?". O SIM fica lembrado em apoios.json
+# (o par volta calado se o Wi-Fi piscar ou no culto seguinte); o NÃO vale até fechar o Sistema.
+# Arquivo separado do configuracoes.json porque o painel regrava aquele inteiro.
+APOIOS = {}             # chave (nome do computador, ou o IP) -> o que se sabe dele
+APOIO_ONLINE_SEG = 6    # sem notícia há mais que isto = desligou
+APOIO_IDENT_SEG = 3     # o "1" e o "2" gigantes ficam este tanto
+PORTA_ANUNCIO = 8766    # UDP: "existe um Sistema aqui" (o apoio acha sem varrer a rede)
+ARQ_APOIOS = os.path.join(DADOS_USUARIO, "apoios.json")
 
 
 
@@ -2392,6 +2403,121 @@ def gravar_config(dados):
 
 
 
+# ===== 3.0.9: o par com o computador de apoio =====
+def apoios_lembrados():
+    try:
+        with open(ARQ_APOIOS, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def _gravar_apoios(d):
+    try:
+        os.makedirs(DADOS_USUARIO, exist_ok=True)
+        tmp = ARQ_APOIOS + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(d, f, ensure_ascii=False)
+        os.replace(tmp, ARQ_APOIOS)
+    except Exception:
+        pass
+
+
+def _apoio_publico(chave, a, agora):
+    return {"chave": chave, "nome": a["nome"], "ip": a["ip"], "estado": a["estado"], "papel": a["papel"],
+            "online": agora - a.get("visto", 0) <= APOIO_ONLINE_SEG,
+            "identificar": max(0.0, round(a.get("ident_ate", 0) - agora, 2))}
+
+
+def apoio_ola(nome, ip, denovo=False):
+    """O apoio deu sinal de vida. Devolve o que ele deve mostrar (pendente, aceito ou dispensado)."""
+    nome = (nome or "").strip()[:40]
+    chave = nome or ip or "?"
+    agora = time.time()
+    with TRAVA:
+        a = APOIOS.get(chave)
+        if a is None:
+            lem = apoios_lembrados().get(chave)
+            # par lembrado: volta CALADO (sem pergunta e sem o "1" gigante no meio do culto)
+            a = {"nome": nome or ip, "ip": ip, "estado": "aceito" if lem else "pendente",
+                 "papel": (lem or {}).get("papel", 2), "ident_ate": 0}
+            APOIOS[chave] = a
+        if denovo and a["estado"] == "dispensado":
+            a["estado"] = "pendente"
+        a["ip"] = ip
+        a["visto"] = agora
+        return dict(_apoio_publico(chave, a, agora), ok=True)
+
+
+def apoios_lista():
+    agora = time.time()
+    with TRAVA:
+        return [_apoio_publico(k, a, agora) for k, a in APOIOS.items()]
+
+
+def apoio_mudar(chave, acao):
+    """sim | nao | identificar | trocar | desligar. Só o SIM, o Identificar e o Trocar acendem o 1 e o 2."""
+    agora = time.time()
+    with TRAVA:
+        a = APOIOS.get(chave)
+        if a is None:
+            return {"ok": False, "erro": "esse computador não está na rede"}
+        if acao == "sim":
+            a["estado"] = "aceito"
+            a["ident_ate"] = agora + APOIO_IDENT_SEG
+        elif acao == "nao":
+            a["estado"] = "dispensado"
+        elif acao == "identificar":
+            a["ident_ate"] = agora + APOIO_IDENT_SEG
+        elif acao == "trocar":
+            a["papel"] = 1 if a["papel"] == 2 else 2
+            a["ident_ate"] = agora + APOIO_IDENT_SEG
+        elif acao == "desligar":
+            a["estado"] = "dispensado"
+            a["papel"] = 2
+        else:
+            return {"ok": False, "erro": "ação desconhecida"}
+        r = _apoio_publico(chave, a, agora)
+    lem = apoios_lembrados()
+    if r["estado"] == "aceito":
+        lem[chave] = {"nome": r["nome"], "papel": r["papel"], "em": time.strftime("%Y-%m-%d %H:%M")}
+    else:
+        lem.pop(chave, None)
+    _gravar_apoios(lem)
+    return dict(r, ok=True)
+
+
+def anunciar_na_rede(porta):
+    """A cada 2 s grita na rede local que existe um Sistema aqui. O modo gestos do Vaio escuta e
+    vem direto, sem varrer 254 endereços. Sobre o Tailscale não há broadcast: lá a varredura continua."""
+    if os.environ.get("SISTEMA_SO_LOCAL"):
+        return
+    msg = json.dumps({"sistema": "icm-projecao", "porta": porta, "nome": socket.gethostname(),
+                      "versao": VERSAO}).encode("utf-8")
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    except Exception:
+        return
+    while True:
+        alvos = {"255.255.255.255"}
+        try:
+            for inf in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+                ip = inf[4][0]
+                if not ip.startswith(("127.", "169.254.")):
+                    alvos.add(ip.rsplit(".", 1)[0] + ".255")
+        except Exception:
+            pass
+        for a in alvos:
+            try:
+                s.sendto(msg, (a, PORTA_ANUNCIO))
+            except Exception:
+                pass
+        time.sleep(2)
+
+
+
 
 
 # ---------------------------------------------------------------- conversão
@@ -3029,6 +3155,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                 return self._json({"ok": True, "n": TELA["n"], "payload": TELA["payload"]})
 
+        if self.path.startswith("/api/apoios"):          # 3.0.9: o painel quer saber quem quer ser a 2ª tela
+            return self._json({"ok": True, "apoios": apoios_lista()})
+        if self.path.startswith("/api/apoio"):           # 3.0.9: o apoio (retorno.html) dá sinal de vida
+            from urllib.parse import urlparse, parse_qs
+            q = parse_qs(urlparse(self.path).query)
+            return self._json(apoio_ola((q.get("nome") or [""])[0], self.client_address[0],
+                                        denovo=bool(q.get("denovo"))))
         if self.path.startswith("/api/estado"):          # o celular pergunta o que está no telão
 
             with TRAVA:
@@ -3193,6 +3326,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                 return self._json({"ok": False, "erro": str(e)})
 
+        if self.path.startswith("/api/apoio"):            # 3.0.9: sim | nao | identificar | trocar | desligar
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                c = json.loads(self.rfile.read(n).decode("utf-8"))
+                return self._json(apoio_mudar(str(c.get("chave", "")), str(c.get("acao", ""))))
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
         if self.path.startswith("/api/estado"):           # a tela do Sistema avisa o que está no ar
 
             try:
@@ -3697,6 +3837,39 @@ class Ponte:
         return {"ok": True, "aberta": self.projecao is not None}
 
 
+
+    # 3.0.9: DUAS SAÍDAS NO MESMO PC. Com duas telas externas (telão + TV de apoio), a apresentação
+    # especial abre o retorno na 2ª sozinha. "Só desliga quando puxar o HDMI": o vigia fecha quando
+    # a 2ª tela some. Com uma tela externa só, não faz nada (o normal de sempre).
+    def segunda_tela(self):
+        externas = [m for m in monitores() if not m["principal"]]
+        return externas[1] if len(externas) >= 2 else None
+
+    def abrir_apoio_local(self):
+        import webview
+        alvo = self.segunda_tela()
+        if alvo is None:
+            return {"ok": True, "aberto": False}
+        if getattr(self, "apoio_local", None) is not None:
+            return {"ok": True, "aberto": True}
+        self.apoio_local = webview.create_window(
+            "Retorno", self.url + "retorno.html?local=1",
+            x=alvo["x"], y=alvo["y"], width=alvo["w"], height=alvo["h"],
+            frameless=True, fullscreen=True, background_color="#000000")
+        def fechou():
+            self.apoio_local = None
+        self.apoio_local.events.closed += fechou
+        def vigia():
+            while getattr(self, "apoio_local", None) is not None:
+                time.sleep(self.VIGIA_SEG)
+                if self.segunda_tela() is None and self.apoio_local is not None:
+                    try:
+                        self.apoio_local.destroy()
+                    except Exception:
+                        pass
+                    self.apoio_local = None
+        threading.Thread(target=vigia, name="vigia-apoio", daemon=True).start()
+        return {"ok": True, "aberto": True}
 
     def fechar_projecao(self):
 
@@ -4209,6 +4382,7 @@ def main():
     marcar_splash(0.25)                        # porta achada e servidor criado
 
     threading.Thread(target=liberar_no_firewall, args=(porta,), daemon=True).start()
+    threading.Thread(target=anunciar_na_rede, args=(porta,), name="anuncio-udp", daemon=True).start()
 
     threading.Thread(target=srv.serve_forever, daemon=True).start()
 
