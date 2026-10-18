@@ -3853,15 +3853,24 @@ function dtPapel(querApoio) {
 }
 function dtFechar() {
   clearTimeout(DT.timer);
+  const veu = document.getElementById('dt-veu'); if (veu) veu.remove();
   if (DT.cartao) DT.cartao.remove();
   DT.cartao = null; DT.modo = ''; DT.chave = '';
 }
+// Esc fecha o cartão das duas telas sem responder (3.0.10); as outras teclas seguem para o culto
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && DT.cartao) { dtFechar(); dtPilula(); } }, true);
 // modo: 'pergunta' (Nova tela encontrada) | 'como' (Como usar as duas telas?)
 function dtCartao(a, modo) {
   if (!DT.cartao) {
     DT.cartao = document.createElement('div');
     DT.cartao.id = 'dt-cartao';
     DT.cartao.setAttribute('role', 'status');
+    // 3.0.10: o véu (tela esmaecida e desfocada por trás). Clicar nele fecha SEM responder: a pílula continua
+    // oferecendo "Conectar a tela de retorno", e ninguém aceita ou dispensa o Vaio sem querer.
+    const veu = document.createElement('div'); veu.id = 'dt-veu';
+    veu.onmousedown = ev => ev.preventDefault();
+    veu.onclick = () => { dtFechar(); dtPilula(); };
+    document.body.appendChild(veu);
     document.body.appendChild(DT.cartao);
   }
   clearTimeout(DT.timer);

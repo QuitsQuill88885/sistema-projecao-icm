@@ -788,13 +788,18 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
   border:1px solid #ffffff26;box-shadow:0 2px 8px #000a,inset 0 0 0 1px #2e8b5733;pointer-events:none}
 .selo-ultra svg{display:block;filter:drop-shadow(0 0 3px #2e8b5780)}
 #ap-grade .fundo-card.especial .ap-info{color:#9fd3b4;opacity:.95}
-/* o cartão da pergunta: no canto, sem escurecer nada e sem pegar o teclado */
-#dt-cartao{position:fixed;bottom:14px;right:14px;z-index:120;width:326px;display:flex;gap:12px;align-items:flex-start;
+/* 3.0.10, pedido dele (18/10 13h08): o cartão das duas telas no CENTRO, com a tela esmaecida e um leve desfoque por
+   trás, "igual quando o Windows dá um pedido de deseja autorizar o administrador". O teclado continua livre (as setas
+   do culto passam); clicar no véu ou Esc fecha sem responder. */
+#dt-veu{position:fixed;inset:0;z-index:119;background:#050a14a6;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  animation:dt-veu .2s ease-out}
+@keyframes dt-veu{from{opacity:0}to{opacity:1}}
+#dt-cartao{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:120;width:380px;display:flex;gap:12px;align-items:flex-start;
   padding:14px 14px 12px;border-radius:14px;border:2px solid var(--verde);
   background:radial-gradient(120% 60% at 50% 0%,#ffffff12 0%,#ffffff00 60%),linear-gradient(180deg,#1e2d49,#16233c);
   box-shadow:0 0 0 1px #2e8b5733,0 0 18px #2e8b5740,0 18px 50px #000c,inset 0 1px 0 #ffffff1a;
   animation:dt-entra .25s ease-out}
-@keyframes dt-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes dt-entra{from{opacity:0;transform:translate(-50%,calc(-50% + 8px))}to{opacity:1;transform:translate(-50%,-50%)}}
 #dt-cartao .dt-ico{flex:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   background:#07090ee6;color:#3fae6f;border:1px solid #ffffff26;box-shadow:inset 0 0 0 1px #2e8b5733,0 2px 8px #000a}
 #dt-cartao .dt-ico svg{filter:drop-shadow(0 0 3px #2e8b5780)}
@@ -809,7 +814,7 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 #dt-cartao .dt-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
 #dt-cartao .dt-acoes .big-btn{padding:7px 13px}
 /* as escolhas SEM palavras: duas TVs com o selo 1 e 2; a escolhida com borda de ouro */
-#dt-cartao.como{width:430px}
+#dt-cartao.como{width:470px}
 #dt-cartao .dt-ops{display:flex;gap:8px;margin-top:10px}
 #dt-cartao .dt-op{flex:1 1 0;min-width:0;padding:8px 5px 6px;border-radius:10px;background:var(--painel);border:1.5px solid var(--borda);
   display:flex;justify-content:center;transition:border-color .15s,background .15s}
@@ -933,9 +938,6 @@ body.pb-on.pb-dupla #painel > #pb-retorno{grid-column:2;grid-row:1}
 body.pb-on.pb-dupla #painel > #pb-retorno{margin:0}
 body.pb-on.pb-dupla #painel > .preview-box .mini{width:100%}
 body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
-/* o cartão das duas telas abre no canto de baixo do CENTRO, nunca por cima da Lista */
-#dt-cartao{right:362px}
-body.pb-on #dt-cartao{bottom:78px}
 /* 3.0.10: na lista de slides do louvor, as telas da ANIMAÇÃO das CIAS com a miniatura parada */
 #lista-slides .item.anim{display:flex;align-items:center;gap:10px}
 #lista-slides .anim-mini{flex:none;width:96px;height:54px;border-radius:4px;background:#0b1526;border:1px solid var(--borda)}
