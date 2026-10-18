@@ -2173,14 +2173,25 @@ function perguntarSemProjetor() {
 // ligado) e espera, com o cartão no centro e a tela esmaecida (pedido 1). Quando a 2ª tela aparece, o telão vai
 // sozinho para ela, em tela cheia, e o cartão some. Sem termo do Windows no texto. "Ensaiar nesta tela" fica num link
 // discreto, fora do caminho de quem não conhece.
-let ESPERA_PROJ = null;
+let ESPERA_PROJ = null, ESPERA_LIMITE_MS = 12000, FUNDO_PROJ = null;
+// depois da saída automática: pede "estender" a cada 20 s, por até 10 min, até a 2ª tela aparecer ou o telão fechar
+function estenderNoFundo() {
+  clearInterval(FUNDO_PROJ);
+  const api = window.pywebview && window.pywebview.api, ini = Date.now();
+  FUNDO_PROJ = setInterval(async () => {
+    let telas = null;
+    try { telas = await api.monitores(); } catch (e) {}
+    if (!est.projetando || (Array.isArray(telas) && telas.length >= 2) || Date.now() - ini > 600000) { clearInterval(FUNDO_PROJ); FUNDO_PROJ = null; return; }
+    try { if (api && api.estender) await api.estender(); } catch (e) {}
+  }, 20000);
+}
 function esperarProjetor() {
   if (ESPERA_PROJ) return;
   const api = window.pywebview && window.pywebview.api;
   const veu = document.createElement('div'); veu.id = 'pj-veu';
   const c = document.createElement('div'); c.id = 'pj-cartao'; c.setAttribute('role', 'status');
   c.innerHTML = '<div class="pj-roda"></div><div class="pj-corpo"><div class="pj-tit">Procurando o projetor…</div>' +
-    '<div class="pj-txt">Ligue o cabo do projetor neste computador. Assim que ele aparecer, o telão abre sozinho nele — esta tela continua sua.</div>' +
+    '<div class="pj-txt">Ligue o cabo do projetor neste computador. Assim que ele aparecer, o telão abre sozinho nele — esta tela continua sua. Se ele não aparecer em alguns segundos, o telão abre nesta tela.</div>' +
     '<div class="pj-acoes"><a href="#" class="pj-ensaio">ensaiar nesta tela</a><button class="big-btn" data-a="cancelar">Cancelar</button></div></div>';
   document.body.appendChild(veu); document.body.appendChild(c);
   const inicio = Date.now();
@@ -2198,7 +2209,11 @@ function esperarProjetor() {
     }
     let telas = null;
     try { telas = await api.monitores(); } catch (e) {}
-    if (ESPERA_PROJ && Array.isArray(telas) && telas.length >= 2) { fecha(); abrirProjecao(); }
+    if (ESPERA_PROJ && Array.isArray(telas) && telas.length >= 2) { fecha(); abrirProjecao(); return; }
+    // SAÍDA AUTOMÁTICA (HD 18h05): se em 12 s a 2ª tela não veio (driver velho, divisor), projeta NESTA tela, como a
+    // 3.0.9 fazia, e segue tentando de leve no fundo; quando a 2ª tela surgir, o vigia do sistema.py leva o telão para
+    // ela. O pior caso da 3.0.10 fica igual à 3.0.9 que rodou com o Kevin: o operador nunca fica preso esperando.
+    if (ESPERA_PROJ && agora - inicio >= ESPERA_LIMITE_MS) { fecha(); projAquiMesmo = 'auto'; abrirProjecao(); estenderNoFundo(); }
   };
   ESPERA_PROJ = { t: setInterval(passo, 1000), tecla: e => { if (e.key === 'Escape') { e.preventDefault(); fecha(); } } };
   document.addEventListener('keydown', ESPERA_PROJ.tecla, true);
@@ -2220,6 +2235,7 @@ async function abrirProjecao() {
     try { r = await window.pywebview.api.abrir_projecao(); } catch (e) {}
     setTimeout(() => { if (CANAL) try { CANAL.postMessage(est.ultimo); } catch (e) {} }, 900);
     if (r && r.externa) toast('Projetor detectado — projetando em tela cheia.');
+    else if (aqui === 'auto') toast('Projetando nesta tela. Quando a segunda tela aparecer, o telão vai para ela.');
     else if (aqui) toast('Projeção aberta numa janela nesta tela (ensaio).');
     else avisoSemProjetor(r && r.sumiu);           // a tela sumiu entre a pergunta e a abertura
     return;
