@@ -2162,13 +2162,52 @@ function perguntarSemProjetor() {
   ov.querySelector('#aj-retry').onclick = () => { fecha(); setTimeout(abrirProjecao, 200); };
   ov.querySelector('#aj-aqui').onclick = () => { fecha(); projAquiMesmo = true; abrirProjecao(); };
 }
+// 3.0.10 (a), regra dele (18/10 11h58): O TELÃO NUNCA NA CARA DO OPERADOR. Com uma tela só, o Projetar não abre nada:
+// pede ao Windows para ESTENDER (o Lenovo da igreja ficava em Duplicar, e aí o Windows mostra UMA tela mesmo com o HDMI
+// ligado) e espera, com o cartão no centro e a tela esmaecida (pedido 1). Quando a 2ª tela aparece, o telão vai
+// sozinho para ela, em tela cheia, e o cartão some. Sem termo do Windows no texto. "Ensaiar nesta tela" fica num link
+// discreto, fora do caminho de quem não conhece.
+let ESPERA_PROJ = null;
+function esperarProjetor() {
+  if (ESPERA_PROJ) return;
+  const api = window.pywebview && window.pywebview.api;
+  const veu = document.createElement('div'); veu.id = 'pj-veu';
+  const c = document.createElement('div'); c.id = 'pj-cartao'; c.setAttribute('role', 'status');
+  c.innerHTML = '<div class="pj-roda"></div><div class="pj-corpo"><div class="pj-tit">Procurando o projetor…</div>' +
+    '<div class="pj-txt">Ligue o cabo do projetor neste computador. Assim que ele aparecer, o telão abre sozinho nele — esta tela continua sua.</div>' +
+    '<div class="pj-acoes"><a href="#" class="pj-ensaio">ensaiar nesta tela</a><button class="big-btn" data-a="cancelar">Cancelar</button></div></div>';
+  document.body.appendChild(veu); document.body.appendChild(c);
+  const inicio = Date.now();
+  let ultimoPedido = 0;
+  const fecha = () => {
+    clearInterval(ESPERA_PROJ.t); document.removeEventListener('keydown', ESPERA_PROJ.tecla, true);
+    veu.remove(); c.remove(); ESPERA_PROJ = null;
+  };
+  const passo = async () => {
+    const agora = Date.now();
+    // estende já e repete de tempos em tempos (o cabo pode chegar depois; em Duplicar o Windows não mostra a 2ª tela)
+    if (agora - ultimoPedido >= (agora - inicio < 60000 ? 5000 : 15000)) {
+      ultimoPedido = agora;
+      try { if (api && api.estender) await api.estender(); } catch (e) {}
+    }
+    let telas = null;
+    try { telas = await api.monitores(); } catch (e) {}
+    if (ESPERA_PROJ && Array.isArray(telas) && telas.length >= 2) { fecha(); abrirProjecao(); }
+  };
+  ESPERA_PROJ = { t: setInterval(passo, 1000), tecla: e => { if (e.key === 'Escape') { e.preventDefault(); fecha(); } } };
+  document.addEventListener('keydown', ESPERA_PROJ.tecla, true);
+  c.querySelector('[data-a=cancelar]').onclick = fecha;
+  c.querySelector('.pj-ensaio').onclick = ev => { ev.preventDefault(); fecha(); projAquiMesmo = true; abrirProjecao(); };
+  veu.onmousedown = ev => ev.preventDefault();
+  passo();
+}
 async function abrirProjecao() {
   if (nativo()) {                        // janela PRÓPRIA do Sistema (sem navegador)
     const aqui = projAquiMesmo; projAquiMesmo = false;
     if (!aqui) {
       let telas = null;
       try { telas = await window.pywebview.api.monitores(); } catch (e) {}
-      if (Array.isArray(telas) && telas.length < 2) { perguntarSemProjetor(); return; }
+      if (Array.isArray(telas) && telas.length < 2) { esperarProjetor(); return; }
     }
     est.projetando = true; atualizarProjBtn();     // marca ANTES: a janela já vai nascer ao vivo
     let r = null;

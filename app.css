@@ -943,3 +943,16 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
 #lista-slides .anim-mini{flex:none;width:96px;height:54px;border-radius:4px;background:#0b1526;border:1px solid var(--borda)}
 /* 3.0.10 (HD 15h13): em tela estreita a pilula "gestos" cobria o texto da previa PROXIMO: menor e no canto */
 @media (max-width:1100px){.pb-selo{right:3px;bottom:3px;padding:2px 6px;gap:3px;font-size:9.5px}.pb-selo svg{width:11px;height:11px}}
+/* 3.0.10 (a): "Procurando o projetor…" no centro, com a tela esmaecida (o mesmo véu do cartão das duas telas) */
+#pj-veu{position:fixed;inset:0;z-index:119;background:#050a14a6;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#pj-cartao{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:120;width:420px;display:flex;gap:16px;align-items:flex-start;
+  padding:20px 20px 16px;border-radius:14px;border:2px solid var(--verde);
+  background:radial-gradient(120% 60% at 50% 0%,#ffffff12 0%,#ffffff00 60%),linear-gradient(180deg,#1e2d49,#16233c);
+  box-shadow:0 0 0 1px #2e8b5733,0 0 18px #2e8b5740,0 18px 50px #000c,inset 0 1px 0 #ffffff1a}
+#pj-cartao .pj-roda{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid #2e8b5744;border-top-color:var(--verde);animation:pj-gira 1s linear infinite}
+@keyframes pj-gira{to{transform:rotate(360deg)}}
+#pj-cartao .pj-corpo{flex:1;min-width:0}
+#pj-cartao .pj-tit{font-size:17px;font-weight:700;color:var(--ouro)}
+#pj-cartao .pj-txt{font-size:13.5px;color:#cdd9ee;margin:6px 0 14px;line-height:1.5}
+#pj-cartao .pj-acoes{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#pj-cartao .pj-ensaio{font-size:12px;color:#7f90ad;text-decoration:underline}

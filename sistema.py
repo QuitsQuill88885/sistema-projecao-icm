@@ -3599,13 +3599,59 @@ def monitores():
 
 
 
-def telao_externo(telas=None):
+def monitor_do_painel():
+    """O retângulo {x, y, w, h} do monitor onde está a janela do painel ("Sistema v..."), ou None."""
+    try:
+        import win32api
+        hs = janelas_do_processo("Sistema v")
+        if not hs:
+            return None
+        info = win32api.GetMonitorInfo(win32api.MonitorFromWindow(hs[0], 2))   # 2 = o mais próximo
+        x1, y1, x2, y2 = info["Monitor"]
+        return {"x": x1, "y": y1, "w": x2 - x1, "h": y2 - y1}
+    except Exception:
+        return None
 
-    """O monitor do telão: o primeiro que não é o principal (o HDMI)."""
+
+def telao_externo(telas=None, painel=None):
+
+    """O monitor do telão: a tela onde o PAINEL NÃO ESTÁ (3.0.10, regra dele: "o telão nunca na cara do operador").
+    Antes era "a primeira que não é a principal": se o operador deixava o painel na tela do HDMI, o telão abria
+    por cima dele. Sem saber onde está o painel, fica o jeito de antes."""
 
     telas = monitores() if telas is None else telas
 
+    if len(telas) < 2:
+
+        return None
+
+    painel = monitor_do_painel() if painel is None else painel
+
+    if painel:
+
+        mesma = lambda m: (m["x"], m["y"], m["w"], m["h"]) == (painel["x"], painel["y"], painel["w"], painel["h"])
+
+        livres = [m for m in telas if not mesma(m)]
+
+        if livres and len(livres) < len(telas):
+
+            return next((m for m in livres if not m["principal"]), livres[0])
+
     return next((m for m in telas if not m["principal"]), None)
+
+
+def estender_telas():
+    """Pede ao Windows "estender" a área de trabalho (o que o operador faria com Windows+P > Estender). Não precisa de
+    administrador. Roda escondido (SEM_JANELA). O Lenovo da igreja ficava em DUPLICAR e o telão não tinha para onde ir."""
+    if os.name != "nt":
+        return False
+    try:
+        exe = os.path.join(os.environ.get("SystemRoot", "C:" + os.sep + "Windows"), "System32", "DisplaySwitch.exe")
+        subprocess.Popen([exe, "/extend"], **SEM_JANELA)
+        return True
+    except Exception as e:
+        sys.stderr.write("estender telas: %s" % e + chr(10))
+        return False
 
 
 
@@ -3675,6 +3721,10 @@ class Ponte:
     def monitores(self):
 
         return monitores()
+
+    def estender(self):
+        """3.0.10: uma tela só no Projetar = pede ao Windows para estender (o painel espera a 2ª tela aparecer)."""
+        return {"ok": estender_telas()}
 
     def tela_cheia(self):
         """F11 no painel (vídeo dele, 17/10): o WebView2 não repassa a tecla à janela, então o painel pede aqui."""
