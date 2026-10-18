@@ -41,11 +41,10 @@ SLIDES = APRESENTACOES[APRES]["slides"]
 REPETEM = {"97": {4, 5},
            # a aula (3.0.9): o "bis" do 69 e o coro do 249, que volta no slide 20
            "69": {11, 12, 15}, "249": {8, 9, 10, 11}}
-# figuras que o recorte da Coletânea NÃO pegou (16/10, conferido no PDF da Cris 1790803279, pág. 1):
-# a mão do "Jesus" (imagem 48 do PDF, extraída para figs\extra\jesus_mao.png) ao lado de
-# "A Jesus honra e louvor" (y 77) e de "Jesus, é o caminho" (y 242) / "Jesus, é a verdade" (y 509).
-FALTAM = {("fui_lavado", 11): ["../extra/jesus_mao.png"],
-          ("97", 0): ["../extra/jesus_mao.png"], ("97", 6): ["../extra/jesus_mao.png"]}
+# figuras que o recorte da Coletânea NÃO pegou. 18/10: VAZIO. A mão levantada (imagem 48 do PDF) que
+# entrava aqui à mão em 3 frases era jogada fora pelo filtro de largura do extrai_gestos.py; com o filtro
+# consertado ela vem do próprio livro em 9 frases de 5 louvores, cada uma no lugar dela.
+FALTAM = {}
 # figura que o recorte grudou na frase errada (conferente cego, 16/10): o papel junta "Que me faz
 # vencedor. Estamos preparando, estamos preparando" numa frase só, e a figura 198_106 (= 198_108, md5
 # 18508e00) fica ao lado de "Estamos preparando" (pág. 3, y 470-522). Ela NÃO é do slide 25, e o
@@ -71,10 +70,27 @@ def frases_do(louvor, gestos):
         txt = " ".join("".join(p[0] for p in it["ped"]).split())
         figs = [] if (louvor, i) in TIRAR else it["figs"]
         formas = CASA_COMO.get((louvor, i), [txt])
+        legs = pedacos(txt, it.get("legs"), len(it["figs"])) if figs else []
         for forma in formas:
             out.append({"i": i, "txt": formas[0] if (louvor, i) in CASA_COMO else txt, "pal": norm(forma),
-                        "figs": figs + FALTAM.get((louvor, i), [])})
+                        "figs": figs + FALTAM.get((louvor, i), []), "legs": legs})
     return out
+
+
+def pedacos(txt, legs, n):
+    """O pedaço da letra de CADA figura, lido pelo extrator na posição do texto em volta dela no livro.
+    Só vale onde muda alguma coisa: frase com 2+ figuras ("O Pai Celeste" | "que deseja a ti todo Bem.")
+    ou frase que o extrator montou cruzando as duas colunas (249: "oportunidade," era a figura de
+    "De nova vida e felicidade."). Pedaço vazio = não deu para repartir: fica a frase inteira, como antes."""
+    if not legs or len(legs) != n or not all(legs):
+        return []
+    if n == 1 and sorted(norm(legs[0])) == sorted(norm(txt)):
+        return []                       # a mesma frase: segue a legenda do slide (e o CASA_COMO)
+    return list(legs)
+
+
+def leg_da_figura(f, j, texto):
+    return f["legs"][j] if f.get("legs") else legenda(f, texto)
 
 
 def _ocorre(seq, sub):
@@ -175,7 +191,7 @@ def legenda(frase, texto):
 
 
 def monta_imagem(frases, louvor, destino, texto=""):
-    itens = [(Path(COLET, "figs", louvor, fig), legenda(f, texto)) for f in frases for fig in f["figs"]]
+    itens = [(Path(COLET, "figs", louvor, fig), leg_da_figura(f, j, texto)) for f in frases for j, fig in enumerate(f["figs"])]
     itens = [(p, t) for p, t in itens if p.exists()]
     if not itens:
         return False
@@ -222,14 +238,16 @@ def exporta_figuras(frases, louvor, pasta, texto=""):
     com a legenda em HTML (3.0.9: a letra da legenda precisa de >= 45 px numa TV de 32" a 1080p)."""
     out = []
     for f in frases:
-        leg = legenda(f, texto)
-        for fig in f["figs"]:
+        for j, fig in enumerate(f["figs"]):
+            leg = leg_da_figura(f, j, texto)
             p = Path(COLET, "figs", louvor, fig)
             if not p.exists():
                 continue
             nome = "%s_%s.webp" % (louvor, Path(fig).stem)
             destino = APP / "gestos" / pasta / "f" / nome
-            if not destino.exists():
+            # 18/10: refaz sempre. O nome é a POSIÇÃO no livro (fui_lavado_02_0 era o colchete em branco e
+            # agora é a mão): "se já existe, pula" deixava a figura velha com o nome novo.
+            if True:
                 im = Image.open(p).convert("RGBA")
                 fundo = Image.new("RGBA", im.size, (255, 255, 255, 255))
                 plano = Image.alpha_composite(fundo, im).convert("RGB")

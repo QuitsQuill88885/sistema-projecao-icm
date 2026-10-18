@@ -42,15 +42,15 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "FUI LAVADO NO SANGUE",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_07_0.webp",
+    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_00_0.webp",
     "txt": "Fui lavado no sangue"
    },
    {
-    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_09_0.webp",
+    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_02_0.webp",
     "txt": "do cordeiro,"
    },
    {
-    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_10_0.webp",
+    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_03_0.webp",
     "txt": "Aleluia, Glória e Aleluia!"
    }
   ]
@@ -60,16 +60,16 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "FUI LAVADO NO SANGUE",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/fui_lavado_jesus_mao.webp",
+    "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_100_0.webp",
     "txt": "A Jesus honra e louvor,"
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_101_0.webp",
-    "txt": "Aleluia ao meu Salvador"
+    "txt": "Aleluia"
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_101_1.webp",
-    "txt": "Aleluia ao meu Salvador"
+    "txt": "ao meu Salvador"
    }
   ]
  },
@@ -137,7 +137,11 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026/f/81_81_11_0.webp",
-    "txt": "O PAI CELESTE QUE DESEJA A TI TODO BEM."
+    "txt": "O Pai Celeste"
+   },
+   {
+    "img": "gestos/evang_out2026/f/81_81_11_1.webp",
+    "txt": "que deseja a ti todo Bem."
    }
   ]
  },
@@ -172,20 +176,24 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "SENHOR TÃO PEQUENO SOU",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/81_81_105_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_08_0.webp",
     "txt": "Quem quer subir para o céu"
    },
    {
-    "img": "gestos/evang_out2026/f/81_81_106_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_09_0.webp",
     "txt": "pequeno se faça também,"
    },
    {
-    "img": "gestos/evang_out2026/f/81_81_107_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_10_0.webp",
     "txt": "Entrega tua vida a Jesus:"
    },
    {
     "img": "gestos/evang_out2026/f/81_81_108_0.webp",
-    "txt": "O PAI CELESTE QUE DESEJA A TI TODO BEM."
+    "txt": "O Pai Celeste"
+   },
+   {
+    "img": "gestos/evang_out2026/f/81_81_108_1.webp",
+    "txt": "que deseja a ti todo Bem."
    }
   ]
  },
@@ -194,20 +202,24 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "SENHOR TÃO PEQUENO SOU",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/81_81_110_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_08_0.webp",
     "txt": "Quem quer subir para o céu"
    },
    {
-    "img": "gestos/evang_out2026/f/81_81_111_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_09_0.webp",
     "txt": "pequeno se faça também,"
    },
    {
-    "img": "gestos/evang_out2026/f/81_81_112_0.webp",
+    "img": "gestos/evang_out2026/f/81_81_10_0.webp",
     "txt": "Entrega tua vida a Jesus:"
    },
    {
+    "img": "gestos/evang_out2026/f/81_81_114_0.webp",
+    "txt": "O Pai Celeste"
+   },
+   {
     "img": "gestos/evang_out2026/f/81_81_116_0.webp",
-    "txt": "Celeste a ti todo"
+    "txt": "que deseja a ti todo Bem."
    }
   ]
  },
@@ -216,7 +228,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "JESUS É O CAMINHO",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/97_jesus_mao.webp",
+    "img": "gestos/evang_out2026/f/97_97_00_0.webp",
     "txt": "Jesus, é o caminho,"
    },
    {
@@ -244,11 +256,11 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "louvor": "JESUS É O CAMINHO",
   "figs": [
    {
-    "img": "gestos/evang_out2026/f/97_jesus_mao.webp",
+    "img": "gestos/evang_out2026/f/97_97_06_0.webp",
     "txt": "Jesus, é a verdade,"
    },
    {
-    "img": "gestos/evang_out2026/f/97_97_05_0.webp",
+    "img": "gestos/evang_out2026/f/97_97_02_0.webp",
     "txt": "Eu vou ao céu com Ele"
    }
   ]
@@ -262,7 +274,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
     "txt": "Eu vou, Eu vou"
    },
    {
-    "img": "gestos/evang_out2026/f/97_97_08_0.webp",
+    "img": "gestos/evang_out2026/f/97_97_02_0.webp",
     "txt": "Eu vou ao céu com Ele"
    }
   ]
@@ -276,7 +288,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
     "txt": "Jesus, é a minha vida,"
    },
    {
-    "img": "gestos/evang_out2026/f/97_97_08_0.webp",
+    "img": "gestos/evang_out2026/f/97_97_02_0.webp",
     "txt": "Eu vou ao céu com Ele"
    }
   ]
@@ -290,7 +302,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
     "txt": "Eu vou, Eu vou"
    },
    {
-    "img": "gestos/evang_out2026/f/97_97_11_0.webp",
+    "img": "gestos/evang_out2026/f/97_97_02_0.webp",
     "txt": "Eu vou ao céu com Ele"
    }
   ]
@@ -371,7 +383,11 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026/f/198_198_102_0.webp",
-    "txt": "ESCRITAS POR JESUS, PARA NOS PREPARAR,"
+    "txt": "escritas por Jesus,"
+   },
+   {
+    "img": "gestos/evang_out2026/f/198_198_102_1.webp",
+    "txt": "para nos preparar,"
    },
    {
     "img": "gestos/evang_out2026/f/198_198_103_0.webp",
@@ -389,7 +405,11 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026/f/198_198_105_0.webp",
-    "txt": "PARA JESUS ENCONTRAR, JESUS, MEU BOM PASTOR,"
+    "txt": "para Jesus encontrar,"
+   },
+   {
+    "img": "gestos/evang_out2026/f/198_198_105_1.webp",
+    "txt": "Jesus, meu Bom Pastor"
    }
   ]
  },
@@ -452,6 +472,10 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
   "figs": [
    {
+    "img": "gestos/evang_out2026_aula/f/69_69_04_0.webp",
+    "txt": "Jesus nos deu Salvação"
+   },
+   {
     "img": "gestos/evang_out2026_aula/f/69_69_05_0.webp",
     "txt": "quando lá na cruz morreu,"
    },
@@ -469,6 +493,10 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "img": "gestos/evang_out2026_aula/s10.webp",
   "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
   "figs": [
+   {
+    "img": "gestos/evang_out2026_aula/f/69_69_08_0.webp",
+    "txt": "Dê a Ele o seu louvor"
+   },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_09_0.webp",
     "txt": "uma vida de gratidão"
@@ -515,7 +543,11 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_04_0.webp",
-    "txt": "Cristo"
+    "txt": "Que Jesus Cristo"
+   },
+   {
+    "img": "gestos/evang_out2026_aula/f/249_249_04_1.webp",
+    "txt": "por mim já morreu,"
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_05_0.webp",
@@ -563,11 +595,11 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_15_0.webp",
-    "txt": "É tempo de"
+    "txt": "É tempo de oportunidade,"
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_17_0.webp",
-    "txt": "oportunidade,"
+    "txt": "De nova vida e felicidade. | bis"
    }
   ]
  },
