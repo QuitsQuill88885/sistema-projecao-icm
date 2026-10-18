@@ -936,3 +936,8 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
 /* o cartão das duas telas abre no canto de baixo do CENTRO, nunca por cima da Lista */
 #dt-cartao{right:362px}
 body.pb-on #dt-cartao{bottom:78px}
+/* 3.0.10: na lista de slides do louvor, as telas da ANIMAÇÃO das CIAS com a miniatura parada */
+#lista-slides .item.anim{display:flex;align-items:center;gap:10px}
+#lista-slides .anim-mini{flex:none;width:96px;height:54px;border-radius:4px;background:#0b1526;border:1px solid var(--borda)}
+/* 3.0.10 (HD 15h13): em tela estreita a pilula "gestos" cobria o texto da previa PROXIMO: menor e no canto */
+@media (max-width:1100px){.pb-selo{right:3px;bottom:3px;padding:2px 6px;gap:3px;font-size:9.5px}.pb-selo svg{width:11px;height:11px}}

@@ -962,6 +962,36 @@ function renderListaLouvores(filtro) {
     cont.appendChild(d);
   });
 }
+// A LISTA DE SLIDES do louvor é a do que vai para o telão (3.0.10). Com a animação das CIAS ligada, o telão anda
+// pelas telas do GIF (projetarLouvor) e elas não são as de texto: o 69 tem 4 telas de texto e 5 animadas, e a
+// lista mostrava 4 enquanto as setas andavam em 5. Agora, com a animação, cada item é uma tela animada, com a
+// miniatura PARADA (o 1º quadro desenhado uma vez num canvas: 5 GIFs animando no painel pesariam no PC da igreja).
+function desenharSlidesLouvor(i) {
+  const s = LOUVORES[i]; if (!s) return;
+  const cont = $('#lista-slides'); cont.innerHTML = ''; cont.dataset.i = i;
+  const anim = est.modoAnim !== false ? daAnimacao(s) : null;
+  const n = anim && anim.length ? anim.length : s.slides.length;
+  for (let k = 0; k < n; k++) {
+    const d = document.createElement('div'); d.className = 'item'; d.dataset.k = k;
+    if (anim && anim.length) {
+      d.classList.add('anim');
+      d.innerHTML = '<canvas class="anim-mini" width="96" height="54"></canvas><small style="color:#f5d76e">Tela ' + (k + 1) + ' de ' + n + ' · animada</small>';
+      const c = d.querySelector('canvas'), im = new Image();
+      im.onload = () => { try { c.getContext('2d').drawImage(im, 0, 0, 96, 54); } catch (e) {} im.src = ''; };
+      im.src = '/animacoes/' + encodeURIComponent(anim[k]);
+    } else {
+      const sl = s.slides[k];
+      d.innerHTML = (sl.label ? '<small style="color:#f5d76e">' + sl.label + '</small><br>' : '') +
+        sl.linhas.slice(0, 2).map(x => x.replace(/\u0001/g, '')).join('<br>') + (sl.linhas.length > 2 ? '…' : '');
+    }
+    d.onclick = () => projetarLouvor(i, k, false);
+    d.ondblclick = () => {   // 2 cliques no slide também manda o louvor pra lista
+      const s2 = LOUVORES[i];
+      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s2), rotulo: rotuloLouvor(s2) });
+    };
+    cont.appendChild(d);
+  }
+}
 // semProjetar: usado pelo duplo-clique, que só GUARDA na lista. Sem isso, montar
 // a lista com a projeção aberta fazia a congregação ver os 4 louvores do culto
 // desfilarem no telão antes de começar.
@@ -971,18 +1001,7 @@ function selecionarLouvor(i, semProjetar) {
   $$('#lista-louvores .item').forEach(e => e.classList.toggle('sel', +e.dataset.i === i));
   const s = LOUVORES[i];
   $('#tit-slides').textContent = rotuloLouvor(s);   // diz a coletânea também
-  const cont = $('#lista-slides'); cont.innerHTML = '';
-  s.slides.forEach((sl, k) => {
-    const d = document.createElement('div'); d.className = 'item'; d.dataset.k = k;
-    d.innerHTML = (sl.label ? '<small style="color:#f5d76e">' + sl.label + '</small><br>' : '') +
-      sl.linhas.slice(0, 2).map(x => x.replace(/\u0001/g, '')).join('<br>') + (sl.linhas.length > 2 ? '…' : '');
-    d.onclick = () => projetarLouvor(i, k, false);
-    d.ondblclick = () => {   // 2 cliques no slide também manda o louvor pra lista
-      const s2 = LOUVORES[i];
-      adicionarLista({ tipo: 'louvor', idx: i, chave: chaveLouvor(s2), rotulo: rotuloLouvor(s2) });
-    };
-    cont.appendChild(d);
-  });
+  desenharSlidesLouvor(i);
   atualizarExtras();                 // este louvor tem cifra? tem animação?
   if (!semProjetar) projetarLouvor(i, 0, false);
   else marcarSlide();
@@ -998,7 +1017,12 @@ let ANIMACOES = {}, CIFRAS = {};
 // O NÍVEL da cifra (1 = acordes simples, 2 = completos) fica gravado como a
 // fonte da folha: quem lê pelo Nível 1 não escolhe de novo a cada louvor.
 function carregarExtras() {
-  fetch('/api/animacoes').then(r => r.json()).then(r => { ANIMACOES = r.indice || {}; atualizarExtras(); }).catch(() => {});
+  fetch('/api/animacoes').then(r => r.json()).then(r => {
+    ANIMACOES = r.indice || {}; atualizarExtras();
+    // o índice chegou depois do louvor escolhido: a lista passa a ser a das telas animadas (3.0.10)
+    const ls = $('#lista-slides');
+    if (ls && ls.dataset.i && $('#lista-slides .item')) { desenharSlidesLouvor(+ls.dataset.i); marcarSlide(); }
+  }).catch(() => {});
   fetch('/api/musico').then(r => r.json()).then(r => { CIFRAS = r.violao || {}; atualizarExtras(); }).catch(() => {});
 }
 // CIA pelo NÚMERO (o 60 das CIAS não pode emprestar a animação ao 60 da
@@ -1355,7 +1379,7 @@ function fecharCifra() {
 function alternarAnimacao() {
   est.modoAnim = est.modoAnim === false;      // undefined/true -> false; false -> true
   atualizarExtras();
-  if (est.louvorIdx >= 0) projetarLouvor(est.louvorIdx, est.louvorSlide || 0, true);
+  if (est.louvorIdx >= 0) { desenharSlidesLouvor(est.louvorIdx); projetarLouvor(est.louvorIdx, est.louvorSlide || 0, true); }
   toast(est.modoAnim === false ? 'Exibindo o texto deste louvor.' : 'Exibindo a animação das CIAS.');
 }
 // A PREFERÊNCIA, que vale para todo louvor de CIAS e sobrevive a fechar e abrir.
