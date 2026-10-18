@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.9"
+VERSAO = "3.0.10"
 # 0.0.0.0 = o celular controla pela rede. SISTEMA_SO_LOCAL=1 (so as PROVAS usam) abre so em 127.0.0.1: cada instalacao
 # de teste roda de uma pasta nova, e o Firewall do Windows perguntava "Permitir?" na tela da casa (11/10 14h11).
 ENDERECO_REDE = "127.0.0.1" if os.environ.get("SISTEMA_SO_LOCAL") else "0.0.0.0"
@@ -2329,7 +2329,9 @@ def ler_indice(nome):
 
 
 
-ARQ_HISTORICO = os.path.join(DADOS_USUARIO, "historico.json")
+# SISTEMA_HISTORICO: os testes apontam o histórico para um arquivo temporário (18/10: a bateria gravava "João 3:16" no
+# histórico de verdade). Sem a variável, o de sempre.
+ARQ_HISTORICO = os.environ.get("SISTEMA_HISTORICO") or os.path.join(DADOS_USUARIO, "historico.json")
 
 
 
