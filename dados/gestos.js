@@ -3,7 +3,7 @@ window.GESTOS = window.GESTOS || {};
 window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  "1": {
   "img": "gestos/evang_out2026/s01.webp",
-  "louvor": "FUI LAVADO NO SANGUE",
+  "louvor": "FUI LAVADO NO SANGUE DO CORDEIRO",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_01.webp",
@@ -24,7 +24,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "2": {
   "img": "gestos/evang_out2026/s02.webp",
-  "louvor": "FUI LAVADO NO SANGUE",
+  "louvor": "FUI LAVADO NO SANGUE DO CORDEIRO",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_04.webp",
@@ -45,7 +45,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "3": {
   "img": "gestos/evang_out2026/s03.webp",
-  "louvor": "FUI LAVADO NO SANGUE",
+  "louvor": "FUI LAVADO NO SANGUE DO CORDEIRO",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_07.webp",
@@ -66,7 +66,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "4": {
   "img": "gestos/evang_out2026/s04.webp",
-  "louvor": "FUI LAVADO NO SANGUE",
+  "louvor": "FUI LAVADO NO SANGUE DO CORDEIRO",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_p1_x48.webp",
@@ -87,7 +87,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "6": {
   "img": "gestos/evang_out2026/s06.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_01.webp",
@@ -113,7 +113,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "7": {
   "img": "gestos/evang_out2026/s07.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_05.webp",
@@ -124,7 +124,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "8": {
   "img": "gestos/evang_out2026/s08.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_06.webp",
@@ -140,7 +140,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "9": {
   "img": "gestos/evang_out2026/s09.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_08.webp",
@@ -171,7 +171,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "10": {
   "img": "gestos/evang_out2026/s10.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_12.webp",
@@ -202,7 +202,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "11": {
   "img": "gestos/evang_out2026/s11.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_17.webp",
@@ -233,7 +233,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  },
  "12": {
   "img": "gestos/evang_out2026/s12.webp",
-  "louvor": "SENHOR TÃO PEQUENO SOU",
+  "louvor": "QUANDO OUVI JESUS ME CHAMAR",
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_21.webp",
@@ -524,7 +524,7 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
 window.GESTOS["apres:Evangelização de Outubro 2026"] = {
  "7": {
   "img": "gestos/evang_out2026_aula/s07.webp",
-  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO?",
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_fig_01.webp",
@@ -550,7 +550,7 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
  },
  "8": {
   "img": "gestos/evang_out2026_aula/s08.webp",
-  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO?",
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_fig_05.webp",
@@ -561,7 +561,7 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
  },
  "9": {
   "img": "gestos/evang_out2026_aula/s09.webp",
-  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO?",
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_fig_06.webp",
@@ -587,7 +587,7 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
  },
  "10": {
   "img": "gestos/evang_out2026_aula/s10.webp",
-  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO?",
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_fig_10.webp",
@@ -618,7 +618,7 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
  },
  "11": {
   "img": "gestos/evang_out2026_aula/s11.webp",
-  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO?",
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_fig_12.webp",

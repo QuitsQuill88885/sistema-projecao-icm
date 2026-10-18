@@ -53,14 +53,16 @@ def pedacos_do_negrito(md, n):
     return [limpo(md[inicios[k]:(inicios[k + 1] if k + 1 < n else len(md))]) for k in range(n)]
 
 
+# os NOMES dos louvores = os títulos das páginas da coletânea (Edição Cris), como a professora acha no caderninho
+# (HD 17h03: o 81 aparecia "SENHOR TÃO PEQUENO SOU"; decidido "QUANDO OUVI JESUS ME CHAMAR").
 APRESENTACOES = {
     "Louvores da Evangelização de Outubro 2026": {
         "pasta": "evang_out2026", "slides": None,
-        "louvores": {"fui_lavado": "FUI LAVADO NO SANGUE", "81": "SENHOR TÃO PEQUENO SOU",
+        "louvores": {"fui_lavado": "FUI LAVADO NO SANGUE DO CORDEIRO", "81": "QUANDO OUVI JESUS ME CHAMAR",
                      "97": "JESUS É O CAMINHO", "198": "O DIA ESTÁ CHEGANDO"}},
     "Evangelização de Outubro 2026": {
         "pasta": "evang_out2026_aula", "slides": {7, 8, 9, 10, 11, 17, 18, 19, 20},
-        "louvores": {"69": "VOCÊ SABE O QUE É SALVAÇÃO", "249": "ESTA É A MENSAGEM ETERNA DE DEUS"}},
+        "louvores": {"69": "VOCÊ SABE O QUE É SALVAÇÃO?", "249": "ESTA É A MENSAGEM ETERNA DE DEUS"}},
 }
 APRES = "Louvores da Evangelização de Outubro 2026"
 for _i, _a in enumerate(__import__("sys").argv):
