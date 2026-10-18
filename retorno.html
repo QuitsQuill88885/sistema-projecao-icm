@@ -74,8 +74,10 @@
   .gfig img { flex:1; min-width:0; width:100%; min-height:0; object-fit:contain; object-position:center bottom; }
   /* a legenda: legível e secundária, até 2 linhas; se faltar espaço ela encolhe (a figura nunca) */
   /* 3.0.10: o TEXTO da legenda usa no máximo 92% da célula: legendas vizinhas sempre com vão (Samuel, 15h16) */
-  .gfig .gleg span { max-width:92%; }
-  .gfig .gleg { flex:none; margin-top:8px; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
+  .gfig .gleg span { max-width:92%; text-wrap:balance; }   /* duas linhas equilibradas: nada de uma palavra sozinha embaixo */
+  /* width:100%: a legenda tem a largura da CÉLULA (antes era a do texto, e os 92% do span viravam 92% dele mesmo: quebrava
+     "EU VOU, EU / VOU" com o cartão sobrando) */
+  .gfig .gleg { flex:none; width:100%; margin-top:8px; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
     text-transform:uppercase; max-width:100%; overflow:hidden; height:2.12em; display:flex; align-items:flex-start; justify-content:center; }
   .seguir .gfig .gleg { font-size:3.6vh; }
   /* a prévia entre louvores: os gestos do próximo JÁ no lugar, com a marca de próximo */
