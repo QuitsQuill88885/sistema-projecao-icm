@@ -258,7 +258,9 @@ def exporta_figuras(frases, louvor, pasta, texto=""):
                 caixa = (max(0, caixa[0] - m), max(0, caixa[1] - m), min(plano.width, caixa[2] + m), min(plano.height, caixa[3] + m))
                 destino.parent.mkdir(parents=True, exist_ok=True)
                 plano.crop(caixa).save(destino, "WEBP", quality=88)
-            out.append({"img": "gestos/%s/f/%s" % (pasta, nome), "txt": leg})
+            with Image.open(destino) as im_r:   # a proporção (altura/largura): o retorno escolhe as colunas por ela
+                r = round(im_r.height / im_r.width, 3)
+            out.append({"img": "gestos/%s/f/%s" % (pasta, nome), "txt": leg, "r": r})
     return out
 
 

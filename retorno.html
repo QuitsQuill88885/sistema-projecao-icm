@@ -69,7 +69,8 @@
   .gtitulo { flex:none; margin:0 0 1.2vh; padding:0 0 1vh; border-bottom:.35vh solid var(--ouro); text-align:center;
     font:800 4.4vh/1.1 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#0f2f5e; text-transform:uppercase; }
   .gfig { display:flex; flex-direction:column; align-items:center; min-width:0; min-height:0; }
-  .gfig img { flex:1; width:100%; min-height:0; object-fit:contain; object-position:center bottom; }
+  .gfig .gimgs { flex:1; width:100%; min-height:0; display:flex; gap:1vw; }
+  .gfig img { flex:1; min-width:0; width:100%; min-height:0; object-fit:contain; object-position:center bottom; }
   /* a legenda: legível e secundária, até 2 linhas; se faltar espaço ela encolhe (a figura nunca) */
   .gfig .gleg { flex:none; margin-top:8px; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
     text-transform:uppercase; max-width:100%; overflow:hidden; height:2.12em; display:flex; align-items:flex-start; justify-content:center; }
@@ -284,12 +285,46 @@ function grade(g, titulo) {
   if (r && titulo) r.html = '<div class="gtitulo">' + escH(titulo) + '</div>' + r.html;
   return r;
 }
+// quantas colunas: a que deixa a MENOR figura do slide o maior possível (3.0.10). Antes era fixo (2 figuras =
+// 2 colunas) e duas figuras largas lado a lado ficavam pequenas no cartão quase quadrado. Sem a proporção
+// (gestos.js antigo), cada figura conta como quadrada e sai o mesmo de antes.
+function colunas(grupos) {
+  const n = grupos.reduce((s, gr) => s + gr.imgs.length, 0);
+  const padrao = n <= 2 ? n : n <= 4 ? 2 : 3;
+  const card = document.querySelector('#gc-agora .gcard');
+  const W = card && card.clientWidth > 50 ? card.clientWidth * 0.94 : innerWidth * 0.5;
+  const H = card && card.clientHeight > 50 ? card.clientHeight * 0.9 : innerHeight * 0.75;
+  const gx = innerWidth * 0.01, gy = innerHeight * 0.014, leg = innerHeight * 0.095;
+  const nota = col => {
+    if (grupos.some(gr => gr.imgs.length > col)) return -1;
+    const lin = Math.ceil(n / col), cw = (W - (col - 1) * gx) / col, ch = (H - (lin - 1) * gy) / lin - leg;
+    if (ch <= 0) return -1;
+    let menor = Infinity;
+    for (const gr of grupos) {
+      for (const r of gr.rs) { const h = Math.min(ch, cw * r); menor = Math.min(menor, h * h / r); }   // área, 1 célula cada
+    }
+    return menor;
+  };
+  let melhor = padrao, nm = nota(padrao);
+  for (let c = 1; c <= Math.min(n, 3); c++) { const v = nota(c); if (v > nm * 1.15) { melhor = c; nm = v; } }
+  return melhor;
+}
 function grade_(g) {
   if (g && g.figs && g.figs.length) {
-    const n = g.figs.length, col = n <= 2 ? n : n <= 4 ? 2 : 3, lin = Math.ceil(n / col);
-    const tam = 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ');height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
+    // figuras SEGUIDAS com a mesma legenda (uma linha do livro com duas figuras: "Mensagens reveladas")
+    // viram um grupo: as figuras lado a lado e a legenda uma vez só, embaixo das duas (3.0.10)
+    const grupos = [];
+    for (const f of g.figs) {
+      const ult = grupos[grupos.length - 1];
+      if (ult && ult.txt === f.txt && ult.imgs.length < 2) { ult.imgs.push(f.img); ult.rs.push(f.r || 1); }
+      else grupos.push({ txt: f.txt, imgs: [f.img], rs: [f.r || 1] });
+    }
+    const n = g.figs.length, col = colunas(grupos), lin = Math.ceil(n / col);
+    const alt = 'height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
+    const larg = k => 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ' * ' + k + ' + ' + (k - 1) + 'vw)';
     return { cls: '', css: '',
-             html: '<div class="ggrade">' + g.figs.map(f => '<div class="gfig" style="' + tam + '"><img src="' + f.img + '" alt=""><div class="gleg"><span>' + escH(f.txt) + '</span></div></div>').join('') + '</div>' };
+             html: '<div class="ggrade">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
+               gr.imgs.map(src => '<img src="' + src + '" alt="">').join('') + '</div><div class="gleg"><span>' + escH(gr.txt) + '</span></div></div>').join('') + '</div>' };
   }
   if (g && g.img) return { cls: 'so-img', css: '', html: '<img src="' + g.img + '" alt="">' };
   return null;
@@ -322,14 +357,42 @@ function ajustaLegendas() {
     px -= 1;
   }
 }
-addEventListener('resize', () => { ajustaLegendas(); ajustaRotulos(); });
+// cada linha da grade fica da altura do desenho mais alto DELA (3.0.10): com figuras largas a célula tinha a altura
+// toda e o desenho, encostado na legenda, deixava a metade de cima do cartão em branco (7 de 33 slides). As legendas
+// da mesma linha continuam alinhadas, e a grade inteira fica no meio do cartão.
+function ajustaGrade() {
+  for (const gr of document.querySelectorAll('#gesto .ggrade')) {
+    const figs = [...gr.querySelectorAll(':scope > .gfig')];
+    figs.forEach(f => { if (f.dataset.alt == null) f.dataset.alt = f.style.height; f.style.height = f.dataset.alt; });
+    const linhas = new Map();
+    for (const f of figs) {
+      const top = Math.round(f.offsetTop);
+      if (!linhas.has(top)) linhas.set(top, []);
+      linhas.get(top).push(f);
+    }
+    for (const fs of linhas.values()) {
+      let caixa = 0, desenho = 0, pronto = true;
+      for (const f of fs) for (const im of f.querySelectorAll('img')) {
+        if (!im.naturalWidth) { pronto = false; continue; }
+        caixa = Math.max(caixa, im.clientHeight);
+        desenho = Math.max(desenho, Math.min(im.clientHeight, im.clientWidth * im.naturalHeight / im.naturalWidth));
+      }
+      if (!pronto || !caixa) continue;
+      const sobra = caixa - desenho;
+      if (sobra > 2) fs.forEach(f => { f.style.height = (f.getBoundingClientRect().height - sobra) + 'px'; });
+    }
+    gr.style.alignContent = 'center';
+  }
+}
+document.addEventListener('load', e => { if (e.target.tagName === 'IMG' && e.target.closest('#gesto')) ajustaGrade(); }, true);
+addEventListener('resize', () => { ajustaLegendas(); ajustaRotulos(); ajustaGrade(); });
 function escH(s) { return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 // troca suave: some (opacidade + leve escala, o que custa menos no Vaio) e volta com o conteúdo novo
 function pinta(el, chave, monta) {
   if (el.dataset.k === chave) return;
   const primeira = !el.dataset.k;
   el.dataset.k = chave;
-  const aplica = () => { const r = monta(); el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); ajustaTitulos(); };
+  const aplica = () => { const r = monta(); el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); ajustaTitulos(); ajustaGrade(); };
   if (primeira) { aplica(); return; }
   el.classList.add('troca');
   setTimeout(() => { aplica(); requestAnimationFrame(() => el.classList.remove('troca')); setTimeout(() => el.classList.remove('troca'), 60); }, 180);

@@ -7,15 +7,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_00_0.webp",
-    "txt": "Fui lavado no sangue"
+    "txt": "Fui lavado no sangue",
+    "r": 0.804
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_02_0.webp",
-    "txt": "do cordeiro,"
+    "txt": "do cordeiro,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_03_0.webp",
-    "txt": "Aleluia, Glória e Aleluia!"
+    "txt": "Aleluia, Glória e Aleluia!",
+    "r": 0.847
    }
   ]
  },
@@ -25,15 +28,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_04_0.webp",
-    "txt": "Agora estou aqui"
+    "txt": "Agora estou aqui",
+    "r": 0.706
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_05_0.webp",
-    "txt": "e vou louvar meu Salvador"
+    "txt": "e vou louvar meu Salvador",
+    "r": 0.549
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_06_0.webp",
-    "txt": "Aleluia, Glória a Deus!"
+    "txt": "Aleluia, Glória a Deus!",
+    "r": 0.847
    }
   ]
  },
@@ -43,15 +49,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_00_0.webp",
-    "txt": "Fui lavado no sangue"
+    "txt": "Fui lavado no sangue",
+    "r": 0.804
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_02_0.webp",
-    "txt": "do cordeiro,"
+    "txt": "do cordeiro,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_03_0.webp",
-    "txt": "Aleluia, Glória e Aleluia!"
+    "txt": "Aleluia, Glória e Aleluia!",
+    "r": 0.847
    }
   ]
  },
@@ -61,15 +70,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_100_0.webp",
-    "txt": "A Jesus honra e louvor,"
+    "txt": "A Jesus honra e louvor,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_101_0.webp",
-    "txt": "Aleluia"
+    "txt": "Aleluia",
+    "r": 0.847
    },
    {
     "img": "gestos/evang_out2026/f/fui_lavado_fui_lavado_101_1.webp",
-    "txt": "ao meu Salvador"
+    "txt": "ao meu Salvador",
+    "r": 0.55
    }
   ]
  },
@@ -79,19 +91,23 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_00_0.webp",
-    "txt": "Quando ouvi Jesus me chamar"
+    "txt": "Quando ouvi Jesus me chamar",
+    "r": 1.516
    },
    {
     "img": "gestos/evang_out2026/f/81_81_01_0.webp",
-    "txt": "pensei que era irreal,"
+    "txt": "pensei que era irreal,",
+    "r": 0.506
    },
    {
     "img": "gestos/evang_out2026/f/81_81_02_0.webp",
-    "txt": "Sua voz doce e meiga a dizer:"
+    "txt": "Sua voz doce e meiga a dizer:",
+    "r": 0.348
    },
    {
     "img": "gestos/evang_out2026/f/81_81_03_0.webp",
-    "txt": "“Vinde pequeninos do Pai”."
+    "txt": "“Vinde pequeninos do Pai”.",
+    "r": 0.688
    }
   ]
  },
@@ -101,7 +117,8 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_04_0.webp",
-    "txt": "Então pude crer que Jesus quer usar-me também."
+    "txt": "Então pude crer que Jesus quer usar-me também.",
+    "r": 0.549
    }
   ]
  },
@@ -111,11 +128,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_05_0.webp",
-    "txt": "Ainda pequenino sou,"
+    "txt": "Ainda pequenino sou,",
+    "r": 0.613
    },
    {
     "img": "gestos/evang_out2026/f/81_81_06_0.webp",
-    "txt": "Mas posso levar, de Deus, a mensagem de amor."
+    "txt": "Mas posso levar, de Deus, a mensagem de amor.",
+    "r": 0.348
    }
   ]
  },
@@ -125,23 +144,28 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_08_0.webp",
-    "txt": "Quem quer subir para o céu"
+    "txt": "Quem quer subir para o céu",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/81_81_09_0.webp",
-    "txt": "pequeno se faça também,"
+    "txt": "pequeno se faça também,",
+    "r": 0.613
    },
    {
     "img": "gestos/evang_out2026/f/81_81_10_0.webp",
-    "txt": "Entrega tua vida a Jesus:"
+    "txt": "Entrega tua vida a Jesus:",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026/f/81_81_11_0.webp",
-    "txt": "O Pai Celeste"
+    "txt": "O Pai Celeste",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/81_81_11_1.webp",
-    "txt": "que deseja a ti todo Bem."
+    "txt": "que deseja a ti todo Bem.",
+    "r": 0.65
    }
   ]
  },
@@ -151,23 +175,28 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_100_0.webp",
-    "txt": "Se queres ter de Cristo o perdão"
+    "txt": "Se queres ter de Cristo o perdão",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/81_81_101_0.webp",
-    "txt": "Abre hoje o teu coração."
+    "txt": "Abre hoje o teu coração.",
+    "r": 0.392
    },
    {
     "img": "gestos/evang_out2026/f/81_81_102_0.webp",
-    "txt": "Deixe Cristo entrar e reinar"
+    "txt": "Deixe Cristo entrar e reinar",
+    "r": 1.029
    },
    {
     "img": "gestos/evang_out2026/f/81_81_103_0.webp",
-    "txt": "E a paz em tua vida nunca irá faltar."
+    "txt": "E a paz em tua vida nunca irá faltar.",
+    "r": 0.812
    },
    {
     "img": "gestos/evang_out2026/f/81_81_103_1.webp",
-    "txt": "E a paz em tua vida nunca irá faltar."
+    "txt": "E a paz em tua vida nunca irá faltar.",
+    "r": 0.55
    }
   ]
  },
@@ -177,23 +206,28 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_08_0.webp",
-    "txt": "Quem quer subir para o céu"
+    "txt": "Quem quer subir para o céu",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/81_81_09_0.webp",
-    "txt": "pequeno se faça também,"
+    "txt": "pequeno se faça também,",
+    "r": 0.613
    },
    {
     "img": "gestos/evang_out2026/f/81_81_10_0.webp",
-    "txt": "Entrega tua vida a Jesus:"
+    "txt": "Entrega tua vida a Jesus:",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026/f/81_81_108_0.webp",
-    "txt": "O Pai Celeste"
+    "txt": "O Pai Celeste",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/81_81_108_1.webp",
-    "txt": "que deseja a ti todo Bem."
+    "txt": "que deseja a ti todo Bem.",
+    "r": 0.65
    }
   ]
  },
@@ -203,23 +237,28 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/81_81_08_0.webp",
-    "txt": "Quem quer subir para o céu"
+    "txt": "Quem quer subir para o céu",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/81_81_09_0.webp",
-    "txt": "pequeno se faça também,"
+    "txt": "pequeno se faça também,",
+    "r": 0.613
    },
    {
     "img": "gestos/evang_out2026/f/81_81_10_0.webp",
-    "txt": "Entrega tua vida a Jesus:"
+    "txt": "Entrega tua vida a Jesus:",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026/f/81_81_114_0.webp",
-    "txt": "O Pai Celeste"
+    "txt": "O Pai Celeste",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/81_81_116_0.webp",
-    "txt": "que deseja a ti todo Bem."
+    "txt": "que deseja a ti todo Bem.",
+    "r": 0.65
    }
   ]
  },
@@ -229,11 +268,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_00_0.webp",
-    "txt": "Jesus, é o caminho,"
+    "txt": "Jesus, é o caminho,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -243,11 +284,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_04_0.webp",
-    "txt": "Eu vou, Eu vou"
+    "txt": "Eu vou, Eu vou",
+    "r": 0.552
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -257,11 +300,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_06_0.webp",
-    "txt": "Jesus, é a verdade,"
+    "txt": "Jesus, é a verdade,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -271,11 +316,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_04_0.webp",
-    "txt": "Eu vou, Eu vou"
+    "txt": "Eu vou, Eu vou",
+    "r": 0.552
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -285,11 +332,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_09_0.webp",
-    "txt": "Jesus, é a minha vida,"
+    "txt": "Jesus, é a minha vida,",
+    "r": 0.55
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -299,11 +348,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/97_97_04_0.webp",
-    "txt": "Eu vou, Eu vou"
+    "txt": "Eu vou, Eu vou",
+    "r": 0.552
    },
    {
     "img": "gestos/evang_out2026/f/97_97_02_0.webp",
-    "txt": "Eu vou ao céu com Ele"
+    "txt": "Eu vou ao céu com Ele",
+    "r": 0.636
    }
   ]
  },
@@ -313,19 +364,23 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_00_0.webp",
-    "txt": "O dia está chegando,"
+    "txt": "O dia está chegando,",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/198_198_01_0.webp",
-    "txt": "as horas estão passando,"
+    "txt": "as horas estão passando,",
+    "r": 0.525
    },
    {
     "img": "gestos/evang_out2026/f/198_198_02_0.webp",
-    "txt": "O dia já vai chegar e"
+    "txt": "O dia já vai chegar e",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/198_198_03_0.webp",
-    "txt": "Jesus vai voltar!"
+    "txt": "Jesus vai voltar!",
+    "r": 1.132
    }
   ]
  },
@@ -335,15 +390,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_04_0.webp",
-    "txt": "O tempo se apressa, o amor se esfriando,"
+    "txt": "O tempo se apressa, o amor se esfriando,",
+    "r": 0.741
    },
    {
     "img": "gestos/evang_out2026/f/198_198_05_0.webp",
-    "txt": "Pessoas não se falando."
+    "txt": "Pessoas não se falando.",
+    "r": 1.506
    },
    {
     "img": "gestos/evang_out2026/f/198_198_06_0.webp",
-    "txt": "Mas Jesus vai voltar!"
+    "txt": "Mas Jesus vai voltar!",
+    "r": 1.132
    }
   ]
  },
@@ -353,19 +411,23 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_07_0.webp",
-    "txt": "Pois assim será"
+    "txt": "Pois assim será",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/198_198_08_0.webp",
-    "txt": "Quando Jesus voltar."
+    "txt": "Quando Jesus voltar.",
+    "r": 1.132
    },
    {
     "img": "gestos/evang_out2026/f/198_198_09_0.webp",
-    "txt": "Assim será"
+    "txt": "Assim será",
+    "r": 0.946
    },
    {
     "img": "gestos/evang_out2026/f/198_198_10_0.webp",
-    "txt": "quando Jesus voltar Vai voltar, Vai voltar!"
+    "txt": "quando Jesus voltar Vai voltar, Vai voltar!",
+    "r": 1.132
    }
   ]
  },
@@ -375,23 +437,28 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_101_0.webp",
-    "txt": "Mensagens reveladas"
+    "txt": "Mensagens reveladas",
+    "r": 0.686
    },
    {
     "img": "gestos/evang_out2026/f/198_198_101_1.webp",
-    "txt": "Mensagens reveladas"
+    "txt": "Mensagens reveladas",
+    "r": 0.829
    },
    {
     "img": "gestos/evang_out2026/f/198_198_102_0.webp",
-    "txt": "escritas por Jesus,"
+    "txt": "escritas por Jesus,",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026/f/198_198_102_1.webp",
-    "txt": "para nos preparar,"
+    "txt": "para nos preparar,",
+    "r": 0.55
    },
    {
     "img": "gestos/evang_out2026/f/198_198_103_0.webp",
-    "txt": "porque Jesus vai voltar."
+    "txt": "porque Jesus vai voltar.",
+    "r": 1.132
    }
   ]
  },
@@ -401,15 +468,18 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_104_0.webp",
-    "txt": "Preparando os corações"
+    "txt": "Preparando os corações",
+    "r": 0.65
    },
    {
     "img": "gestos/evang_out2026/f/198_198_105_0.webp",
-    "txt": "para Jesus encontrar,"
+    "txt": "para Jesus encontrar,",
+    "r": 0.489
    },
    {
     "img": "gestos/evang_out2026/f/198_198_105_1.webp",
-    "txt": "Jesus, meu Bom Pastor"
+    "txt": "Jesus, meu Bom Pastor",
+    "r": 3.244
    }
   ]
  },
@@ -419,11 +489,13 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_107_0.webp",
-    "txt": "Os corações,"
+    "txt": "Os corações,",
+    "r": 0.55
    },
    {
     "img": "gestos/evang_out2026/f/198_198_108_0.webp",
-    "txt": "Estamos preparando, Preparando"
+    "txt": "Estamos preparando, Preparando",
+    "r": 0.549
    }
   ]
  },
@@ -433,7 +505,8 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026/f/198_198_110_0.webp",
-    "txt": "Porque Jesus vai voltar, Vai voltar, Vai voltar! Vai voltar!"
+    "txt": "Porque Jesus vai voltar, Vai voltar, Vai voltar! Vai voltar!",
+    "r": 1.132
    }
   ]
  }
@@ -445,15 +518,18 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_69_00_0.webp",
-    "txt": "Você sabe o que é salvação?"
+    "txt": "Você sabe o que é salvação?",
+    "r": 0.955
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_01_0.webp",
-    "txt": "É sentir uma grande alegria"
+    "txt": "É sentir uma grande alegria",
+    "r": 0.793
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_02_0.webp",
-    "txt": "Que o mundo não conhece"
+    "txt": "Que o mundo não conhece",
+    "r": 1.506
    }
   ]
  },
@@ -463,7 +539,8 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_69_03_0.webp",
-    "txt": "nele há trevas e solidão."
+    "txt": "nele há trevas e solidão.",
+    "r": 0.741
    }
   ]
  },
@@ -473,19 +550,23 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_69_04_0.webp",
-    "txt": "Jesus nos deu Salvação"
+    "txt": "Jesus nos deu Salvação",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_05_0.webp",
-    "txt": "quando lá na cruz morreu,"
+    "txt": "quando lá na cruz morreu,",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_06_0.webp",
-    "txt": "Levou os nossos pecados"
+    "txt": "Levou os nossos pecados",
+    "r": 0.741
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_07_0.webp",
-    "txt": "libertos agora estamos."
+    "txt": "libertos agora estamos.",
+    "r": 0.793
    }
   ]
  },
@@ -495,23 +576,28 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_69_08_0.webp",
-    "txt": "Dê a Ele o seu louvor"
+    "txt": "Dê a Ele o seu louvor",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_09_0.webp",
-    "txt": "uma vida de gratidão"
+    "txt": "uma vida de gratidão",
+    "r": 0.55
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_11_0.webp",
-    "txt": "Vem agora"
+    "txt": "Vem agora",
+    "r": 0.688
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_12_0.webp",
-    "txt": "e entrega"
+    "txt": "e entrega",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_15_0.webp",
-    "txt": "a Jesus seu coração."
+    "txt": "a Jesus seu coração.",
+    "r": 0.55
    }
   ]
  },
@@ -521,15 +607,18 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/69_69_11_0.webp",
-    "txt": "Vem agora"
+    "txt": "Vem agora",
+    "r": 0.688
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_12_0.webp",
-    "txt": "e entrega"
+    "txt": "e entrega",
+    "r": 0.637
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_15_0.webp",
-    "txt": "a Jesus seu coração."
+    "txt": "a Jesus seu coração.",
+    "r": 0.55
    }
   ]
  },
@@ -539,23 +628,28 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/249_249_00_0.webp",
-    "txt": "Esta é a mensagem eterna de Deus:"
+    "txt": "Esta é a mensagem eterna de Deus:",
+    "r": 0.686
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_04_0.webp",
-    "txt": "Que Jesus Cristo"
+    "txt": "Que Jesus Cristo",
+    "r": 3.244
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_04_1.webp",
-    "txt": "por mim já morreu,"
+    "txt": "por mim já morreu,",
+    "r": 0.549
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_05_0.webp",
-    "txt": "Mas Ele vivo hoje está"
+    "txt": "Mas Ele vivo hoje está",
+    "r": 0.65
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_06_0.webp",
-    "txt": "E breve dos céus virá me buscar. | bis"
+    "txt": "E breve dos céus virá me buscar. | bis",
+    "r": 1.132
    }
   ]
  },
@@ -565,19 +659,23 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/249_249_08_0.webp",
-    "txt": "Maranata é o grito da igreja,"
+    "txt": "Maranata é o grito da igreja,",
+    "r": 0.842
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_09_0.webp",
-    "txt": "Que vitoriosa nos céus Entrará"
+    "txt": "Que vitoriosa nos céus Entrará",
+    "r": 0.489
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_10_0.webp",
-    "txt": "Para herdar tudo o que Deus nos deu;"
+    "txt": "Para herdar tudo o que Deus nos deu;",
+    "r": 0.698
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_11_0.webp",
-    "txt": "O vencedor, de Deus, tudo herdará. | bis"
+    "txt": "O vencedor, de Deus, tudo herdará. | bis",
+    "r": 0.65
    }
   ]
  },
@@ -587,19 +685,23 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/249_249_12_0.webp",
-    "txt": "Hoje é tempo de reconstrução,"
+    "txt": "Hoje é tempo de reconstrução,",
+    "r": 0.967
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_13_0.webp",
-    "txt": "de vigilância e de oração,"
+    "txt": "de vigilância e de oração,",
+    "r": 0.696
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_15_0.webp",
-    "txt": "É tempo de oportunidade,"
+    "txt": "É tempo de oportunidade,",
+    "r": 0.967
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_17_0.webp",
-    "txt": "De nova vida e felicidade. | bis"
+    "txt": "De nova vida e felicidade. | bis",
+    "r": 0.793
    }
   ]
  },
@@ -609,19 +711,23 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
   "figs": [
    {
     "img": "gestos/evang_out2026_aula/f/249_249_08_0.webp",
-    "txt": "Maranata é o grito da igreja,"
+    "txt": "Maranata é o grito da igreja,",
+    "r": 0.842
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_09_0.webp",
-    "txt": "Que vitoriosa nos céus Entrará"
+    "txt": "Que vitoriosa nos céus Entrará",
+    "r": 0.489
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_10_0.webp",
-    "txt": "Para herdar tudo o que Deus nos deu;"
+    "txt": "Para herdar tudo o que Deus nos deu;",
+    "r": 0.698
    },
    {
     "img": "gestos/evang_out2026_aula/f/249_249_11_0.webp",
-    "txt": "O vencedor, de Deus, tudo herdará. | bis"
+    "txt": "O vencedor, de Deus, tudo herdará. | bis",
+    "r": 0.65
    }
   ]
  }
