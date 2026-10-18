@@ -878,9 +878,20 @@ body.pb-on #pb-louvores:empty{display:none}
 body.pb-on #pb-faixa{display:flex;position:absolute;left:236px;right:0;bottom:0;height:64px;z-index:5;
   align-items:center;gap:12px;padding:0 18px;background:var(--painel);border-top:1px solid var(--borda)}
 body.pb-on .apr.escondida #pb-faixa{left:46px}
-#pb-faixa .nav2{flex:0 0 320px;margin:0}
+#pb-faixa .nav2{flex:0 1 320px;min-width:0;margin:0}
+#pb-faixa .projetar{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #pb-faixa .barra-ferr{flex:none;margin:0}
-#pb-faixa .pb-agora{flex:none;font-size:12px;color:#b9c6dc;white-space:nowrap}
+#pb-faixa .pb-agora{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#b9c6dc;white-space:nowrap}
+/* 3.0.10: em 1024x768 a faixa não cabia e a coluna da direita cobria o "Padrão" e o "A+". A faixa encolhe por
+   etapas (app.js marca a classe pela largura) e NENHUM botão some: o Congelar fica só com o ícone (o nome segue na
+   dica) e, mais apertado, sai o "No telão: Slide 1/30" (o painel já mostra o slide no ar). */
+#pb-faixa.apertada{gap:8px;padding:0 10px}
+#pb-faixa.apertada .nav2{flex-basis:250px}
+#pb-faixa.apertada #btn-congelar{font-size:0;gap:0}
+#pb-faixa.apertada #btn-congelar .ico{font-size:14px}
+#pb-faixa.muito .pb-agora{display:none}
+#pb-faixa.muito .nav2{flex-basis:240px}
+#pb-faixa.muito .nav2 .nav{flex-basis:40px}
 #pb-faixa .pb-agora b{color:var(--ouro);font-weight:600}
 /* ARRANJO 1 e 2 (HD 01h20): o palco maior e no meio; o anterior vira uma tira */
 body.pb-on #apr .apr-palco{align-content:center;padding-top:0}

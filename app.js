@@ -4034,6 +4034,8 @@ function ligarPainelB() {
     const a = $('#agora'), pa = $('#pb-agora');      // o que está no telão, curto: "Slide 10/30"
     if (a && pa) { const m = a.textContent.match(/Slide\s*\d+\s*\/\s*\d+/i); const h = '<b>No telão:</b> ' + dtEsc(m ? m[0] : a.textContent.split('—')[0]); if (pa.innerHTML !== h) pa.innerHTML = h; }
     pbLouvores();
+    const fx = $('#pb-faixa');                           // 3.0.10: a faixa encolhe por etapas (app.css)
+    if (fx && fx.clientWidth) { const w = fx.clientWidth; fx.classList.toggle('apertada', w < 760); fx.classList.toggle('muito', w < 560); }
     // duas telas ligadas: a prévia da tela de retorno logo abaixo da do telão, do mesmo tamanho
     const lig = DT.lista.find(x => x.estado === 'aceito' && x.online);
     document.body.classList.toggle('pb-dupla', !!lig);
