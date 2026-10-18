@@ -214,6 +214,33 @@ def monta_imagem(frases, louvor, destino, texto=""):
     return True
 
 
+def exporta_figuras(frases, louvor, pasta, texto=""):
+    """Cada figura RECORTADA no conteúdo (sem o branco em volta), para a tela de retorno montar a grade grande
+    com a legenda em HTML (3.0.9: a letra da legenda precisa de >= 45 px numa TV de 32" a 1080p)."""
+    out = []
+    for f in frases:
+        leg = legenda(f, texto)
+        for fig in f["figs"]:
+            p = Path(COLET, "figs", louvor, fig)
+            if not p.exists():
+                continue
+            nome = "%s_%s.webp" % (louvor, Path(fig).stem)
+            destino = APP / "gestos" / pasta / "f" / nome
+            if not destino.exists():
+                im = Image.open(p).convert("RGBA")
+                fundo = Image.new("RGBA", im.size, (255, 255, 255, 255))
+                plano = Image.alpha_composite(fundo, im).convert("RGB")
+                # o que não é (quase) branco: a caixa do desenho
+                cinza = plano.convert("L").point(lambda v: 255 if v < 235 else 0)
+                caixa = cinza.getbbox() or (0, 0, plano.width, plano.height)
+                m = 6
+                caixa = (max(0, caixa[0] - m), max(0, caixa[1] - m), min(plano.width, caixa[2] + m), min(plano.height, caixa[3] + m))
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                plano.crop(caixa).save(destino, "WEBP", quality=88)
+            out.append({"img": "gestos/%s/f/%s" % (pasta, nome), "txt": leg})
+    return out
+
+
 def main():
     gravar = "--gravar" in sys.argv
     gestos = json.load(open(COLET / "gestos.json", encoding="utf-8"))
@@ -246,7 +273,8 @@ def main():
         print("slide %2d  %-10s %s %d frases, %d figuras: %s" % (s, melhor, [f["i"] for f in achadas], len(achadas), figs,
               " / ".join(f["txt"] for f in achadas)[:110]))
         if gravar and monta_imagem(achadas, melhor, APP / "gestos" / PASTA / nome, texto):
-            tabela[str(s)] = {"img": "gestos/%s/%s" % (PASTA, nome), "louvor": LOUVORES[melhor]}
+            tabela[str(s)] = {"img": "gestos/%s/%s" % (PASTA, nome), "louvor": LOUVORES[melhor],
+                              "figs": exporta_figuras(achadas, melhor, PASTA, texto)}
     if gravar:
         # junta: as outras apresentações que já estão no arquivo ficam como estão (mesmos bytes)
         arq = APP / "dados" / "gestos.js"

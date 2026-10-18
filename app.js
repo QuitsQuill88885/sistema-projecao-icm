@@ -3715,7 +3715,7 @@ function ligarControleCelular() {
         projetando: est.projetando, congelado: est.freeze,
         slides: (SLIDES.lista || []).length,
         // o que o celular precisa para ter as MESMAS telas do computador
-        estilo: est.estilo, espera: esperaAtual(), fundos,
+        estilo: est.estilo, espera: esperaAtual(), fundos, plano: FB.plano,   // 3.0.9: o relógio da tela de retorno
         tipo: est.live && est.live.tipo,
         timer: { rot: est.timerRotulo, fim: est.timerFim, parado: est.timerParadoMs },
         // OS AVISOS VÃO PRONTOS PARA O CELULAR. Quatro deles (Próximo culto,
@@ -3933,6 +3933,119 @@ function ligarDuasTelas() {
   passo(); setInterval(passo, 1500);
 }
 
+// ===================== 3.0.9: O PAINEL "B" (a escolha dele, 17/10 18h01; o arranjo de 18/10 00h50) =====================
+// Três regiões, cada uma com uma função:
+//  - DIREITA, "o que sai e o que vem": a prévia "1 · Telão" e, com duas telas, logo abaixo e do mesmo tamanho,
+//    "2 · Tela de retorno"; embaixo, a Lista de projeção de sempre;
+//  - CENTRO: o palco (anterior | NO TELÃO | PRÓXIMO com destaque), mais alto, e os louvores da apresentação embaixo;
+//  - FAIXA DE BAIXO: os controles de sempre, com o ‹ › no canto inferior esquerdo.
+// Os botões são OS MESMOS do painel: mudam de lugar no modo apresentação e voltam ao sair.
+const PB = { on: false, lugares: [], tabelas: {}, montado: false };
+const ICO_MAO = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+  '<path d="M18 11V6a2 2 0 0 0-4 0"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/>' +
+  '<path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/></svg>';
+function pbMover(el, destino, antes) {
+  if (!el || !destino) return;
+  const marca = document.createComment('lugar de ' + (el.id || el.className));
+  el.parentNode.insertBefore(marca, el);
+  PB.lugares.push([el, marca]);
+  if (antes) destino.insertBefore(el, antes); else destino.appendChild(el);
+}
+function pbDevolver() {
+  while (PB.lugares.length) {
+    const [el, marca] = PB.lugares.pop();
+    if (marca.parentNode) { marca.parentNode.insertBefore(el, marca); marca.remove(); }
+  }
+}
+function pbMontar() {
+  if (PB.montado) return;
+  const apr = $('#apr'), palco = $('#apr-palco'), prev = $('#painel .preview-box');
+  if (!apr || !palco || !prev) return;
+  const faixa = document.createElement('div'); faixa.id = 'pb-faixa';
+  faixa.innerHTML = '<div class="pb-agora" id="pb-agora"></div>';
+  const lv = document.createElement('div'); lv.id = 'pb-louvores';
+  apr.appendChild(faixa); palco.appendChild(lv);
+  lv.addEventListener('click', ev => { const c = ev.target.closest('.lv'); if (c && c.dataset.de) projetarSlide(+c.dataset.de); });
+  lv.addEventListener('mousedown', ev => ev.preventDefault());   // o clique não tira o foco (as setas continuam)
+  // as saídas em par, com o selo 1/2 do "Identificar"
+  const mini = prev.querySelector('.mini');
+  if (mini) mini.insertAdjacentHTML('beforeend', '<span class="pb-n">1</span>');
+  const ret = document.createElement('div'); ret.id = 'pb-retorno'; ret.className = 'preview-box';
+  ret.innerHTML = '<div class="mini"><iframe title="a tela de retorno" tabindex="-1"></iframe><span class="pb-n dois">2</span>' +
+    '<span class="prev-selo">Tela de retorno · <b id="pb-rnome"></b></span></div>';
+  prev.insertAdjacentElement('afterend', ret);
+  PB.montado = true;
+}
+const PB_ARRANJO = 1;   // 1: louvores embaixo do palco | 2: louvores na coluna da direita (a escolha é dele)
+function pbEntrar() {
+  pbMontar();
+  const faixa = $('#pb-faixa');
+  const arr = +(window.__pbArranjo || PB_ARRANJO);
+  document.body.classList.toggle('pb-a2', arr === 2);
+  if (arr === 2) pbMover($('#pb-louvores'), $('#painel'));
+  pbMover($('#painel .nav2'), faixa, $('#pb-agora'));
+  pbMover($('#painel .barra-ferr'), faixa);
+  document.body.classList.add('pb-on');
+  PB.on = true;
+}
+function pbSair() {
+  document.body.classList.remove('pb-on', 'pb-dupla');
+  pbDevolver();
+  const f = $('#pb-retorno iframe'); if (f && f.getAttribute('src')) f.removeAttribute('src');   // a prévia não fica gastando
+  PB.on = false;
+}
+function pbTabela() {
+  const nome = SLIDES && SLIDES.nome;
+  return nome ? PB.tabelas[String(nome).normalize('NFC')] || null : null;
+}
+function pbSelo(lado, tem) {
+  const q = lado && lado.querySelector('.apr-q'); if (!q) return;
+  let s = q.querySelector('.pb-selo');
+  if (tem && !s) { s = document.createElement('span'); s.className = 'pb-selo'; s.innerHTML = ICO_MAO + 'gestos'; q.appendChild(s); }
+  if (!tem && s) s.remove();
+}
+function pbLouvores() {
+  const fx = $('#pb-louvores'), t = pbTabela();
+  if (!fx) return;
+  if (!t) { if (fx.innerHTML) fx.innerHTML = ''; pbSelo($('#apr-grande'), false); pbSelo($('#apr-l-px'), false); return; }
+  const seq = [];
+  Object.keys(t).map(Number).sort((a, b) => a - b).forEach(s => {
+    const l = t[s].louvor; if (!seq.length || seq[seq.length - 1].nome !== l) seq.push({ nome: l, de: s, ate: s }); else seq[seq.length - 1].ate = s;
+  });
+  const s = est.slidePos;
+  const iAgora = seq.findIndex(l => s >= l.de && s <= l.ate);
+  const iProx = seq.findIndex(l => l.de > s);
+  const html = seq.map((l, i) => '<span class="lv' + (i === iAgora ? ' agora' : '') + (i === iProx ? ' prox' : '') + (i < iAgora ? ' foi' : '') + '" data-de="' + l.de + '" title="Projetar o começo deste louvor">' +
+    (i === iAgora ? '<small>no telão</small>' : i === iProx ? '<small>próximo louvor</small>' : '') + dtEsc(l.nome) + '</span>').join('');
+  if (fx.innerHTML !== html) fx.innerHTML = html;
+  pbSelo($('#apr-grande'), !!t[String(s)]);
+  pbSelo($('#apr-l-px'), !!t[String(s + 1)]);
+}
+function ligarPainelB() {
+  fetch('dados/gestos.js', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(txt => {
+    const w = {}; try { new Function('window', txt)(w); } catch (e) {}
+    const g = w.GESTOS || {};
+    Object.keys(g).forEach(k => { if (k.indexOf('apres:') === 0) PB.tabelas[k.slice(6).normalize('NFC')] = g[k]; });
+  }).catch(() => {});
+  setInterval(() => {
+    const quer = aprAberto();
+    if (quer && !PB.on) pbEntrar(); else if (!quer && PB.on) pbSair();
+    if (!PB.on) return;
+    const a = $('#agora'), pa = $('#pb-agora');      // o que está no telão, curto: "Slide 10/30"
+    if (a && pa) { const m = a.textContent.match(/Slide\s*\d+\s*\/\s*\d+/i); const h = '<b>No telão:</b> ' + dtEsc(m ? m[0] : a.textContent.split('—')[0]); if (pa.innerHTML !== h) pa.innerHTML = h; }
+    pbLouvores();
+    // duas telas ligadas: a prévia da tela de retorno logo abaixo da do telão, do mesmo tamanho
+    const lig = DT.lista.find(x => x.estado === 'aceito' && x.online);
+    document.body.classList.toggle('pb-dupla', !!lig);
+    const f = $('#pb-retorno iframe');
+    if (lig && f && !f.getAttribute('src')) f.src = 'retorno.html?local=1&previa=1';
+    if (!lig && f && f.getAttribute('src')) f.removeAttribute('src');
+    if (lig) { const n = $('#pb-rnome'); if (n && n.textContent !== lig.nome) n.textContent = lig.nome; }
+    const q = $('#pb-retorno .mini');
+    if (lig && q && q.clientWidth && f) { const e = 'scale(' + (q.clientWidth / 1366) + ')'; if (f.style.transform !== e) f.style.transform = e; }
+  }, 250);
+}
+
 async function iniciar() {
   await Guardar.carregar();     // dados salvos ao lado do programa vêm primeiro (sobrevivem a atualizações)
   carregarDadosUsuario();
@@ -3952,7 +4065,7 @@ async function iniciar() {
   est.ultimo = { modo: 'fundo', fundo: esperaAtual(), estilo: est.estilo, transicao: false };
   previews.forEach(w => post(w, est.ultimo));
   ligarEventos(); atualizarProjBtn(); atualizarAgora();
-  carregarEspeciais(); ligarDuasTelas();   // 3.0.9
+  carregarEspeciais(); ligarDuasTelas(); ligarPainelB();   // 3.0.9
   abrirBemVindo(false);   // primeira vez: apresentação + configuração da igreja
 }
 document.addEventListener('DOMContentLoaded', iniciar);

@@ -835,3 +835,68 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 @keyframes dt-pulsa{0%{box-shadow:0 0 0 0 #f5d76e88}70%{box-shadow:0 0 0 10px #f5d76e00}100%{box-shadow:none}}
 /* 3.0.9: o anel de foco que sobrava na aba depois de clicar e usar as setas (o operador não deve ver) */
 .tabs .tab:focus,.tabs .tab:focus-visible{outline:none}
+
+/* ===== 3.0.9: O PAINEL "B" (a escolha dele, 17/10 18h01; o arranjo de 18/10 00h50) ===== */
+/* DIREITA = o que sai e o que vem: "1 · Telão", "2 · Tela de retorno" (com duas telas) e a Lista de sempre */
+body.pb-on #painel #estado-barra,body.pb-on #painel #agora,body.pb-on #painel .barra-extras{display:none}
+.pb-n{display:none}
+body.pb-on .preview-box .pb-n{display:flex;position:absolute;top:7px;left:7px;z-index:4;width:24px;height:24px;border-radius:7px;
+  align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--ouro);
+  background:linear-gradient(160deg,#14487a,#0f2f5e);border:1.5px solid var(--ouro);box-shadow:0 2px 8px #000a}
+#pb-retorno{display:none}
+body.pb-on.pb-dupla #pb-retorno{display:block;margin-top:8px}
+#pb-retorno .mini{outline:2px solid var(--verde);outline-offset:-2px;background:#0b1526}
+#pb-retorno iframe{border:0;width:1366px;height:768px;transform-origin:0 0;pointer-events:none;position:absolute;left:0;top:0}
+#pb-retorno .prev-selo{color:#cfeedd}
+#pb-retorno .prev-selo b{color:#fff}
+/* CENTRO = o palco do operador, mais alto, e os louvores da apresentação logo embaixo */
+body.pb-on #apr .apr-palco{bottom:64px;flex-wrap:wrap;align-content:flex-start;padding-top:38px;row-gap:26px}
+/* a escadinha mede a largura do PRÓPRIO palco (o painel da direita continua lá) */
+body.pb-on #apr .apr-palco{--d:calc(100cqw - 64px);gap:calc(var(--d) * .025)}
+body.pb-on #apr .apr-grande{width:calc(var(--d) * .47)}
+body.pb-on #apr .apr-lado.px{width:calc(var(--d) * .31)}
+body.pb-on #apr .apr-lado.ant{width:calc(var(--d) * .15)}
+body.pb-on #apr .apr-lado.px .apr-q{outline:2px solid #e6eefb66;outline-offset:3px;border-radius:8px}
+body.pb-on #apr .apr-lado.px .apr-tag{color:#fff;font-weight:600}
+body.pb-on #apr .apr-lado.ant .apr-tag{color:#d5deec;font-size:12.5px;font-weight:600}
+body.pb-on #apr .apr-lado.ant img{opacity:.55}
+body.pb-on #apr .apr-tag{font-size:12.5px}
+#pb-louvores{display:none}
+body.pb-on #pb-louvores{display:flex;flex:0 0 100%;justify-content:center;gap:10px;flex-wrap:wrap}
+body.pb-on #pb-louvores:empty{display:none}
+#pb-louvores .lv{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:600;
+  background:var(--painel2);border:1px solid var(--borda);color:#9fb0cc;letter-spacing:.3px}
+#pb-louvores .lv.agora{background:#2a2410;border-color:var(--ouro);color:var(--ouro)}
+#pb-louvores .lv.prox{color:#fff;border-color:#e6eefb66}
+#pb-louvores .lv small{font-weight:500;font-size:10.5px;opacity:.8;text-transform:uppercase;letter-spacing:.8px}
+/* o selo "gestos" no slide que tem gesto da Cris */
+.pb-selo{position:absolute;right:8px;bottom:8px;z-index:3;display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;
+  font-size:11px;font-weight:700;background:#07090ee6;border:1px solid var(--verde);color:#9ff0bd;box-shadow:0 3px 10px #0008}
+.pb-selo svg{display:block}
+/* FAIXA DE BAIXO = os controles de sempre, com o ‹ › no canto inferior esquerdo */
+#pb-faixa{display:none}
+body.pb-on #pb-faixa{display:flex;position:absolute;left:236px;right:0;bottom:0;height:64px;z-index:5;
+  align-items:center;gap:12px;padding:0 18px;background:var(--painel);border-top:1px solid var(--borda)}
+body.pb-on .apr.escondida #pb-faixa{left:46px}
+#pb-faixa .nav2{flex:0 0 320px;margin:0}
+#pb-faixa .barra-ferr{flex:none;margin:0}
+#pb-faixa .pb-agora{flex:none;font-size:12px;color:#b9c6dc;white-space:nowrap}
+#pb-faixa .pb-agora b{color:var(--ouro);font-weight:600}
+/* ARRANJO 1 e 2 (HD 01h20): o palco maior e no meio; o anterior vira uma tira */
+body.pb-on #apr .apr-palco{align-content:center;padding-top:0}
+body.pb-on #apr .apr-grande{width:calc(var(--d) * .55)}
+body.pb-on #apr .apr-lado.px{width:calc(var(--d) * .31)}
+body.pb-on #apr .apr-lado.ant{width:calc(var(--d) * .09)}
+#pb-louvores .lv{cursor:pointer}
+#pb-louvores .lv:hover{border-color:#3b5680;color:#fff}
+#pb-louvores .lv.foi{opacity:.55}
+/* ARRANJO 2: os louvores na coluna da direita, um por linha, no estilo da Lista */
+body.pb-on.pb-a2 #painel #pb-louvores{display:flex;flex-direction:column;flex-wrap:nowrap;gap:4px;margin-top:6px;justify-content:flex-start}
+body.pb-on.pb-a2 #painel #pb-louvores .lv{padding:7px 10px;border-radius:6px;font-size:12px}
+body.pb-on.pb-a2 #painel #pb-louvores .lv small{margin-left:auto;order:2}
+body.pb-on.pb-a2 #apr .apr-grande{width:calc(var(--d) * .57)}
+body.pb-on.pb-a2 #apr .apr-lado.px{width:calc(var(--d) * .32)}
+body.pb-on.pb-a2 #apr .apr-lado.ant{width:calc(var(--d) * .07)}
+/* o item da Lista no tom dos chips (o azul aceso destoava); no telão = a faixa de ouro */
+body.pb-on .fila-item{background:var(--painel2);border:1px solid var(--borda)}
+body.pb-on .fila-item.atual{background:#2a2410;border-color:var(--ouro);box-shadow:inset 3px 0 0 var(--ouro)}
