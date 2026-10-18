@@ -2359,7 +2359,10 @@ function atualizarAgora() {
   let t = 'Pronto.'; const l = est.live;
   // contador NA FRENTE: a tarja tem 327px e título com mais de ~44 letras comia
   // justamente o "slide 3/7" na reticência — a única coisa que diz quanto falta
-  if (l && l.tipo === 'louvor') { const s = LOUVORES[l.idx]; t = 'Slide ' + (l.slide + 1) + '/' + s.slides.length + (l.fim ? ' (fim)' : '') + ' — ' + s.titulo; }
+  // 3.0.10: com a animação das CIAS no ar, conta as telas ANIMADAS (as que a lista mostra e o telão percorre). O 69 dizia
+  // "Slide 1/4" com a lista em "Tela 1 de 5" (pedido dele: "a separação da quantidade de slides").
+  if (l && l.tipo === 'louvor') { const s = LOUVORES[l.idx], tot = l.anim && l.n ? l.n : s.slides.length, fim = l.slide === tot - 1;
+    t = 'Slide ' + (l.slide + 1) + '/' + tot + (fim ? ' (fim)' : '') + ' — ' + s.titulo; }
   else if (l && l.tipo === 'biblia' && est.bibPos) t = est.bibPos.livro + ' ' + est.bibPos.cap + ':' + est.bibPos.v;
   else if (l && l.tipo === 'bibmulti') t = l.n === 1 ? (l.ref || '1 versículo') : l.n + ' versículos juntos';
   else if (l && l.tipo === 'timer') t = 'Timer — ' + est.timerRotulo;
