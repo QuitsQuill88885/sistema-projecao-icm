@@ -170,6 +170,12 @@ function stLouvor(idx, slide, fade) {
     // "MEU - " não é número; o mesmo louvor com outro número sai "69   9990   AV - TÍTULO"
     titulo: prim ? (((numerosLouvor(s, idx) || (s.num === 'AV' ? 'AV' : '')) ?
       (numerosLouvor(s, idx) || 'AV') + ' - ' : '') + s.titulo) : '',
+    // 3.0.10, escolha dele (18/10 17h02, o "Glorifica dourado"): os DOIS números no telão, o novo dourado e o antigo
+    // no amarelo do título, separados por "/", e um filete antes do título. O titulo acima continua igual para quem
+    // só lê texto (celular, retorno, painel). Mais de um antigo ("AV"): vai só o primeiro.
+    num1: prim ? ((numerosLouvor(s, idx) || (s.num === 'AV' ? 'AV' : '')).split(/\s+/).filter(Boolean)[0] || '') : '',
+    num2: prim ? ((numerosLouvor(s, idx) || '').split(/\s+/).filter(Boolean)[1] || '') : '',
+    tituloSo: prim ? s.titulo : '',
     rep: repeticoes(s)[slide],
     // o selo do LIVRO (bis/2x/3x/repete o hino), tirado da Coletânea Nível 1.
     // É diferente do rep: o rep conta slides duplicados; o selo avisa a

@@ -90,6 +90,11 @@ html,body{height:100%;background:#000;overflow:hidden;
 #bib-ref,#lou-tit{font-family:'Bebas',sans-serif;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
 #bib-ref{color:#f5d76e;font-size:6.9cqh}
 #lou-tit{color:#fff3a3;font-size:6.4cqh}
+/* 3.0.10 o "Glorifica dourado" (o CSS exato do esboço que ele escolheu) */
+#lou-tit .n{color:#f5d76e}
+#lou-tit .bar{color:#f5d76e;opacity:.85;margin:0 .06em}
+#lou-tit .ant{opacity:.8}
+#lou-tit .sep{display:inline-block;width:.06em;height:.9em;background:#f5d76e;opacity:.7;margin:0 .5em;vertical-align:-.08em}
 #bib-txt{font-family:'Sistema A4','Sistema A3',sans-serif;color:#fff;font-style:italic;font-size:5.55cqh;flex-direction:column;gap:.15em}
 /* (18/08) o versículo voltou à caixa MISTA, como na Bíblia impressa — decisão
    do Samuel revendo o #32; o texto da ARC já vem limpo, com o "NO princípio"
@@ -208,6 +213,42 @@ html,body{height:100%;background:#000;overflow:hidden;
 <script>
 const $=s=>document.querySelector(s);
 const tela=$('#tela'), cam=$('#cam');
+// 3.0.10: o título do louvor no "Glorifica dourado" (escolha dele, 18/10): 69 / 9990 | TÍTULO. Cada pedaço por
+// textContent (o título vem de dado, nunca vira HTML).
+// A FOLGA da etiqueta "LOUVOR" (18/10): a ponta inclinada dela chega a 33,6% da largura na altura do título (medido nos
+// estilos limpo e mapa, 1280x720) e o título comprido, centrado, começava em cima dela. Fica o centro de sempre; só
+// quando o começo do texto passaria de 34,8% para a esquerda ele ganha recuo, e se aí não couber à direita a letra encolhe.
+const TIT_MIN = 0.348, TIT_MAX = 0.985;
+function folgaTitulo(){
+  el.tit.style.paddingLeft = ''; el.tit.style.fontSize = '';
+  const r = document.createRange(); r.selectNodeContents(el.tit);
+  const caixa = () => { const rs = [...r.getClientRects()]; return rs.length ? { l: Math.min(...rs.map(q => q.left)), d: Math.max(...rs.map(q => q.right)) } : null; };
+  const W = innerWidth;
+  let px = parseFloat(getComputedStyle(el.tit).fontSize);
+  for (let n = 0; n < 30; n++) {
+    el.tit.style.paddingLeft = '';
+    const c = caixa(); if (!c) return;
+    const falta = TIT_MIN * W - c.l;
+    if (falta > 0) el.tit.style.paddingLeft = 'calc(5.5% + ' + Math.ceil(2 * falta) + 'px)';   // centrado: o recuo anda a metade
+    const c2 = caixa();
+    if (!c2 || c2.d <= TIT_MAX * W) return;
+    px *= 0.96; el.tit.style.fontSize = px + 'px';
+  }
+}
+function poeTitulo(e){
+  el.tit.style.display='flex';
+  if(!e.num1){ el.tit.textContent=e.titulo; folgaTitulo(); folgaDeNovo(); return; }
+  el.tit.textContent='';
+  const sp=(c,t)=>{ const x=document.createElement('span'); x.className=c; if(t!=null) x.textContent=t; el.tit.appendChild(x); };
+  sp('n', e.num1);
+  if(e.num2){ sp('bar','/'); sp('ant', e.num2); }
+  sp('sep');
+  el.tit.appendChild(document.createTextNode(e.tituloSo || ''));
+  folgaTitulo(); folgaDeNovo();
+}
+// a letra Bebas pode chegar DEPOIS da medida (a largura muda): mede de novo quando as fontes terminam e no quadro seguinte
+function folgaDeNovo(){ requestAnimationFrame(folgaTitulo); try { document.fonts.ready.then(folgaTitulo); } catch (x) {} }
+addEventListener('resize', folgaTitulo);
 const el={ref:$('#bib-ref'),bib:$('#bib-txt'),tit:$('#lou-tit'),lou:$('#lou-txt'),multi:$('#bib-multi'),
           grandeS:$('#grande small'),grandeV:$('#grande span'),grande:$('#grande'),livre:$('#livre'),fim:$('#fim-tag'),
           pos:$('#pos-tag'),cifra:$('#cifra-tela'),cifraPag:$('#cifra-pag')};
@@ -547,7 +588,7 @@ function aplicar(e){
     }
     else if(e.modo==='louvor'){
       fundo(e.fundo);
-      if(e.titulo){ el.tit.style.display='flex'; el.tit.textContent=e.titulo; }
+      if(e.titulo) poeTitulo(e);
       // Sem a faixa do título o bloco oficial SOBE: na transmissão as linhas
       // vão de 18,2% a 88,9% (rótulo CORO acima delas), contra 19,6%–90,3%
       // com faixa. Sem esta folga o slide de CORO (rótulo + 7 linhas) não
