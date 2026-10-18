@@ -51,9 +51,9 @@ FALTAM = {("fui_lavado", 11): ["../extra/jesus_mao.png"],
 # 18508e00) fica ao lado de "Estamos preparando" (pág. 3, y 470-522). Ela NÃO é do slide 25, e o
 # slide 26 já mostra esse mesmo gesto pela 198_108.
 TIRAR = {("198", 17)}
-# aula (3.0.9): o papel diz "e entregue" e o slide diz "e entrega". Casa pela palavra do slide; a
-# legenda continua a do papel.
-CASA_COMO = {("69", 12): "e entrega"}
+# aula (3.0.9): o papel dos gestos diz "e entregue"; a apostila da Cris e o slide dizem "e entrega" (a versao
+# do caderno, a certa). Casa e escreve como a apostila. O slide 11 tem o texto colado ("ENTREGAA"): a 2a forma.
+CASA_COMO = {("69", 12): ["e entrega", "e entregaa"]}
 COBRE = 0.8           # reserva: fração das palavras DIFERENTES da frase presentes, juntas, no slide
 
 
@@ -70,7 +70,10 @@ def frases_do(louvor, gestos):
             continue
         txt = " ".join("".join(p[0] for p in it["ped"]).split())
         figs = [] if (louvor, i) in TIRAR else it["figs"]
-        out.append({"i": i, "txt": txt, "pal": norm(CASA_COMO.get((louvor, i), txt)), "figs": figs + FALTAM.get((louvor, i), [])})
+        formas = CASA_COMO.get((louvor, i), [txt])
+        for forma in formas:
+            out.append({"i": i, "txt": formas[0] if (louvor, i) in CASA_COMO else txt, "pal": norm(forma),
+                        "figs": figs + FALTAM.get((louvor, i), [])})
     return out
 
 

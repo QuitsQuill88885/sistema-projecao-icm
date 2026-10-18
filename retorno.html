@@ -24,6 +24,7 @@
 <style>
   /* a fonte do Sistema (a mesma do telão), para o relógio e a legenda */
   @font-face{font-family:'Sistema A1';font-weight:100 900;font-style:normal;src:url('fontes/Outfit.ttf') format('truetype-variations');}
+  @font-face{font-family:'Bebas';src:url('fontes/bebas.otf');}
   @font-face{font-family:'Sistema A3';font-weight:100 900;font-style:normal;src:url('fontes/Outfit.ttf') format('truetype-variations');}
   /* 3.0.9: a TV de apoio no PADRÃO DO SISTEMA (as cores do app.css: azul do painel, ouro, o verde da casa) */
   :root { --fundo:#0b1526; --painel:#16233c; --painel2:#1e2d49; --borda:#2c3d5c; --texto:#eaf0fb; --apagado:#9db3d6;
@@ -58,22 +59,24 @@
   #gc-seg { flex:0 0 40.6%; }
   .grot { font-size:3vh; font-weight:800; color:var(--ouro); letter-spacing:.08em; text-transform:uppercase; text-align:left; margin:0 0 .8vh .4vw;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .gcard { flex:1; min-height:0; background:#fff; border-radius:1.8vh; padding:1.6vh 1vw; box-sizing:border-box; display:grid; gap:1.4vh 1vw;
+  .gcard { flex:1; min-height:0; background:#fff; border-radius:1.8vh; padding:1.6vh 1vw; box-sizing:border-box; display:flex;
+    flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:1.4vh 1vw; overflow:hidden;
     box-shadow:0 2vh 6vh #0009; transition:opacity .35s ease-out, transform .35s ease-out; }
   .seguir .gcard { opacity:.82; outline:.45vh dashed var(--verde); outline-offset:.5vh; }
   .gcard.troca { opacity:0; transform:scale(.97); }
   .seguir .gcard.troca { opacity:0; }
-  .gfig { display:grid; grid-template-rows:minmax(0,1fr) auto; justify-items:center; align-items:center; min-width:0; min-height:0; }
-  .gfig img { width:100%; height:100%; min-height:0; object-fit:contain; }
+  .gfig { display:flex; flex-direction:column; align-items:center; min-width:0; min-height:0; }
+  .gfig img { flex:1; width:100%; min-height:0; object-fit:contain; object-position:center bottom; }
   /* a legenda: legível e secundária, até 2 linhas; se faltar espaço ela encolhe (a figura nunca) */
-  .gfig .gleg { margin-top:.4vh; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
-    text-transform:uppercase; max-width:100%; overflow:hidden; }
+  .gfig .gleg { flex:none; margin-top:8px; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
+    text-transform:uppercase; max-width:100%; overflow:hidden; height:2.12em; display:flex; align-items:flex-start; justify-content:center; }
   .seguir .gfig .gleg { font-size:3.6vh; }
   /* a prévia entre louvores: os gestos do próximo JÁ no lugar, com a marca de próximo */
   #gc-agora.previa .gcard { outline:.45vh dashed var(--ouro); outline-offset:.5vh; }
   .gcard.so-img img { width:100%; height:100%; object-fit:contain; }
-  .gcard.slide { background:#000; padding:0; overflow:hidden; display:flex; flex-direction:column; }
-  .gcard.slide img { flex:1; min-height:0; width:100%; object-fit:contain; }
+  .gcard.slide { background:#000; padding:0; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+  .gcard.slide img { position:relative; flex:1; min-height:0; width:100%; object-fit:contain; }
+  .gcard.slide .gfundo { position:absolute; inset:-6%; background-size:cover; background-position:center; filter:blur(3vh) brightness(.7); }
   .gcard.slide .gsl { flex:none; padding:1vh 1vw; font-size:3vh; font-weight:700; color:var(--ouro); text-align:center; background:var(--painel); }
   .gcard.louvor { background:linear-gradient(180deg,var(--painel2),var(--painel)); display:flex; align-items:center; justify-content:center; }
   .gcard.louvor .gtit { font-size:6vh; font-weight:800; color:var(--texto); text-align:center; padding:0 2vw; line-height:1.15; }
@@ -101,6 +104,10 @@
   .c-rot { font-size:2.8vh; font-weight:700; color:var(--ouro); text-transform:uppercase; letter-spacing:.06em; margin-top:4vh; }
   #c-prox { font-size:7.5vh; font-weight:700; color:var(--texto); max-width:92vw; margin-top:.6vh; }
   #c-vers { font-size:5vh; max-width:88vw; color:var(--texto); margin-top:.6vh; }
+  #relogio.on { inset:0; z-index:6; }
+  #r-data { font-family:'Sistema A1', "Segoe UI", sans-serif; font-size:3.6vh; font-weight:500; letter-spacing:.42em; color:var(--ouro);
+    text-shadow:0 .3vh 1.2vh #000a; margin-bottom:1vh; }
+  #r-hora { font-family:'Bebas', 'Sistema A1', sans-serif; font-size:30vh; line-height:1; color:#fff; text-shadow:0 1vh 3vh #000b; }
   /* 3.0.9: o espelho do telão (o próprio projecao.html, alimentado pelo /api/tela) */
   #espelho { inset:0; z-index:5; background:#000; }
   #esp-f { width:100%; height:100%; border:0; display:block; background:#000; }
@@ -165,6 +172,9 @@
   <div class="c-rot" id="c-vers-rot">Versículo</div>
   <div id="c-vers">—</div>
 </section>
+
+<!-- 3.0.9: a tela de espera no telão = o relógio do Sistema, enchendo a TV (sem a moldura do fundo liso) -->
+<section class="tela" id="relogio"><div id="r-data"></div><div id="r-hora">--:--</div></section>
 
 <!-- 3.0.9: Bíblia, aviso, fundo, aula, louvor sem gesto: o MESMO desenho do telão -->
 <section class="tela" id="espelho"><iframe id="esp-f" title="o que está no telão"></iframe></section>
@@ -269,28 +279,42 @@ function aSeguir(e, g) {
 function grade(g) {
   if (g && g.figs && g.figs.length) {
     const n = g.figs.length, col = n <= 2 ? n : n <= 4 ? 2 : 3, lin = Math.ceil(n / col);
-    return { cls: '', css: 'grid-template-columns:repeat(' + col + ',minmax(0,1fr));grid-template-rows:repeat(' + lin + ',minmax(0,1fr))',
-             html: g.figs.map(f => '<div class="gfig"><img src="' + f.img + '" alt=""><div class="gleg">' + escH(f.txt) + '</div></div>').join('') };
+    const tam = 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ');height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
+    return { cls: '', css: '',
+             html: g.figs.map(f => '<div class="gfig" style="' + tam + '"><img src="' + f.img + '" alt=""><div class="gleg"><span>' + escH(f.txt) + '</span></div></div>').join('') };
   }
   if (g && g.img) return { cls: 'so-img', css: '', html: '<img src="' + g.img + '" alt="">' };
   return null;
 }
-function ajustaLegendas(raiz) {
-  for (const el of raiz.querySelectorAll('.gleg')) {
+// o rótulo (AGORA / A SEGUIR / Próximo louvor · TÍTULO) numa linha só: encolhe até caber, sem cortar o título
+function ajustaRotulos() {
+  for (const el of document.querySelectorAll('#gesto .grot')) {
     el.style.fontSize = '';
     let px = parseFloat(getComputedStyle(el).fontSize);
-    const limite = px * 1.06 * 2 + 2, minimo = innerHeight * 0.022;
-    while (el.scrollHeight > limite && px > minimo) { px -= 1; el.style.fontSize = px + 'px'; }
+    while (el.scrollWidth > el.clientWidth + 1 && px > innerHeight * 0.016) { px -= 1; el.style.fontSize = px + 'px'; }
   }
 }
-addEventListener('resize', () => { ajustaLegendas(document); });
+function ajustaLegendas() {
+  const todas = [...document.querySelectorAll('#gesto .gleg')];
+  if (!todas.length) return;
+  todas.forEach(el => { el.style.fontSize = ''; });
+  const base = parseFloat(getComputedStyle(todas[0]).fontSize), minimo = innerHeight * 0.022;
+  let px = base;
+  const cabe = el => { const s = el.firstElementChild; return !s || s.getBoundingClientRect().height <= px * 1.06 * 2 + 2; };
+  while (px > minimo) {
+    todas.forEach(el => { el.style.fontSize = px + 'px'; });
+    if (todas.every(cabe)) break;
+    px -= 1;
+  }
+}
+addEventListener('resize', () => { ajustaLegendas(); ajustaRotulos(); });
 function escH(s) { return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 // troca suave: some (opacidade + leve escala, o que custa menos no Vaio) e volta com o conteúdo novo
 function pinta(el, chave, monta) {
   if (el.dataset.k === chave) return;
   const primeira = !el.dataset.k;
   el.dataset.k = chave;
-  const aplica = () => { const r = monta(); el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(el); };
+  const aplica = () => { const r = monta(); el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); };
   if (primeira) { aplica(); return; }
   el.classList.add('troca');
   setTimeout(() => { aplica(); requestAnimationFrame(() => el.classList.remove('troca')); setTimeout(() => el.classList.remove('troca'), 60); }, 180);
@@ -338,8 +362,12 @@ function pintaGestos(e, g) {
   else if (s) pinta($('#g-seg'), 'l:' + s.louvor, () => ({ cls: 'louvor', css: '', html: '<div class="gtit"><span class="gsub">Próximo louvor</span>' + escH(s.louvor) + '</div>' }));
 }
 
+const DIAS = ['DOMINGO', 'SEGUNDA-FEIRA', 'TERÇA-FEIRA', 'QUARTA-FEIRA', 'QUINTA-FEIRA', 'SEXTA-FEIRA', 'SÁBADO'];
+const MESES = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 function hora() {
   const d = new Date();
+  $('#r-data').textContent = DIAS[d.getDay()] + ' · ' + d.getDate() + ' DE ' + MESES[d.getMonth()] + ' DE ' + d.getFullYear();
+  $('#r-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   $('#c-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
@@ -388,7 +416,8 @@ fetch('/api/apresentacoes', { cache: 'no-store' }).then(r => r.json()).then(r =>
   (r.lista || []).forEach(a => { APRS[a.nome] = a.slides || []; });
 }).catch(() => {});
 function slideCard(url, rotulo) {
-  return { cls: 'slide', css: '', html: (url ? '<img src="' + url + '" alt="">' : '') + (rotulo ? '<div class="gsl">' + escH(rotulo) + '</div>' : '') };
+  return { cls: 'slide', css: '', html: (url ? '<div class="gfundo" style="background-image:url(\'' + url + '\')"></div><img src="' + url + '" alt="">' : '') +
+    (rotulo ? '<div class="gsl">' + escH(rotulo) + '</div>' : '') };
 }
 function pintaApres(e, g) {
   const ap = apresNoAr(e), t = G()['apres:' + ap] || {}, sl = APRS[ap] || [], n = e.slidepp, total = sl.length || e.slides || 0;
@@ -414,6 +443,7 @@ function pintaApres(e, g) {
     pinta($('#g-seg'), 'ssl:' + ap + (n + 1), () => slideCard(sl[n + 1] || '', ''));
   }
   $('#t-oque').textContent = g && g.louvor ? g.louvor : ap;
+  ajustaRotulos();
 }
 function soLouvor(nome) {
   const t = nome && G()['apres:' + nome]; if (!t) return false;
@@ -429,7 +459,7 @@ function modoDe(e, g) {
   if (g) return 'gesto';                                   // louvor com gesto da Cris
   if (e.tipo === 'louvor') return espPronto ? 'espelho' : 'letra';   // sem gesto: a MESMA tela do telão
   // a TELA DE ESPERA no telão (ele, Mt 1:18): aqui o relógio da Maranata, o mesmo desenho da aba Relógio
-  if (e.tipo === 'descanso' && e.plano) return 'relogio';
+  if (e.tipo === 'descanso') return 'relogio';
   if (!e.tipo || e.tipo === 'descanso' || e.tipo === 'preto') return 'cinema';
   // numa apresentação QUASE TODA de louvor (os Louvores: 24 de 30 com gesto) o slide sem gesto é a espera entre
   // louvores: o próximo louvor grande. Na aula (9 de 22) o resto é o material da aula: espelho do telão.
@@ -513,8 +543,7 @@ async function ciclo() {
   if (modo === 'relogio') {
     document.body.classList.remove('gestos');
     document.body.classList.add('sem-topo');
-    espelhar({ modo: 'relogio', fundo: e.plano, estilo: e.estilo, transicao: false }, 'relogio:' + e.plano + e.estilo);
-    mostra('espelho');
+    mostra('relogio');
     return;
   }
   if (modo === 'espelho') {

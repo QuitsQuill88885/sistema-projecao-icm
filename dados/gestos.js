@@ -479,7 +479,7 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_12_0.webp",
-    "txt": "e entregue"
+    "txt": "e entrega"
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_15_0.webp",
@@ -494,6 +494,10 @@ window.GESTOS["apres:Evangelização de Outubro 2026"] = {
    {
     "img": "gestos/evang_out2026_aula/f/69_69_11_0.webp",
     "txt": "Vem agora"
+   },
+   {
+    "img": "gestos/evang_out2026_aula/f/69_69_12_0.webp",
+    "txt": "e entrega"
    },
    {
     "img": "gestos/evang_out2026_aula/f/69_69_15_0.webp",
