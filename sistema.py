@@ -305,6 +305,18 @@ def pasta_melodias():
 _CATALOGO = {"ts": 0, "dados": None}
 
 
+def cifras_ocultas():
+    """CIFRA SO' SE FOR VERIFICADA (pedido dele, 18/10/2026 13h08: "Se o louvor nao tiver uma cifra verificada, nem
+    apareca o botao de cifra"). dados/cifras_ocultas.json = {chave: motivo}, gerado por
+    ferramentas/gera_cifras_ocultas.py: a cifra cobre menos de 90% da letra do telao, ou esta' na lista negra a mao.
+    Sem o arquivo, nada some (o jeito de antes)."""
+    try:
+        with io.open(os.path.join(BASE, "dados", "cifras_ocultas.json"), encoding="utf-8") as f:
+            return set(json.load(f))
+    except Exception:
+        return set()
+
+
 
 
 
@@ -326,7 +338,13 @@ def catalogo_do_musico():
 
         with io.open(cam, encoding="utf-8") as f:
 
+            ocultas = cifras_ocultas()
+
             for chave, reg in json.load(f).items():
+
+                if chave in ocultas:
+
+                    continue      # 3.0.10: cifra nao verificada nao aparece (nem no painel nem no celular)
 
                 violao[chave] = reg.get("tom") or ""
 

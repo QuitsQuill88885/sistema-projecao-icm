@@ -13,7 +13,7 @@ datas = [('index.html', '.'), ('projecao.html', '.'), ('carregando.html', '.'), 
 import os as _os
 _DADOS = ['biblia.js', 'consertos_louvores.json', 'fundos.js', 'galeria.js',
           'louvores.js', 'repeticoes.js', 'repetidos.js', 'sugestoes.js', 'temas.js',
-          'tipologia.js', 'gestos.js']
+          'tipologia.js', 'gestos.js', 'cifras_ocultas.json']
 for _nome in _DADOS:
     _cam = _os.path.join(SPECPATH, 'dados', _nome)
     if not _os.path.isfile(_cam):
