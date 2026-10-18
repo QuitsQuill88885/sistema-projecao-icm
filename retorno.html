@@ -66,13 +66,15 @@
   .seguir .gcard { opacity:.82; outline:.45vh dashed var(--verde); outline-offset:.5vh; }
   .gcard.troca { opacity:0; }   /* só opacidade: escala obriga o Vaio (sem placa) a redesenhar o cartão a cada quadro */
   .seguir .gcard.troca { opacity:0; }
-  .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:2.6vh 1vw; padding-top:.8vh; box-sizing:border-box; }  /* 3.0.10: respiro (HD 15h00) */
+  .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:1.4vh 1vw; }
   .gtitulo { flex:none; margin:0 0 1.2vh; padding:0 0 1vh; border-bottom:.35vh solid var(--ouro); text-align:center;
     font:800 4.4vh/1.1 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#0f2f5e; text-transform:uppercase; }
   .gfig { display:flex; flex-direction:column; align-items:center; min-width:0; min-height:0; }
   .gfig .gimgs { flex:1; width:100%; min-height:0; display:flex; gap:1vw; }
   .gfig img { flex:1; min-width:0; width:100%; min-height:0; object-fit:contain; object-position:center bottom; }
   /* a legenda: legível e secundária, até 2 linhas; se faltar espaço ela encolhe (a figura nunca) */
+  /* 3.0.10: o TEXTO da legenda usa no máximo 92% da célula: legendas vizinhas sempre com vão (Samuel, 15h16) */
+  .gfig .gleg span { max-width:92%; }
   .gfig .gleg { flex:none; margin-top:8px; font:800 4vh/1.06 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#1a1a1a; text-align:center;
     text-transform:uppercase; max-width:100%; overflow:hidden; height:2.12em; display:flex; align-items:flex-start; justify-content:center; }
   .seguir .gfig .gleg { font-size:3.6vh; }
@@ -285,6 +287,7 @@ function aSeguir(e, g) {
 
 // a grade de UM slide de gesto: as figuras recortadas com a legenda em texto (ou a imagem pronta, reserva)
 let GRADE_EL = null;      // o cartão que está sendo montado (o pinta() marca): AGORA e A SEGUIR têm tamanhos diferentes
+const LEG_LARG = 0.92;     // a fração da célula que o texto da legenda usa (igual ao CSS .gleg span)
 function grade(g, titulo) {
   const r = grade_(g, titulo);
   if (r && titulo) r.html = '<div class="gtitulo">' + escH(titulo) + '</div>' + r.html;
@@ -311,30 +314,43 @@ function linhasDaLegenda(txt, px, larg) {
 function planoDaGrade(grupos, titulo) {
   const el = GRADE_EL, vh = innerHeight / 100, vw = innerWidth / 100;
   const W = (el && el.clientWidth > 50 ? el.clientWidth : innerWidth * 0.5) - 2 * vw;
-  const H = (el && el.clientHeight > 50 ? el.clientHeight : innerHeight * 0.75) - 4 * vh - (titulo ? 7 * vh : 0);
-  const base = (el && el.closest('.seguir') ? 3.6 : 4) * vh, gx = vw, gy = 2.6 * vh;
+  const H = (el && el.clientHeight > 50 ? el.clientHeight : innerHeight * 0.75) - 3.2 * vh - (titulo ? 7 * vh : 0);
+  const base = (el && el.closest('.seguir') ? 3.6 : 4) * vh, minimo = 2.2 * vh, gx = vw, gy = 1.4 * vh;
   const n = grupos.reduce((s, gr) => s + gr.imgs.length, 0);
+  const padrao = n <= 2 ? n : n <= 4 ? 2 : 3;
   const sozinha = r => { const h = Math.min(H - 2.14 * base - 8, W * r); return h * h / r; };
-  let melhor = null;
-  for (let col = 1; col <= Math.min(n, 3); col++) {
-    if (grupos.some(gr => gr.imgs.length > col)) continue;
+  // a legenda como o ajustaLegendas faz (o jeito do Vaio): 2 linhas encolhendo até o mínimo, depois 3 linhas
+  const legenda = cw => {
+    const larg = gr => (cw * gr.imgs.length + (gr.imgs.length - 1) * gx) * LEG_LARG;
+    for (let L = 2; L <= 3; L++) for (let px = base; px >= minimo; px--)
+      if (grupos.every(gr => linhasDaLegenda(gr.txt, px, larg(gr)) <= L)) return { px, L };
+    return { px: minimo, L: 3 };
+  };
+  const mede = col => {
+    if (grupos.some(gr => gr.imgs.length > col)) return null;
     let lin = 1, livre = col;
     for (const gr of grupos) { if (gr.imgs.length > livre) { lin++; livre = col; } livre -= gr.imgs.length; }
-    const cw = (W - (col - 1) * gx) / col;
-    let px = base, L = 3;
-    for (px = base; px >= base * 0.55; px--) {
-      L = Math.max(...grupos.map(gr => linhasDaLegenda(gr.txt, px, cw * gr.imgs.length + (gr.imgs.length - 1) * gx - 4)));
-      if (L <= 3) break;
+    const cw = (W - (col - 1) * gx) / col, lg = legenda(cw);
+    const altImg = (H - (lin - 1) * gy) / lin - (lg.L * 1.06 * lg.px + 8);
+    if (altImg < 6 * vh) return null;
+    let pior = Infinity, menor = Infinity;
+    for (const gr of grupos) for (const r of gr.rs) {
+      const h = Math.min(altImg, cw * r), a = h * h / r;
+      pior = Math.min(pior, a / sozinha(r)); menor = Math.min(menor, a);
     }
-    L = Math.min(L, 3);
-    const altImg = (H - (lin - 1) * gy) / lin - (L * 1.06 * px + 8);
-    if (altImg < 6 * vh) continue;
-    let pior = Infinity;
-    for (const gr of grupos) for (const r of gr.rs) { const h = Math.min(altImg, cw * r); pior = Math.min(pior, (h * h / r) / sozinha(r)); }
-    const nota = pior * Math.pow(Math.min(1, px / base), 2);
-    if (!melhor || nota > melhor.nota * 1.03) melhor = { col, lin, px, L, nota };
+    return { col, lin, nota: pior, menor };
+  };
+  // A FIGURA MANDA (regra dele): o arranjo de sempre (2 figuras = 2 colunas...) só é trocado por outro em que
+  // NENHUMA figura fique menor que nele, e a figura mais prejudicada fique maior (as 2 largas uma em cima da outra).
+  const ref = mede(padrao);
+  let melhor = ref;
+  for (let col = 1; col <= Math.min(n, 3); col++) {
+    if (col === padrao) continue;
+    const m = mede(col);
+    if (!m || (ref && m.menor < ref.menor * 0.97)) continue;
+    if (!melhor || m.nota > melhor.nota * 1.03) melhor = m;
   }
-  return melhor || { col: Math.min(n, 3), lin: Math.ceil(n / Math.min(n, 3)), px: base, L: 2 };
+  return melhor || { col: Math.min(n, 3), lin: Math.ceil(n / Math.min(n, 3)) };
 }
 function grade_(g, titulo) {
   if (g && g.figs && g.figs.length) {
@@ -347,10 +363,10 @@ function grade_(g, titulo) {
       else grupos.push({ txt: f.txt, imgs: [f.img], rs: [f.r || 1] });
     }
     const p = planoDaGrade(grupos, titulo), col = p.col, lin = p.lin;
-    const alt = 'height:calc((100% - .8vh - ' + (lin - 1) * 2.6 + 'vh) / ' + lin + ')';
+    const alt = 'height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
     const larg = k => 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ' * ' + k + ' + ' + (k - 1) + 'vw)';
     return { cls: '', css: '',
-             html: '<div class="ggrade" data-pxr="' + (p.px / innerHeight).toFixed(5) + '" data-lin="' + p.L + '">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
+             html: '<div class="ggrade">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
                gr.imgs.map(src => '<img src="' + src + '" alt="">').join('') + '</div><div class="gleg"><span>' + escH(gr.txt) + '</span></div></div>').join('') + '</div>' };
   }
   if (g && g.img) return { cls: 'so-img', css: '', html: '<img src="' + g.img + '" alt="">' };
@@ -374,32 +390,21 @@ function ajustaTitulos() {
 // a legenda do gesto NUNCA corta (3.0.10, do Vaio: "SE QUERES TER DE CRISTO O" perdia o "PERDÃO"). Primeiro encolhe a
 // letra até o mínimo legível em 2 linhas (a figura manda); se não couber, passa a 3 linhas; só se nem assim couber,
 // continua encolhendo. Um tamanho e uma altura para todas, para as figuras ficarem alinhadas.
-// 3.0.10: CADA CARTÃO tem a sua letra (antes uma só para a tela inteira: a legenda comprida do A SEGUIR encolhia a do
-// AGORA, e o Louvores 12 e o 13, com o mesmo conteúdo, saíam com letras diferentes). Com plano (planoDaGrade), usa o
-// tamanho e as linhas dele e só confere na página; sem plano, o jeito do Vaio.
+// a legenda do gesto NUNCA corta (do Vaio, 18/10: "SE QUERES TER DE CRISTO O" perdia o "PERDÃO"), e a FIGURA MANDA:
+// primeiro a letra encolhe até o mínimo legível em 2 linhas; se não couber, 3 linhas; só se nem assim couber, continua
+// encolhendo. Um tamanho e uma altura para TODAS as legendas da tela (AGORA e A SEGUIR), como na TV que o Kevin usou
+// em 18/10 e o Samuel aprovou ("estava perfeito"): letra menor = mais altura para a figura.
 function ajustaLegendas() {
-  const cartoes = new Map();
-  document.querySelectorAll('#gesto .gleg').forEach(el => {
-    const c = el.closest('.ggrade') || el.closest('.gcard');
-    if (!cartoes.has(c)) cartoes.set(c, []);
-    cartoes.get(c).push(el);
-  });
-  for (const [c, todas] of cartoes) {
-    todas.forEach(el => { el.style.fontSize = ''; el.style.height = ''; });
-    const cabe = (el, px, linhas) => { const s = el.firstElementChild; return !s || s.getBoundingClientRect().height <= px * 1.06 * linhas + 2; };
-    const poe = (px, linhas) => todas.forEach(el => { el.style.fontSize = px + 'px'; el.style.height = (1.06 * linhas + 0.02) + 'em'; });
-    if (c.dataset && c.dataset.pxr) {
-      const L = +c.dataset.lin || 2;
-      let px = +c.dataset.pxr * innerHeight;
-      for (; px > 8; px--) { poe(px, L); if (todas.every(el => cabe(el, px, L))) break; }
-      continue;
-    }
-    const base = parseFloat(getComputedStyle(todas[0]).fontSize), minimo = innerHeight * 0.022;
-    let feito = false;
-    for (let linhas = 2; linhas <= 3 && !feito; linhas++)
-      for (let px = base; px >= minimo; px -= 1) { poe(px, linhas); if (todas.every(el => cabe(el, px, linhas))) { feito = true; break; } }
-    if (!feito) for (let px = Math.floor(minimo); px >= 8; px -= 1) { poe(px, 3); if (todas.every(el => cabe(el, px, 3))) break; }
-  }
+  const todas = [...document.querySelectorAll('#gesto .gleg')];
+  if (!todas.length) return;
+  todas.forEach(el => { el.style.fontSize = ''; el.style.height = ''; });
+  const base = parseFloat(getComputedStyle(todas[0]).fontSize), minimo = innerHeight * 0.022;
+  let px = base, linhas = 2;
+  const poe = () => todas.forEach(el => { el.style.fontSize = px + 'px'; el.style.height = (1.06 * linhas + 0.02) + 'em'; });
+  const cabe = el => { const sp = el.firstElementChild; return !sp || sp.getBoundingClientRect().height <= px * 1.06 * linhas + 2; };
+  for (linhas = 2; linhas <= 3; linhas++) for (px = base; px >= minimo; px -= 1) { poe(); if (todas.every(cabe)) return; }
+  linhas = 3;
+  for (px = Math.floor(minimo); px >= 8; px -= 1) { poe(); if (todas.every(cabe)) return; }
 }
 // cada linha da grade fica da altura do desenho mais alto DELA (3.0.10): com figuras largas a célula tinha a altura
 // toda e o desenho, encostado na legenda, deixava a metade de cima do cartão em branco (7 de 33 slides). As legendas
