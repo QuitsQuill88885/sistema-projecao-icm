@@ -61,9 +61,9 @@
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .gcard { flex:1; min-height:0; background:#fff; border-radius:1.8vh; padding:1.6vh 1vw; box-sizing:border-box; display:flex;
     flex-direction:column; overflow:hidden;
-    box-shadow:0 2vh 6vh #0009; transition:opacity .35s ease-out, transform .35s ease-out; }
+    box-shadow:0 2vh 6vh #0009; transition:opacity .35s ease-out; }
   .seguir .gcard { opacity:.82; outline:.45vh dashed var(--verde); outline-offset:.5vh; }
-  .gcard.troca { opacity:0; transform:scale(.97); }
+  .gcard.troca { opacity:0; }   /* só opacidade: escala obriga o Vaio (sem placa) a redesenhar o cartão a cada quadro */
   .seguir .gcard.troca { opacity:0; }
   .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:1.4vh 1vw; }
   .gtitulo { flex:none; margin:0 0 1.2vh; padding:0 0 1vh; border-bottom:.35vh solid var(--ouro); text-align:center;
@@ -79,7 +79,7 @@
   .gcard.so-img img { width:100%; height:100%; object-fit:contain; }
   .gcard.slide { background:#000; padding:0; overflow:hidden; display:flex; flex-direction:column; position:relative; }
   .gcard.slide img { position:relative; flex:1; min-height:0; width:100%; object-fit:contain; }
-  .gcard.slide .gfundo { position:absolute; inset:-6%; background-size:cover; background-position:center; filter:blur(3vh) brightness(.7); }
+  .gcard.slide .gfundo { position:absolute; left:0; top:0; width:100%; height:100%; opacity:.75; }
   .gcard.slide .gsl { flex:none; padding:1vh 1vw; font-size:3vh; font-weight:700; color:var(--ouro); text-align:center; background:var(--painel); }
   .gcard.louvor { background:linear-gradient(180deg,var(--painel2),var(--painel)); display:flex; align-items:center; justify-content:center; }
   .gcard.louvor .gtit { font-size:6vh; font-weight:800; color:var(--texto); text-align:center; padding:0 2vw; line-height:1.15; }
@@ -430,8 +430,14 @@ const APRS = {};
 fetch('/api/apresentacoes', { cache: 'no-store' }).then(r => r.json()).then(r => {
   (r.lista || []).forEach(a => { APRS[a.nome] = a.slides || []; });
 }).catch(() => {});
+function desfoca(img) {
+  const c = img.parentNode && img.parentNode.querySelector('canvas.gfundo'); if (!c) return;
+  try { c.getContext('2d').drawImage(img, 0, 0, 32, 18); } catch (e) {}
+}
 function slideCard(url, rotulo) {
-  return { cls: 'slide', css: '', html: (url ? '<div class="gfundo" style="background-image:url(\'' + url + '\')"></div><img src="' + url + '" alt="">' : '') +
+  // o fundo "desfocado": o slide desenhado UMA vez numa tela de 32x18 e esticado (o navegador suaviza ao esticar).
+  // Um filter:blur seria redesenhado a cada quadro da troca, e o Vaio (sem placa de vídeo) sente.
+  return { cls: 'slide', css: '', html: (url ? '<canvas class="gfundo" width="32" height="18"></canvas><img src="' + url + '" alt="" onload="desfoca(this)">' : '') +
     (rotulo ? '<div class="gsl">' + escH(rotulo) + '</div>' : '') };
 }
 function pintaApres(e, g) {
