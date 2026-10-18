@@ -66,7 +66,7 @@
   .seguir .gcard { opacity:.82; outline:.45vh dashed var(--verde); outline-offset:.5vh; }
   .gcard.troca { opacity:0; }   /* só opacidade: escala obriga o Vaio (sem placa) a redesenhar o cartão a cada quadro */
   .seguir .gcard.troca { opacity:0; }
-  .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:1.4vh 1vw; }
+  .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:2.6vh 1vw; padding-top:.8vh; box-sizing:border-box; }  /* 3.0.10: respiro (HD 15h00) */
   .gtitulo { flex:none; margin:0 0 1.2vh; padding:0 0 1vh; border-bottom:.35vh solid var(--ouro); text-align:center;
     font:800 4.4vh/1.1 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#0f2f5e; text-transform:uppercase; }
   .gfig { display:flex; flex-direction:column; align-items:center; min-width:0; min-height:0; }
@@ -311,8 +311,8 @@ function linhasDaLegenda(txt, px, larg) {
 function planoDaGrade(grupos, titulo) {
   const el = GRADE_EL, vh = innerHeight / 100, vw = innerWidth / 100;
   const W = (el && el.clientWidth > 50 ? el.clientWidth : innerWidth * 0.5) - 2 * vw;
-  const H = (el && el.clientHeight > 50 ? el.clientHeight : innerHeight * 0.75) - 3.2 * vh - (titulo ? 7 * vh : 0);
-  const base = (el && el.closest('.seguir') ? 3.6 : 4) * vh, gx = vw, gy = 1.4 * vh;
+  const H = (el && el.clientHeight > 50 ? el.clientHeight : innerHeight * 0.75) - 4 * vh - (titulo ? 7 * vh : 0);
+  const base = (el && el.closest('.seguir') ? 3.6 : 4) * vh, gx = vw, gy = 2.6 * vh;
   const n = grupos.reduce((s, gr) => s + gr.imgs.length, 0);
   const sozinha = r => { const h = Math.min(H - 2.14 * base - 8, W * r); return h * h / r; };
   let melhor = null;
@@ -347,7 +347,7 @@ function grade_(g, titulo) {
       else grupos.push({ txt: f.txt, imgs: [f.img], rs: [f.r || 1] });
     }
     const p = planoDaGrade(grupos, titulo), col = p.col, lin = p.lin;
-    const alt = 'height:calc((100% - ' + (lin - 1) * 1.4 + 'vh) / ' + lin + ')';
+    const alt = 'height:calc((100% - .8vh - ' + (lin - 1) * 2.6 + 'vh) / ' + lin + ')';
     const larg = k => 'width:calc((100% - ' + (col - 1) + 'vw) / ' + col + ' * ' + k + ' + ' + (k - 1) + 'vw)';
     return { cls: '', css: '',
              html: '<div class="ggrade" data-pxr="' + (p.px / innerHeight).toFixed(5) + '" data-lin="' + p.L + '">' + grupos.map(gr => '<div class="gfig" style="' + larg(gr.imgs.length) + ';' + alt + '"><div class="gimgs">' +
