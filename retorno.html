@@ -396,7 +396,23 @@ function ajustaTitulos() {
 // primeiro a letra encolhe até o mínimo legível em 2 linhas; se não couber, 3 linhas; só se nem assim couber, continua
 // encolhendo. Um tamanho e uma altura para TODAS as legendas da tela (AGORA e A SEGUIR), como na TV que o Kevin usou
 // em 18/10 e o Samuel aprovou ("estava perfeito"): letra menor = mais altura para a figura.
+// figura SOZINHA na linha (aula 12: "A JESUS / SEU CORAÇÃO." quebrava com o cartão sobrando): a legenda dela usa a
+// largura do cartão, não só a da célula. A figura não muda de tamanho.
+function alargaSozinhas() {
+  for (const gr of document.querySelectorAll('#gesto .ggrade')) {
+    const figs = [...gr.querySelectorAll(':scope > .gfig')], linhas = new Map();
+    figs.forEach(f => { const l = f.querySelector('.gleg'); if (l) { l.style.width = ''; l.style.maxWidth = ''; } });
+    for (const f of figs) { const t = Math.round(f.offsetTop); if (!linhas.has(t)) linhas.set(t, []); linhas.get(t).push(f); }
+    if (linhas.size < 2) continue;
+    for (const fs of linhas.values()) {
+      if (fs.length !== 1 || fs[0].clientWidth > gr.clientWidth * 0.8) continue;
+      const l = fs[0].querySelector('.gleg'); if (!l) continue;
+      l.style.maxWidth = 'none'; l.style.width = Math.round(gr.clientWidth * 0.96) + 'px';
+    }
+  }
+}
 function ajustaLegendas() {
+  alargaSozinhas();
   const todas = [...document.querySelectorAll('#gesto .gleg')];
   if (!todas.length) return;
   todas.forEach(el => { el.style.fontSize = ''; el.style.height = ''; });
