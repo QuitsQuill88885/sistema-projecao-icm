@@ -2437,7 +2437,10 @@ function renderApresentacoes() {
     // 3.0.9: a apresentação ESPECIAL (tem gestos para a TV de apoio) ganha a moldura e o broche "2 telas"
     if (ehEspecial(a.nome)) {
       c.classList.add('especial');
-      c.insertAdjacentHTML('afterbegin', '<span class="broche-2telas">' + ICO_2TELAS + '2 telas</span>');
+      // no canto de BAIXO da miniatura: em cima ele cobria o título do slide (HD, 17/10 23h35)
+      const im = c.querySelector('img'), caixa = document.createElement('div');
+      caixa.className = 'ap-mini'; im.replaceWith(caixa); caixa.appendChild(im);
+      caixa.insertAdjacentHTML('beforeend', '<span class="selo-ultra" aria-hidden="true">' + SELO_ICONES[SELO_ICONE] + '</span>');
     }
     // TELA NOVA (12/10/2026, queixa 1 do culto: "cliquei 2x e não exibiu"): 1 clique já entra no modo
     // apresentação PROJETANDO o slide 1 (e liga o telão, se estiver desligado), igual a um louvor.
@@ -3755,6 +3758,15 @@ function ligarControleCelular() {
 const ICO_2TELAS = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" ' +
   'stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="13" height="9" rx="1.5"/>' +
   '<rect x="9" y="11" width="13" height="9" rx="1.5"/></svg>';
+// O SELO (ordem dele, 17/10 23h52): no canto inferior direito da miniatura, um círculo quase preto com um
+// símbolo verde, "algo que mostre: uau, esse aqui é a versão ouro". Sem triângulo, olho ou compasso. Sem nome
+// escrito (o nome do tipo ele ainda vai escolher). O raio é o padrão; folha e duas telas ficam para a escolha dele.
+const SELO_ICONES = {
+  raio: '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M13.2 2 4.5 13.4h6.3L9.9 22l8.7-11.6h-6.4L13.2 2z" fill="currentColor"/></svg>',
+  folha: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z" fill="currentColor" fill-opacity=".25"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/></svg>',
+  telas: ICO_2TELAS.replace(/width="13" height="13"/, 'width="15" height="15"'),
+};
+const SELO_ICONE = 'telas';   // a escolha dele, 18/10 00h35: as duas telinhas
 let ESPECIAIS = new Set();
 function ehEspecial(nome) { return !!nome && ESPECIAIS.has(String(nome).normalize('NFC')); }
 async function carregarEspeciais() {
@@ -3769,17 +3781,43 @@ async function carregarEspeciais() {
 function abrirApoioLocal() {
   try { if (nativo() && window.pywebview.api.abrir_apoio_local) window.pywebview.api.abrir_apoio_local(); } catch (e) {}
 }
-const DT = { lista: [], cartao: null, modo: '', chave: '', timer: null };
+// AS PALAVRAS (dele, 18/10 00h12-00h18): "tela de retorno", "Nova tela encontrada", "Usar as duas telas", "Agora não",
+// "Como usar as duas telas?", "Telão e retorno", "Retorno igual ao telão", "Só o telão", "Trocar 1 ↔ 2", "Pronto".
+// Nunca "monitor", "primário", "secundário", "duplicar", "estender", "partição".
+// O CABEÇALHO (00h20): sem tela de retorno na rede, NADA; achou e não está ligada, o botão discreto "Conectar a
+// tela de retorno"; ligada, a pílula verde "2 telas · vaio". A resposta vale nas duas telas: quem responder
+// primeiro (o painel ou o próprio retorno) fecha as duas.
+// os desenhos das escolhas: duas TVs, cada uma com o selo 1 ou 2 no estilo do "Identificar" (azul, número em ouro)
+const ICO_TROCAR = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>';
+const ICO_PRONTO = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+function dtDesenho(tipo) {
+  const tv = (x, dentro, n, apagada) => '<g transform="translate(' + x + ',0)">' +
+    '<rect x="1" y="6" width="50" height="32" rx="3.5" fill="' + (apagada ? '#05070d' : '#0f2f5e') + '" stroke="#9db3d6" stroke-width="1.6"/>' +
+    '<path d="M18 44h16M26 38v6" stroke="#9db3d6" stroke-width="1.6" stroke-linecap="round"/>' + dentro +
+    '<rect x="-3" y="1" width="15" height="15" rx="4.5" fill="#14487a" stroke="#f5d76e" stroke-width="1.4"/>' +
+    '<text x="4.5" y="12.6" text-anchor="middle" font-size="10.5" font-weight="800" fill="#f5d76e" font-family="Segoe UI,sans-serif">' + n + '</text></g>';
+  const letra = '<path d="M15 16h22M13 22h26M17 28h18" stroke="#eaf0fb" stroke-width="2.3" stroke-linecap="round"/>';
+  const mao = '<g transform="translate(15.5,10.5) scale(.9)" fill="none" stroke="#f5d76e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M18 11V6a2 2 0 0 0-4 0"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/>' +
+    '<path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/></g>';
+  const desl = '<g fill="none" stroke="#6b7a93" stroke-width="2.2" stroke-linecap="round"><path d="M26 14v7"/><path d="M20.6 16.6a7.6 7.6 0 1 0 10.8 0"/></g>';
+  const dois = tipo === 'gesto' ? mao : tipo === 'igual' ? letra : desl;
+  return '<svg viewBox="-5 -1 130 48" width="118" height="44">' + tv(2, letra, 1) + tv(70, dois, 2, tipo === 'apagada') + '</svg>';
+}
+const DT = { lista: [], cartao: null, modo: '', chave: '', timer: null, ultimo: {} };
 function dtEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function dtTelao(n, rotulo) { try { if (CANAL) CANAL.postMessage({ tipo: 'identificar', n, rotulo, ms: 3000 }); } catch (e) {} }
+function dtNumeros(a) {        // o telão mostra o número DELE: 1 enquanto este PC é o telão; 2 depois do Trocar
+  if (a.papel === 2) dtTelao(1, 'Telão'); else dtTelao(2, 'Tela de retorno');
+}
 async function dtAcao(chave, acao) {
   try {
     const r = await fetch('/api/apoio', { method: 'POST', body: JSON.stringify({ chave, acao }) }).then(r => r.json());
-    if (r && r.ok && r.identificar > 0) {
-      // o telão mostra o número DELE: 1 enquanto este PC é o telão; 2 depois do Trocar
-      if (r.papel === 2) dtTelao(1, 'Telão'); else dtTelao(2, 'Tela de apoio · este computador');
+    if (r && r.ok) {
+      if (r.identificar > 0) dtNumeros(r);
+      DT.ultimo[chave] = r.estado;
+      dtPapel(r.estado === 'aceito' && r.papel === 1);
     }
-    dtPapel(r && r.ok && r.estado === 'aceito' && r.papel === 1);
     return r;
   } catch (e) { return null; }
 }
@@ -3794,7 +3832,7 @@ function dtFechar() {
   if (DT.cartao) DT.cartao.remove();
   DT.cartao = null; DT.modo = ''; DT.chave = '';
 }
-// modo: 'pergunta' (chegou agora) | 'pronto' (acabou de dizer sim / trocou) | 'gerenciar' (clicou na pílula)
+// modo: 'pergunta' (Nova tela encontrada) | 'como' (Como usar as duas telas?)
 function dtCartao(a, modo) {
   if (!DT.cartao) {
     DT.cartao = document.createElement('div');
@@ -3804,26 +3842,30 @@ function dtCartao(a, modo) {
   }
   clearTimeout(DT.timer);
   DT.modo = modo; DT.chave = a.chave;
+  DT.cartao.className = modo === 'como' ? 'como' : '';
   const nome = '<b class="dt-nome">' + dtEsc(a.nome) + '</b>';
-  const telao = a.papel === 1 ? nome : '<b>este computador</b>';
-  const apoio = a.papel === 1 ? '<b>este computador</b>' : nome;
   let corpo;
   if (modo === 'pergunta') {
-    corpo = '<div class="dt-tit">Achamos outro computador na rede (' + dtEsc(a.nome) + ').</div>' +
-      '<div class="dt-txt">Projetar com duas telas?</div>' +
+    corpo = '<div class="dt-tit">Nova tela encontrada</div>' +
+      '<div class="dt-txt">O computador ' + nome + ' também está com o Sistema ICM nesta rede. Ele pode ser a tela de retorno.</div>' +
       '<div class="dt-acoes"><button data-a="nao" class="big-btn">Agora não</button>' +
-      '<button data-a="sim" class="big-btn verde">Sim</button></div>';
+      '<button data-a="sim" class="big-btn verde">Usar as duas telas</button></div>';
   } else {
-    corpo = '<div class="dt-tit">' + (modo === 'pronto' ? 'Olhe as TVs: cada uma mostra o seu número' : 'Duas telas') + '</div>' +
+    const telao = a.papel === 1 ? nome : '<b>este computador</b>';
+    const ret = a.papel === 1 ? '<b>este computador</b>' : nome;
+    // SEM PALAVRAS nas escolhas (ele, 00h22: "símbolos já vão resolver tudo"): duas TVs com o selo 1 e 2
+    const op = (ac, des, dica, on) => '<button data-a="' + ac + '" class="dt-op' + (on ? ' on' : '') + '" title="' + dica + '">' + dtDesenho(des) + '</button>';
+    corpo = '<div class="dt-tit">Como usar as duas telas?</div>' +
       '<div class="dt-par"><span class="dt-n">1</span> Telão: ' + telao + '</div>' +
-      '<div class="dt-par"><span class="dt-n dois">2</span> Tela de apoio: ' + apoio + '</div>' +
-      '<div class="dt-acoes">' +
-      (modo === 'gerenciar' ? '<button data-a="desligar" class="big-btn">Desligar</button><button data-a="identificar" class="big-btn">Identificar</button>' : '') +
-      '<button data-a="trocar" class="big-btn">Trocar</button>' +
-      '<button data-a="ok" class="big-btn verde">' + (modo === 'pronto' ? 'Pronto' : 'Fechar') + '</button></div>';
-    DT.timer = setTimeout(dtFechar, 15000);
+      '<div class="dt-par"><span class="dt-n dois">2</span> Tela de retorno: ' + ret + '</div>' +
+      '<div class="dt-ops">' + op('modo:retorno', 'gesto', 'O telão e, na tela de retorno, os gestos', a.modo !== 'igual') +
+      op('modo:igual', 'igual', 'As duas telas iguais', a.modo === 'igual') +
+      op('so_telao', 'apagada', 'Só o telão (desliga a tela de retorno)', false) + '</div>' +
+      '<div class="dt-acoes"><button data-a="trocar" class="dt-redondo" title="Trocar 1 e 2">' + ICO_TROCAR + '</button>' +
+      '<button data-a="ok" class="dt-redondo verde" title="Pronto">' + ICO_PRONTO + '</button></div>';
+    DT.timer = setTimeout(dtFechar, 20000);
   }
-  DT.cartao.innerHTML = '<div class="dt-ico">' + ICO_2TELAS.replace(/width="13" height="13"/, 'width="26" height="26"') + '</div>' +
+  DT.cartao.innerHTML = '<div class="dt-ico">' + ICO_2TELAS.replace(/width="13" height="13"/, 'width="22" height="22"') + '</div>' +
     '<div class="dt-corpo">' + corpo + '</div>';
   DT.cartao.querySelectorAll('button').forEach(b => {
     b.tabIndex = -1;                                    // nunca fica com o foco: Espaço/Enter continuam do painel
@@ -3832,9 +3874,9 @@ function dtCartao(a, modo) {
       const ac = b.dataset.a;
       if (ac === 'ok') return dtFechar();
       const r = await dtAcao(a.chave, ac);
-      if (!r || !r.ok) { toast((r && r.erro) || 'O outro computador não respondeu.'); return dtFechar(); }
-      if (ac === 'nao' || ac === 'desligar') { dtFechar(); toast(ac === 'nao' ? 'Ok: uma tela só.' : 'Duas telas desligadas.'); }
-      else dtCartao(Object.assign({}, a, r), ac === 'identificar' ? 'gerenciar' : 'pronto');
+      if (!r || !r.ok) { toast((r && r.erro) || 'A tela de retorno não respondeu.'); return dtFechar(); }
+      if (ac === 'nao' || ac === 'so_telao') { dtFechar(); toast('Só o telão.'); }
+      else dtCartao(Object.assign({}, a, r), 'como');
       dtPilula();
     };
   });
@@ -3845,16 +3887,30 @@ function dtPilula() {
   if (!p && header) {
     p = document.createElement('button'); p.id = 'dt-pilula'; p.tabIndex = -1;
     p.onmousedown = ev => ev.preventDefault();
-    p.onclick = () => { const a = DT.lista.find(x => x.estado === 'aceito'); if (a) dtCartao(a, 'gerenciar'); };
-    header.appendChild(p);   // depois do Estilo, no canto direito
+    p.onclick = async () => {
+      const lig = DT.lista.find(x => x.estado === 'aceito');
+      if (lig) return dtCartao(lig, 'como');
+      const fora = DT.lista.find(x => x.online && x.estado !== 'aceito');
+      if (!fora) return;
+      const r = await dtAcao(fora.chave, 'pedir');       // "Agora não" sem querer: volta a perguntar
+      dtCartao(Object.assign({}, fora, r || {}), 'pergunta');
+      dtPilula();
+    };
+    header.appendChild(p);                               // depois do Estilo, no canto direito
   }
   if (!p) return;
-  const a = DT.lista.find(x => x.estado === 'aceito');
-  p.style.display = a ? '' : 'none';
-  if (a) {
-    p.className = a.online ? 'on' : 'fora';
-    p.innerHTML = '<span class="dt-bola"></span>' + ICO_2TELAS + '<span>2 telas · ' + dtEsc(a.nome) + (a.online ? '' : ' (fora do ar)') + '</span>';
-  }
+  const lig = DT.lista.find(x => x.estado === 'aceito' && x.online);
+  // ligada e caiu (o Wi-Fi oscilou): a pílula fica âmbar e volta ao verde sozinha, sem cartão e sem pergunta
+  const caiu = !lig && DT.lista.find(x => x.estado === 'aceito' && !x.online);
+  const fora = !lig && !caiu && DT.lista.find(x => x.online && (x.estado === 'dispensado' || (x.estado === 'pendente' && DT.modo !== 'pergunta')));
+  const estado = lig ? 'on' : caiu ? 'reconectando' : fora ? 'conectar' : '';
+  p.style.display = estado ? '' : 'none';
+  if (p.dataset.estado === estado) return;
+  p.dataset.estado = estado;
+  p.className = estado;                                  // a classe nova reinicia a animação: pulsa UMA vez ao surgir
+  p.innerHTML = lig ? '<span class="dt-bola"></span>' + ICO_2TELAS + '<span>2 telas · ' + dtEsc(lig.nome) + '</span>'
+    : caiu ? '<span class="dt-bola"></span><span>reconectando · ' + dtEsc(caiu.nome) + '</span>'
+    : fora ? ICO_2TELAS + '<span>Conectar a tela de retorno</span>' : '';
 }
 function ligarDuasTelas() {
   const passo = async () => {
@@ -3863,10 +3919,15 @@ function ligarDuasTelas() {
       DT.lista = (r && r.apoios) || [];
     } catch (e) { return; }
     const ativo = DT.lista.find(a => a.estado === 'aceito' && a.online);
-    dtPapel(ativo && ativo.papel === 1);                 // o apoio caiu depois do Trocar: o telão volta a ser telão
+    dtPapel(ativo && ativo.papel === 1);                 // o retorno caiu depois do Trocar: o telão volta a ser telão
+    // respondido NA OUTRA TELA (o retorno também pergunta): o cartão daqui acompanha
+    if (DT.modo === 'pergunta') {
+      const a = DT.lista.find(x => x.chave === DT.chave);
+      if (!a || !a.online || a.estado === 'dispensado') dtFechar();
+      else if (a.estado === 'aceito') { if (a.identificar > 0) dtNumeros(a); dtCartao(a, 'como'); }
+    }
     const pend = DT.lista.find(a => a.estado === 'pendente' && a.online);
-    if (pend && !DT.cartao) dtCartao(pend, 'pergunta');
-    if (DT.modo === 'pergunta' && !DT.lista.some(a => a.chave === DT.chave && a.estado === 'pendente' && a.online)) dtFechar();
+    if (pend && !DT.cartao && DT.ultimo[pend.chave] !== 'visto') { DT.ultimo[pend.chave] = 'visto'; dtCartao(pend, 'pergunta'); }
     dtPilula();
   };
   passo(); setInterval(passo, 1500);

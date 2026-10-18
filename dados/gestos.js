@@ -1,4 +1,4 @@
-// Gerado por ferramentas/gestos_da_apresentacao.py (Louvores da Evangelização de Outubro 2026). Não editar à mão.
+// Gerado por ferramentas/gestos_da_apresentacao.py (Louvores da Evangelização de Outubro 2026, Evangelização de Outubro 2026). Não editar à mão.
 window.GESTOS = window.GESTOS || {};
 window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  "1": {
@@ -96,5 +96,43 @@ window.GESTOS["apres:Louvores da Evangelização de Outubro 2026"] = {
  "27": {
   "img": "gestos/evang_out2026/s27.webp",
   "louvor": "O DIA ESTÁ CHEGANDO"
+ }
+};
+window.GESTOS["apres:Evangelização de Outubro 2026"] = {
+ "7": {
+  "img": "gestos/evang_out2026_aula/s07.webp",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO"
+ },
+ "8": {
+  "img": "gestos/evang_out2026_aula/s08.webp",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO"
+ },
+ "9": {
+  "img": "gestos/evang_out2026_aula/s09.webp",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO"
+ },
+ "10": {
+  "img": "gestos/evang_out2026_aula/s10.webp",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO"
+ },
+ "11": {
+  "img": "gestos/evang_out2026_aula/s11.webp",
+  "louvor": "VOCÊ SABE O QUE É SALVAÇÃO"
+ },
+ "17": {
+  "img": "gestos/evang_out2026_aula/s17.webp",
+  "louvor": "ESTA É A MENSAGEM ETERNA DE DEUS"
+ },
+ "18": {
+  "img": "gestos/evang_out2026_aula/s18.webp",
+  "louvor": "ESTA É A MENSAGEM ETERNA DE DEUS"
+ },
+ "19": {
+  "img": "gestos/evang_out2026_aula/s19.webp",
+  "louvor": "ESTA É A MENSAGEM ETERNA DE DEUS"
+ },
+ "20": {
+  "img": "gestos/evang_out2026_aula/s20.webp",
+  "louvor": "ESTA É A MENSAGEM ETERNA DE DEUS"
  }
 };

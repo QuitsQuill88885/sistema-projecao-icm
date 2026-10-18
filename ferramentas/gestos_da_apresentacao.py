@@ -18,13 +18,29 @@ APP = Path(__file__).resolve().parent.parent
 # gestos.json saiu IGUAL ao da Coletânea (md5 f235e657), mas a pasta figs de lá foi refeita depois
 # com outros nomes e não casa mais com ele.
 COLET = Path(r"C:\Projetos\Sistema\Evangelizacao Outubro 2026\gerador\gestos_cris")
+# Uma entrada por apresentação. "slides" = só estes slides podem ter gesto (None = todos). Na aula, a capa
+# e o fim também dizem "Você sabe o que é salvação?" e empurrariam o ponteiro antes do louvor começar.
+APRESENTACOES = {
+    "Louvores da Evangelização de Outubro 2026": {
+        "pasta": "evang_out2026", "slides": None,
+        "louvores": {"fui_lavado": "FUI LAVADO NO SANGUE", "81": "SENHOR TÃO PEQUENO SOU",
+                     "97": "JESUS É O CAMINHO", "198": "O DIA ESTÁ CHEGANDO"}},
+    "Evangelização de Outubro 2026": {
+        "pasta": "evang_out2026_aula", "slides": {7, 8, 9, 10, 11, 17, 18, 19, 20},
+        "louvores": {"69": "VOCÊ SABE O QUE É SALVAÇÃO", "249": "ESTA É A MENSAGEM ETERNA DE DEUS"}},
+}
 APRES = "Louvores da Evangelização de Outubro 2026"
-PASTA = "evang_out2026"
-LOUVORES = {"fui_lavado": "FUI LAVADO NO SANGUE", "81": "SENHOR TÃO PEQUENO SOU",
-            "97": "JESUS É O CAMINHO", "198": "O DIA ESTÁ CHEGANDO"}
+for _i, _a in enumerate(__import__("sys").argv):
+    if _a == "--apres" and _i + 1 < len(__import__("sys").argv):
+        APRES = __import__("sys").argv[_i + 1]
+PASTA = APRESENTACOES[APRES]["pasta"]
+LOUVORES = APRESENTACOES[APRES]["louvores"]
+SLIDES = APRESENTACOES[APRES]["slides"]
 # frases que VOLTAM nos slides sem estar repetidas no papel (o coro do 97 vem uma vez, "CORO 2x",
 # e volta depois de cada estrofe). Índice = posição no gestos.json da Coletânea.
-REPETEM = {"97": {4, 5}}
+REPETEM = {"97": {4, 5},
+           # a aula (3.0.9): o "bis" do 69 e o coro do 249, que volta no slide 20
+           "69": {11, 12, 15}, "249": {8, 9, 10, 11}}
 # figuras que o recorte da Coletânea NÃO pegou (16/10, conferido no PDF da Cris 1790803279, pág. 1):
 # a mão do "Jesus" (imagem 48 do PDF, extraída para figs\extra\jesus_mao.png) ao lado de
 # "A Jesus honra e louvor" (y 77) e de "Jesus, é o caminho" (y 242) / "Jesus, é a verdade" (y 509).
@@ -35,6 +51,9 @@ FALTAM = {("fui_lavado", 11): ["../extra/jesus_mao.png"],
 # 18508e00) fica ao lado de "Estamos preparando" (pág. 3, y 470-522). Ela NÃO é do slide 25, e o
 # slide 26 já mostra esse mesmo gesto pela 198_108.
 TIRAR = {("198", 17)}
+# aula (3.0.9): o papel diz "e entregue" e o slide diz "e entrega". Casa pela palavra do slide; a
+# legenda continua a do papel.
+CASA_COMO = {("69", 12): "e entrega"}
 COBRE = 0.8           # reserva: fração das palavras DIFERENTES da frase presentes, juntas, no slide
 
 
@@ -51,7 +70,7 @@ def frases_do(louvor, gestos):
             continue
         txt = " ".join("".join(p[0] for p in it["ped"]).split())
         figs = [] if (louvor, i) in TIRAR else it["figs"]
-        out.append({"i": i, "txt": txt, "pal": norm(txt), "figs": figs + FALTAM.get((louvor, i), [])})
+        out.append({"i": i, "txt": txt, "pal": norm(CASA_COMO.get((louvor, i), txt)), "figs": figs + FALTAM.get((louvor, i), [])})
     return out
 
 
@@ -203,12 +222,16 @@ def main():
     ponteiro = {k: 0 for k in LOUVORES}
     tabela = {}
     for s, texto in enumerate(textos):
+        if SLIDES is not None and s not in SLIDES:
+            print("slide %2d  (fora do louvor)  %s" % (s, " ".join(texto.split())[:60]))
+            continue
         melhor, achadas = None, []
         for k in LOUVORES:
             a = casa_slide(texto, frases[k], ponteiro[k], k)
             if len(a) > len(achadas):
                 melhor, achadas = k, a
-        if sum(len(f["pal"]) for f in achadas) < 4:   # versículo ou título que cruzou 1-3 palavras
+        # versículo ou título que cruzou 1-3 palavras. Com os slides do louvor já marcados (a aula), basta 1.
+        if sum(len(f["pal"]) for f in achadas) < (4 if SLIDES is None else 1):
             print("slide %2d  (espera)  %s" % (s, " ".join(texto.split())[:60]))
             continue
         # só frase ÚNICA no louvor empurra o ponteiro: a repetida (o coro) pode estar na
@@ -225,11 +248,16 @@ def main():
         if gravar and monta_imagem(achadas, melhor, APP / "gestos" / PASTA / nome, texto):
             tabela[str(s)] = {"img": "gestos/%s/%s" % (PASTA, nome), "louvor": LOUVORES[melhor]}
     if gravar:
-        js = ("// Gerado por ferramentas/gestos_da_apresentacao.py (" + APRES + "). Não editar à mão.\n"
-              "window.GESTOS = window.GESTOS || {};\n"
-              "window.GESTOS[" + json.dumps("apres:" + APRES, ensure_ascii=False) + "] = "
-              + json.dumps(tabela, ensure_ascii=False, indent=1) + ";\n")
-        (APP / "dados" / "gestos.js").write_text(js, encoding="utf-8")
+        # junta: as outras apresentações que já estão no arquivo ficam como estão (mesmos bytes)
+        arq = APP / "dados" / "gestos.js"
+        velho = arq.read_text(encoding="utf-8") if arq.exists() else ""
+        blocos = dict(re.findall(r'(window\.GESTOS\[".*?"\] = \{.*?\};\n)', velho, re.S) and
+                      [(m.split("] = ", 1)[0], m) for m in re.findall(r'window\.GESTOS\[".*?"\] = \{.*?\};\n', velho, re.S)])
+        chave = "window.GESTOS[" + json.dumps("apres:" + APRES, ensure_ascii=False)
+        blocos[chave] = chave + "] = " + json.dumps(tabela, ensure_ascii=False, indent=1) + ";\n"
+        js = ("// Gerado por ferramentas/gestos_da_apresentacao.py (" + ", ".join(APRESENTACOES) + "). Não editar à mão.\n"
+              "window.GESTOS = window.GESTOS || {};\n" + "".join(blocos.values()))
+        arq.write_text(js, encoding="utf-8")
         print("gravado: %d slides com gesto em dados/gestos.js" % len(tabela))
 
 

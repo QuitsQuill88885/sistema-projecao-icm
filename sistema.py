@@ -2426,6 +2426,7 @@ def _gravar_apoios(d):
 
 def _apoio_publico(chave, a, agora):
     return {"chave": chave, "nome": a["nome"], "ip": a["ip"], "estado": a["estado"], "papel": a["papel"],
+            "modo": a.get("modo", "retorno"), "pc": socket.gethostname(),
             "online": agora - a.get("visto", 0) <= APOIO_ONLINE_SEG,
             "identificar": max(0.0, round(a.get("ident_ate", 0) - agora, 2))}
 
@@ -2441,7 +2442,7 @@ def apoio_ola(nome, ip, denovo=False):
             lem = apoios_lembrados().get(chave)
             # par lembrado: volta CALADO (sem pergunta e sem o "1" gigante no meio do culto)
             a = {"nome": nome or ip, "ip": ip, "estado": "aceito" if lem else "pendente",
-                 "papel": (lem or {}).get("papel", 2), "ident_ate": 0}
+                 "papel": (lem or {}).get("papel", 2), "modo": (lem or {}).get("modo", "retorno"), "ident_ate": 0}
             APOIOS[chave] = a
         if denovo and a["estado"] == "dispensado":
             a["estado"] = "pendente"
@@ -2457,7 +2458,9 @@ def apoios_lista():
 
 
 def apoio_mudar(chave, acao):
-    """sim | nao | identificar | trocar | desligar. Só o SIM, o Identificar e o Trocar acendem o 1 e o 2."""
+    """sim (Usar as duas telas) | nao (Agora não) | pedir (Conectar a tela de retorno) | identificar | trocar |
+    modo:retorno (Telão e retorno) | modo:igual (Retorno igual ao telão) | so_telao (Só o telão) | desligar.
+    Só o Sim, o Identificar e o Trocar acendem o 1 e o 2."""
     agora = time.time()
     with TRAVA:
         a = APOIOS.get(chave)
@@ -2468,12 +2471,17 @@ def apoio_mudar(chave, acao):
             a["ident_ate"] = agora + APOIO_IDENT_SEG
         elif acao == "nao":
             a["estado"] = "dispensado"
+        elif acao == "pedir":
+            if a["estado"] == "dispensado":
+                a["estado"] = "pendente"
+        elif acao in ("modo:retorno", "modo:igual"):
+            a["modo"] = acao.split(":", 1)[1]
         elif acao == "identificar":
             a["ident_ate"] = agora + APOIO_IDENT_SEG
         elif acao == "trocar":
             a["papel"] = 1 if a["papel"] == 2 else 2
             a["ident_ate"] = agora + APOIO_IDENT_SEG
-        elif acao == "desligar":
+        elif acao in ("desligar", "so_telao"):
             a["estado"] = "dispensado"
             a["papel"] = 2
         else:
@@ -2481,7 +2489,7 @@ def apoio_mudar(chave, acao):
         r = _apoio_publico(chave, a, agora)
     lem = apoios_lembrados()
     if r["estado"] == "aceito":
-        lem[chave] = {"nome": r["nome"], "papel": r["papel"], "em": time.strftime("%Y-%m-%d %H:%M")}
+        lem[chave] = {"nome": r["nome"], "papel": r["papel"], "modo": r["modo"], "em": time.strftime("%Y-%m-%d %H:%M")}
     else:
         lem.pop(chave, None)
     _gravar_apoios(lem)
@@ -3326,7 +3334,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                 return self._json({"ok": False, "erro": str(e)})
 
-        if self.path.startswith("/api/apoio"):            # 3.0.9: sim | nao | identificar | trocar | desligar
+        if self.path.startswith("/api/apoio"):            # 3.0.9: a resposta do operador (do painel OU do próprio retorno)
             try:
                 n = int(self.headers.get("Content-Length", 0))
                 c = json.loads(self.rfile.read(n).decode("utf-8"))

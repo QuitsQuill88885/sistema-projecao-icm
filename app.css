@@ -782,20 +782,25 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 /* a apresentação especial (com gestos para a TV de apoio): moldura verde e o broche "2 telas" */
 #ap-grade .fundo-card.especial{border-color:var(--verde);box-shadow:0 0 0 1px #2e8b5766,0 6px 18px #2e8b5726}
 #ap-grade .fundo-card.especial:hover{border-color:#3fae6f}
-.broche-2telas{position:absolute;top:7px;left:7px;z-index:2;display:inline-flex;align-items:center;gap:5px;
-  padding:3px 9px 3px 7px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;color:#fff;
-  background:linear-gradient(180deg,#2e8b57,#256f46);border:1px solid #f5d76e66;box-shadow:0 2px 8px #0008;pointer-events:none}
-.broche-2telas svg{display:block}
+.ap-mini{position:relative}
+.selo-ultra{position:absolute;bottom:6px;right:6px;z-index:2;width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;background:#07090ee6;color:#3fae6f;
+  border:1px solid #ffffff26;box-shadow:0 2px 8px #000a,inset 0 0 0 1px #2e8b5733;pointer-events:none}
+.selo-ultra svg{display:block;filter:drop-shadow(0 0 3px #2e8b5780)}
 #ap-grade .fundo-card.especial .ap-info{color:#9fd3b4;opacity:.95}
 /* o cartão da pergunta: no canto, sem escurecer nada e sem pegar o teclado */
 #dt-cartao{position:fixed;bottom:14px;right:14px;z-index:120;width:326px;display:flex;gap:12px;align-items:flex-start;
-  padding:14px 14px 12px;border-radius:12px;background:linear-gradient(180deg,#1e2d49,#16233c);
-  border:1px solid var(--borda);border-left:3px solid var(--verde);box-shadow:0 14px 40px #000a;
+  padding:14px 14px 12px;border-radius:14px;border:2px solid var(--verde);
+  background:radial-gradient(120% 60% at 50% 0%,#ffffff12 0%,#ffffff00 60%),linear-gradient(180deg,#1e2d49,#16233c);
+  box-shadow:0 0 0 1px #2e8b5733,0 0 18px #2e8b5740,0 18px 50px #000c,inset 0 1px 0 #ffffff1a;
   animation:dt-entra .25s ease-out}
 @keyframes dt-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-#dt-cartao .dt-ico{color:var(--ouro);flex:none;margin-top:2px}
+#dt-cartao .dt-ico{flex:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#07090ee6;color:#3fae6f;border:1px solid #ffffff26;box-shadow:inset 0 0 0 1px #2e8b5733,0 2px 8px #000a}
+#dt-cartao .dt-ico svg{filter:drop-shadow(0 0 3px #2e8b5780)}
 #dt-cartao .dt-corpo{flex:1;min-width:0}
-#dt-cartao .dt-tit{font-size:13px;color:#cdd9ee;line-height:1.4}
+#dt-cartao .dt-tit{font-size:15px;font-weight:700;color:var(--ouro);line-height:1.35}
+#dt-cartao .dt-txt{font-size:13px!important;font-weight:400!important;color:#cdd9ee!important;margin:5px 0 10px!important;line-height:1.45}
 #dt-cartao .dt-txt{font-size:16px;font-weight:700;color:var(--ouro);margin:4px 0 10px}
 #dt-cartao .dt-par{font-size:13px;color:#cdd9ee;margin:7px 0;display:flex;align-items:center;gap:8px}
 #dt-cartao .dt-n{flex:none;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
@@ -803,10 +808,30 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 #dt-cartao .dt-n.dois{background:var(--verde);color:#fff}
 #dt-cartao .dt-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
 #dt-cartao .dt-acoes .big-btn{padding:7px 13px}
-/* a pílula do cabeçalho: o par está ligado */
+/* as escolhas SEM palavras: duas TVs com o selo 1 e 2; a escolhida com borda de ouro */
+#dt-cartao.como{width:430px}
+#dt-cartao .dt-ops{display:flex;gap:8px;margin-top:10px}
+#dt-cartao .dt-op{flex:1 1 0;min-width:0;padding:8px 5px 6px;border-radius:10px;background:var(--painel);border:1.5px solid var(--borda);
+  display:flex;justify-content:center;transition:border-color .15s,background .15s}
+#dt-cartao .dt-op:hover{background:var(--hover);border-color:#3b5680}
+#dt-cartao .dt-op.on{border-color:var(--ouro);box-shadow:0 0 0 1px #f5d76e55}
+#dt-cartao .dt-op svg{display:block;width:100%;height:auto}
+#dt-cartao .dt-redondo{width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--painel2);border:1px solid var(--borda);color:var(--txt)}
+#dt-cartao .dt-redondo:hover{background:var(--hover)}
+#dt-cartao .dt-redondo.verde{background:var(--verde);border-color:transparent;color:#fff}
+#dt-cartao .dt-redondo.verde:hover{background:#37a066}
+/* o cabeçalho: nada sem tela de retorno; "Conectar a tela de retorno" quando ela existe e está desligada;
+   a pílula verde "2 telas · vaio" quando está ligada */
 #dt-pilula{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;
-  background:#16233c;border:1px solid #2e8b57;color:var(--txt);white-space:nowrap}
-#dt-pilula:hover{background:var(--hover)}
+  white-space:nowrap}
+#dt-pilula.on{background:#16233c;border:1px solid #2e8b57;color:var(--txt)}
+#dt-pilula.on:hover{background:var(--hover)}
 #dt-pilula .dt-bola{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 3px #2e8b5740}
-#dt-pilula.fora{background:#2a2a2a;border-color:#555;color:#bbb}
-#dt-pilula.fora .dt-bola{background:#888;box-shadow:none}
+#dt-pilula.conectar{background:var(--painel);border:1px solid #f5d76e99;color:#f3e3a6;animation:dt-pulsa 1.4s ease-out 1}
+#dt-pilula.conectar:hover{background:var(--hover);border-color:var(--ouro)}
+#dt-pilula.reconectando{background:var(--painel);border:1px solid #d9a44199;color:#f3d98a}
+#dt-pilula.reconectando .dt-bola{background:#d9a441;box-shadow:0 0 0 3px #d9a44133}
+@keyframes dt-pulsa{0%{box-shadow:0 0 0 0 #f5d76e88}70%{box-shadow:0 0 0 10px #f5d76e00}100%{box-shadow:none}}
+/* 3.0.9: o anel de foco que sobrava na aba depois de clicar e usar as setas (o operador não deve ver) */
+.tabs .tab:focus,.tabs .tab:focus-visible{outline:none}

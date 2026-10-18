@@ -22,34 +22,81 @@
         "apres:<nome da apresentação>": { "<slide>": {"img": "...", "louvor": "TITULO"} } }
 -->
 <style>
-  :root { --fundo:#05070d; --texto:#f4f1e8; --apagado:#8a93a6; --ouro:#f2c14e; --verde:#5bd18b; --vermelho:#ff6b6b; }
-  html, body { margin:0; height:100%; background:var(--fundo); color:var(--texto);
-    font-family: "Segoe UI", "Ubuntu", "Noto Sans", Arial, sans-serif; overflow:hidden; }
-  #topo { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between;
-    align-items:center; padding:1.2vh 2.5vw; font-size:3.2vh; color:var(--apagado); }
-  #topo b { color:var(--texto); }
-  #sinal { font-size:2.4vh; }
-  #sinal.ok { color:var(--verde); } #sinal.mal { color:var(--vermelho); }
+  /* 3.0.9: a TV de apoio no PADRÃO DO SISTEMA (as cores do app.css: azul do painel, ouro, o verde da casa) */
+  :root { --fundo:#0b1526; --painel:#16233c; --painel2:#1e2d49; --borda:#2c3d5c; --texto:#eaf0fb; --apagado:#9db3d6;
+    --ouro:#f5d76e; --verde:#2e8b57; --vermelho:#a31a1a; }
+  html, body { margin:0; height:100%; color:var(--texto); overflow:hidden;
+    font-family: "Segoe UI", "Ubuntu", "Noto Sans", Arial, sans-serif;
+    background:radial-gradient(ellipse at 50% 40%, #12223d 0%, var(--fundo) 70%); }
+  /* o cabeçalho igual ao do painel: o S, o nome, o que está no ar e a pílula de estado */
+  #topo { position:fixed; top:0; left:0; right:0; height:7vh; box-sizing:border-box; display:flex; align-items:center;
+    gap:1.4vw; padding:0 2vw; background:linear-gradient(180deg,#12294a,#0d1f3a); border-bottom:.35vh solid var(--vermelho);
+    font-size:2.8vh; z-index:10; }
+  #marca svg { width:4.4vh; height:4.4vh; display:block; }
+  #topo .nome { font-weight:700; color:#fff; white-space:nowrap; }
+  #t-oque { color:var(--ouro); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+  #t-oque b { color:var(--ouro); }
+  #sinal { display:flex; align-items:center; gap:.8vw; padding:.7vh 1.4vw; border-radius:999px; font-size:2.1vh; font-weight:600;
+    background:var(--painel); border:1px solid var(--borda); color:var(--apagado); white-space:nowrap; }
+  #sinal::before { content:""; width:1.2vh; height:1.2vh; border-radius:50%; background:#6b7a93; }
+  #sinal.ok { border-color:var(--verde); color:var(--texto); }
+  #sinal.ok::before { background:var(--verde); box-shadow:0 0 0 .4vh #2e8b5740; }
+  #sinal.mal { border-color:var(--vermelho); color:#ffd2d2; }
+  #sinal.mal::before { background:#e04848; }
   .tela { position:fixed; inset:7vh 0 0 0; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
   .tela.on { display:flex; }
-  #g-img { max-width:92vw; max-height:70vh; object-fit:contain; border-radius:2vh; background:#fff; }
-  #g-parte { margin-top:2vh; font-size:4vh; color:var(--ouro); letter-spacing:.05em; }
+  /* o gesto: o cartão branco do papel da Cris, e embaixo a faixa "A seguir" */
+  #g-img { max-width:92vw; max-height:58vh; object-fit:contain; border-radius:2vh; background:#fff;
+    box-shadow:0 2vh 6vh #0009; }
+  #gesto.sem-prox #g-img { max-height:78vh; }
+  #g-parte { margin-top:1.5vh; font-size:3.4vh; color:var(--ouro); }
   #g-letra { font-size:6.2vh; line-height:1.25; font-weight:600; max-width:92vw; }
   #g-letra .rot { display:block; font-size:3.4vh; color:var(--ouro); margin-bottom:1.5vh; }
-  #c-hora { font-size:16vh; font-weight:200; letter-spacing:.04em; font-variant-numeric:tabular-nums; }
-  .c-rot { font-size:3.2vh; color:var(--apagado); text-transform:uppercase; letter-spacing:.3em; margin-top:4vh; }
-  #c-prox { font-size:7.5vh; font-weight:700; color:var(--ouro); max-width:92vw; }
-  #c-vers { font-size:5vh; max-width:88vw; }
+  #g-prox { margin-top:2.4vh; display:flex; align-items:center; gap:2vw; max-width:88vw; box-sizing:border-box;
+    padding:1.4vh 2vw; border-radius:1.6vh; background:linear-gradient(180deg,var(--painel2),var(--painel));
+    border:1px solid var(--borda); border-left:.6vh solid var(--ouro); }
+  #gesto.sem-prox #g-prox { display:none; }
+  #g-prox img { height:15vh; max-width:30vw; object-fit:contain; border-radius:1vh; background:#fff; }
+  #g-prox img[src=""] { display:none; }
+  #g-prox .rot { font-size:2.6vh; font-weight:700; color:var(--ouro); letter-spacing:.06em; text-transform:uppercase; }
+  #g-prox .txt { font-size:4vh; font-weight:600; color:var(--texto); text-align:left; }
+  /* fora do louvor: o padrão cinema, com rótulos em ouro como o painel */
+  #c-hora { font-size:16vh; font-weight:300; letter-spacing:.02em; font-variant-numeric:tabular-nums; color:var(--texto); }
+  .c-rot { font-size:2.8vh; font-weight:700; color:var(--ouro); text-transform:uppercase; letter-spacing:.06em; margin-top:4vh; }
+  #c-prox { font-size:7.5vh; font-weight:700; color:var(--texto); max-width:92vw; margin-top:.6vh; }
+  #c-vers { font-size:5vh; max-width:88vw; color:var(--texto); margin-top:.6vh; }
   /* 3.0.9: o espelho do telão (o próprio projecao.html, alimentado pelo /api/tela) */
   #espelho { inset:0; z-index:5; background:#000; }
   #esp-f { width:100%; height:100%; border:0; display:block; background:#000; }
   body.sem-topo #topo { display:none; }
+  /* a faixa da pergunta pendente não cobre o "A seguir": a tela sobe */
+  body.pendente .tela:not(#espelho) { bottom:24vh; }
+  body.pendente #g-img { max-height:40vh; }
+  body.pendente #g-prox img { height:11vh; }
   /* 3.0.9: o par com o computador da projeção */
-  #faixa { position:fixed; left:0; right:0; bottom:0; padding:1.4vh 2.5vw; font-size:2.6vh; text-align:center;
-    background:#16233ccc; color:var(--ouro); z-index:20; display:none; }
-  #dispensado .d-tit { font-size:5vh; max-width:80vw; }
-  #d-denovo { margin-top:4vh; font:600 2.8vh "Segoe UI", sans-serif; padding:1.4vh 3vw; border-radius:1vh;
-    border:1px solid #2c3d5c; background:#1e2d49; color:var(--texto); cursor:pointer; }
+  #faixa { position:fixed; right:2.4vw; bottom:2.4vh; padding:2vh 2vw; font-size:2.4vh; max-width:44vw;
+    border-radius:1.6vh; background:linear-gradient(180deg,var(--painel2),var(--painel)); border:1px solid var(--borda);
+    border:.25vh solid var(--verde); color:var(--texto); z-index:20; display:none;
+    box-shadow:0 0 2vh #2e8b5740, 0 2vh 5vh #000c, inset 0 1px 0 #ffffff1a; }
+  #faixa .f-tit { color:var(--ouro); font-weight:700; font-size:2.8vh; }
+  #faixa .f-txt { margin:.8vh 0 1.6vh; color:#cdd9ee; }
+  #faixa b { color:#fff; }
+  #faixa .f-acoes { display:flex; gap:1vw; justify-content:flex-end; }
+  #faixa button { font:600 2.2vh "Segoe UI", sans-serif; padding:1vh 1.6vw; border-radius:1vh; cursor:pointer;
+    border:1px solid var(--borda); background:var(--painel2); color:var(--texto); }
+  #faixa button.sim { background:var(--verde); border-color:transparent; color:#fff; }
+  #dispensado .cartao { max-width:70vw; padding:6vh 5vw; border-radius:4vh; background:linear-gradient(160deg,#14487a,#0f2f5e);
+    border:.5vh solid var(--ouro); box-shadow:0 4vh 12vh #000c; }
+  #dispensado .d-tit { font-size:5vh; font-weight:700; color:#fff; }
+  #dispensado .d-sub { font-size:3vh; color:var(--apagado); margin-top:2vh; }
+  #d-denovo { margin-top:4vh; font:700 2.8vh "Segoe UI", sans-serif; padding:1.4vh 3vw; border-radius:1vh;
+    border:0; background:var(--ouro); color:#20242c; cursor:pointer; }
+  /* caiu a rede: a ÚLTIMA imagem fica, com este aviso pequeno no canto (nada de tela preta) */
+  #reconectando { position:fixed; left:1.6vw; bottom:1.6vh; z-index:40; display:none; align-items:center; gap:.8vw;
+    padding:.8vh 1.4vw; border-radius:999px; font-size:2vh; font-weight:600; color:#f3d98a;
+    background:#16233ce6; border:1px solid #d9a44199; }
+  #reconectando::before { content:""; width:1.1vh; height:1.1vh; border-radius:50%; background:#d9a441; }
+  body.caiu #reconectando { display:flex; }
   /* o quadradinho do "Identificar" do Windows, nas cores do Sistema (azul, borda e número em ouro) */
   #ident { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
     background:#05070d8c; opacity:0; transition:opacity .35s; pointer-events:none; }
@@ -62,13 +109,16 @@
 </style>
 </head>
 <body>
-<div id="topo"><span id="t-oque">Retorno</span><span id="sinal">procurando o computador principal…</span></div>
+<div id="topo"><span id="marca"></span><span class="nome">Tela de retorno</span><span id="t-oque"></span>
+  <span id="sinal">procurando o computador principal…</span></div>
 
 <!-- durante o louvor: o gesto (ou a letra, enquanto o gesto não foi ligado) -->
-<section class="tela" id="gesto">
+<section class="tela sem-prox" id="gesto">
   <img id="g-img" alt="">
   <div id="g-letra"></div>
   <div id="g-parte"></div>
+  <!-- ordem dele (16h49): SEMPRE mostrar a prévia do que vem -->
+  <div id="g-prox"><img id="gp-img" src="" alt=""><div><div class="rot">A seguir</div><div class="txt" id="gp-txt"></div></div></div>
 </section>
 
 <!-- fora do louvor: padrão cinema -->
@@ -80,18 +130,25 @@
   <div id="c-vers">—</div>
 </section>
 
-<!-- 3.0.9: Bíblia, aviso, fundo, aula: o MESMO desenho do telão -->
+<!-- 3.0.9: Bíblia, aviso, fundo, aula, louvor sem gesto: o MESMO desenho do telão -->
 <section class="tela" id="espelho"><iframe id="esp-f" title="o que está no telão"></iframe></section>
 
 <!-- 3.0.9: o operador respondeu "não" à pergunta "Projetar com duas telas?" -->
 <section class="tela" id="dispensado">
-  <div class="d-tit">O operador preferiu projetar com uma tela só.</div>
-  <div class="c-rot">Esta TV fica de fora até o Sistema ser aberto de novo</div>
-  <button id="d-denovo">Pedir de novo</button>
+  <div class="cartao">
+    <div class="d-tit">Só o telão</div>
+    <div class="d-sub">Esta tela de retorno está desligada.</div>
+    <button id="d-denovo">Usar as duas telas</button>
+  </div>
 </section>
 
-<div id="faixa">Aguardando o operador responder no computador da projeção: “Projetar com duas telas?”</div>
-<div id="ident"><div class="q"><b id="ident-n">2</b><span id="ident-rot">Tela de apoio</span></div></div>
+<!-- a MESMA pergunta do painel: quem responder primeiro (aqui ou lá) fecha as duas -->
+<div id="faixa"><div class="f-tit">Nova tela encontrada</div>
+  <div class="f-txt">Esta tela pode ser a tela de retorno do computador <b id="f-pc">da projeção</b>.</div>
+  <div class="f-acoes"><button id="f-nao">Agora não</button><button id="f-sim" class="sim">Usar as duas telas</button></div></div>
+<div id="reconectando">reconectando…</div>
+<div id="ident"><div class="q"><b id="ident-n">2</b><span id="ident-rot">Tela de retorno</span></div></div>
+<script src="icones.js" onerror="void 0"></script>
 
 <script src="dados/louvores.js"></script>
 <script>window.GESTOS = window.GESTOS || {};</script>
@@ -152,6 +209,26 @@ function versiculo(e) {
   return ultimoVers;
 }
 
+// A SEGUIR (ordem dele, 16h49: "SEMPRE mostrar a prévia do que vem"): o gesto da próxima tela, ou o
+// próximo louvor quando a próxima tela é de espera. Sem nada a seguir, a faixa some e o gesto cresce.
+function aSeguir(e, g) {
+  let tabela = null, n = -1, atual = (g && g.louvor) || '';
+  if (e.tipo === 'slide') { const ap = apresNoAr(e); tabela = ap && G()['apres:' + ap]; n = e.slidepp; }
+  else if (e.tipo === 'louvor' && LOUV[e.louvor]) { tabela = G()['louvor:' + chaveLouvor(LOUV[e.louvor])]; n = e.slide; }
+  let img = '', txt = '';
+  const prox = tabela && tabela[String(n + 1)];
+  if (g && prox && prox.img) {
+    img = prox.img;
+    txt = prox.louvor && prox.louvor !== atual ? prox.louvor : 'próximo trecho';
+  } else {
+    const px = proximo(e);
+    if (px && px !== atual) txt = 'próximo louvor: ' + px;
+  }
+  $('#gp-img').setAttribute('src', img);
+  $('#gp-txt').textContent = txt;
+  $('#gesto').classList.toggle('sem-prox', !txt);
+}
+
 function hora() {
   const d = new Date();
   $('#c-hora').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -159,7 +236,7 @@ function hora() {
 
 async function puxaTela() {
   try {
-    const r = await fetch('/api/tela?n=' + telaN, { cache: 'no-store' }).then(r => r.json());
+    const r = await pega('/api/tela?n=' + telaN, 4000);
     if (r.payload) { telaN = r.n; telaPayload = r.payload; }
     if (telaPayload && telaPayload.modo === 'biblia' && telaPayload.ref) ultimoVers = telaPayload.ref;
   } catch (e) {}
@@ -179,25 +256,38 @@ let identAte = 0, pedirDeNovo = false, espPronto = false, espN = -1;
 async function ola() {
   if (LOCAL) return;
   try {
-    const r = await fetch('/api/apoio?nome=' + encodeURIComponent(NOME) + (pedirDeNovo ? '&denovo=1' : ''),
-                          { cache: 'no-store' }).then(r => r.json());
+    const r = await pega('/api/apoio?nome=' + encodeURIComponent(NOME) + (pedirDeNovo ? '&denovo=1' : ''));
     if (r && r.ok) {
       apoio = r; pedirDeNovo = false;
+      if (r.pc) $('#f-pc').textContent = r.pc;
       if (r.identificar > 0) identAte = Date.now() + r.identificar * 1000;
     }
   } catch (e) {}
 }
-$('#d-denovo').onclick = () => { pedirDeNovo = true; ola(); };
+async function responder(acao) {
+  try { await fetch('/api/apoio', { method: 'POST', body: JSON.stringify({ chave: apoio.chave, acao }) }); } catch (e) {}
+  ola();
+}
+$('#d-denovo').onclick = () => responder('sim');
+$('#f-sim').onclick = () => responder('sim');
+$('#f-nao').onclick = () => responder('nao');
 
-function especial(nome) { return !!(nome && G()['apres:' + nome]); }
+function soLouvor(nome) {
+  const t = nome && G()['apres:' + nome]; if (!t) return false;
+  const n = Object.keys(t).length, total = +(window.__estado_slides || 0);
+  return total > 0 ? n / total >= 0.6 : n >= 20;
+}
 
 // O que esta TV mostra: gesto/letra (louvor), cinema (espera, nada no ar) ou o espelho do telão.
 function modoDe(e, g) {
-  if (apoio.papel === 1) return 'espelho';                 // depois do Trocar, ESTA é o telão
+  if (apoio.papel === 1 || apoio.modo === 'igual') return 'espelho';   // depois do Trocar, ou "Retorno igual ao telão"
   if (e.projetando === false) return 'cinema';
-  if (e.tipo === 'louvor' || (e.tipo === 'slide' && g)) return 'gesto';
+  if (g) return 'gesto';                                   // louvor ou slide com gesto da Cris
+  if (e.tipo === 'louvor') return espPronto ? 'espelho' : 'letra';   // sem gesto: a MESMA tela do telão
   if (!e.tipo || e.tipo === 'descanso' || e.tipo === 'preto') return 'cinema';
-  if (e.tipo === 'slide' && especial(apresNoAr(e))) return 'cinema';   // a espera da apresentação de gestos: o próximo louvor
+  // numa apresentação QUASE TODA de louvor (os Louvores: 24 de 30 com gesto) o slide sem gesto é a espera entre
+  // louvores: o próximo louvor grande. Na aula (9 de 22) o resto é o material da aula: espelho do telão.
+  if (e.tipo === 'slide' && soLouvor(apresNoAr(e))) return 'cinema';
   return 'espelho';
 }
 
@@ -220,28 +310,46 @@ function mostraIdent() {
   $('#ident').classList.toggle('on', on);
   if (on) {
     $('#ident-n').textContent = apoio.papel === 1 ? '1' : '2';
-    $('#ident-rot').textContent = (apoio.papel === 1 ? 'Telão' : 'Tela de apoio') + (apoio.nome && !LOCAL ? ' · ' + apoio.nome : '');
+    $('#ident-rot').textContent = (apoio.papel === 1 ? 'Telão' : 'Tela de retorno') + (apoio.nome && !LOCAL ? ' · ' + apoio.nome : '');
   }
 }
 setInterval(mostraIdent, 150);
 
+// A CONEXÃO NÃO DESISTE (ordem dele, 18/10 00h35: "os dois computadorzinhos são fracos (...) ele vai estar
+// sempre tentando conectar ali, de boa"). Uma pergunta por vez, com prazo de 1,5 s. Ligado: a cada 0,5 s.
+// Sem resposta: 1 tentativa por segundo nos primeiros 15 minutos, depois 1 a cada 5 s, para sempre. A última
+// imagem fica na TV, com "reconectando…" no canto. Se o PC voltar com OUTRO endereço, quem acha é o modo gestos
+// do Vaio, pelo nome no anúncio da rede.
+let caiuDesde = 0;
+function pega(url, ms) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 1500);
+  return fetch(url, { cache: 'no-store', signal: c.signal }).then(r => r.json()).finally(() => clearTimeout(t));
+}
 async function ciclo() {
   let r = null;
-  try { r = await fetch('/api/estado', { cache: 'no-store' }).then(r => r.json()); } catch (e) {}
+  try { r = await pega('/api/estado'); } catch (e) {}
   const sinal = $('#sinal');
-  if (!r || !r.ok) { sinal.textContent = 'sem sinal do computador principal'; sinal.className = 'mal';
-                     document.body.classList.remove('sem-topo'); return; }
+  if (!r || !r.ok) {
+    if (!caiuDesde) caiuDesde = Date.now();
+    document.body.classList.add('caiu');
+    sinal.textContent = 'reconectando…'; sinal.className = 'mal';
+    return;
+  }
+  caiuDesde = 0;
+  document.body.classList.remove('caiu');
   if (r.idade > 10) { sinal.textContent = 'o Sistema do computador principal parou de responder'; sinal.className = 'mal'; }
   else { sinal.textContent = 'ligado ao computador principal'; sinal.className = 'ok'; }
   await ola();
   $('#faixa').style.display = apoio.estado === 'pendente' ? 'block' : 'none';
+  document.body.classList.toggle('pendente', apoio.estado === 'pendente');
   if (apoio.estado === 'dispensado') {
     document.body.classList.remove('sem-topo');
-    $('#t-oque').textContent = 'Retorno';
+    $('#t-oque').textContent = '';
     mostra('dispensado');
     return;
   }
   const e = r.estado || {};
+  window.__estado_slides = e.slides || 0;   // quantos slides tem a apresentação no ar
   await puxaTela();
   const g = gestoDe(e);
   const modo = modoDe(e, g);
@@ -252,9 +360,11 @@ async function ciclo() {
     mostra('espelho');
     return;
   }
-  if (modo === 'gesto') {
+  if (modo === 'letra') alimentaEspelho();           // começa a carregar o espelho; até lá, a letra
+  if (modo === 'gesto' || modo === 'letra') {
     const tit = g && g.louvor || (LOUV[e.louvor] && e.tipo === 'louvor' ? LOUV[e.louvor].titulo : '');
-    $('#t-oque').innerHTML = tit ? '<b>' + tit + '</b>' : 'Louvor';
+    $('#t-oque').textContent = tit || 'Louvor';
+    aSeguir(e, g);
     if (g && g.img) {
       $('#g-img').src = g.img; $('#g-img').style.display = '';
       $('#g-letra').style.display = 'none';
@@ -270,7 +380,7 @@ async function ciclo() {
     }
     mostra('gesto');
   } else {
-    $('#t-oque').textContent = e.agora ? limpa(e.agora) : 'Retorno';
+    $('#t-oque').textContent = e.agora ? limpa(e.agora) : '';
     const px = proximo(e), vs = versiculo(e);
     $('#c-prox').textContent = px || '—';
     $('#c-prox-rot').style.visibility = px ? '' : 'hidden';
@@ -279,8 +389,15 @@ async function ciclo() {
     mostra('cinema');
   }
 }
+try { if (window.Icones) $('#marca').innerHTML = window.Icones.MARCA(30); } catch (e) {}
 hora(); setInterval(hora, 1000);
-ciclo(); setInterval(ciclo, 500);
+(async function laco() {
+  for (;;) {
+    await ciclo();
+    const fora = caiuDesde ? Date.now() - caiuDesde : 0;
+    await new Promise(ok => setTimeout(ok, !caiuDesde ? 500 : fora < 15 * 60 * 1000 ? 1000 : 5000));
+  }
+})();
 </script>
 </body>
 </html>

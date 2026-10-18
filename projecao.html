@@ -630,7 +630,7 @@ function duasTelas(d){
     o.innerHTML='<div style="width:46vh;height:46vh;border-radius:6vh;background:linear-gradient(160deg,#14487a,#0f2f5e);border:.7vh solid #f5d76e;box-shadow:0 4vh 12vh #000c;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
       '<div style="font-size:30vh;font-weight:800;line-height:1;color:#f5d76e">'+d.n+'</div>'+
       '<div style="font-size:3.6vh;color:#eaf0fb;margin-top:1.5vh;letter-spacing:.04em">'+(d.rotulo||'')+'</div></div>';
-    requestAnimationFrame(()=>{ o.style.opacity='1'; }); clearTimeout(duasTelas.t);
+    setTimeout(()=>{ o.style.opacity='1'; }, 20); clearTimeout(duasTelas.t);   // setTimeout: o rAF para em janela de fundo
     duasTelas.t=setTimeout(()=>{ o.style.opacity='0'; }, d.ms||3000);
   } else {
     let f=document.getElementById('papel-apoio');
