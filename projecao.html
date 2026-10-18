@@ -218,12 +218,14 @@ const tela=$('#tela'), cam=$('#cam');
 // A FOLGA da etiqueta "LOUVOR" (18/10): a ponta inclinada dela chega a 33,6% da largura na altura do título (medido nos
 // estilos limpo e mapa, 1280x720) e o título comprido, centrado, começava em cima dela. Fica o centro de sempre; só
 // quando o começo do texto passaria de 34,8% para a esquerda ele ganha recuo, e se aí não couber à direita a letra encolhe.
-const TIT_MIN = 0.348, TIT_MAX = 0.985;
+// a ponta muda com o estilo (medido 18/10 em 1280x720): no limpo a etiqueta inclinada chega a 33,6% (x=430); no mapa
+// o 'Louvor' pequeno termina em 14,9% (x=191). + ~1,2% de folga.
+const TIT_MIN_ESTILO = { 'e-limpo': 0.348, 'e-mapa': 0.161 }, TIT_MAX = 0.985;
 function folgaTitulo(){
   el.tit.style.paddingLeft = ''; el.tit.style.fontSize = '';
   const r = document.createRange(); r.selectNodeContents(el.tit);
   const caixa = () => { const rs = [...r.getClientRects()]; return rs.length ? { l: Math.min(...rs.map(q => q.left)), d: Math.max(...rs.map(q => q.right)) } : null; };
-  const W = innerWidth;
+  const W = innerWidth, TIT_MIN = TIT_MIN_ESTILO[document.getElementById('tela').className] || 0.348;
   let px = parseFloat(getComputedStyle(el.tit).fontSize);
   for (let n = 0; n < 30; n++) {
     el.tit.style.paddingLeft = '';
