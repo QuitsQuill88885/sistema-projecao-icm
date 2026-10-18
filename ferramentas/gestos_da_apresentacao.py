@@ -20,6 +20,39 @@ APP = Path(__file__).resolve().parent.parent
 COLET = Path(r"C:\Projetos\Sistema\Evangelizacao Outubro 2026\gerador\gestos_cris")
 # Uma entrada por apresentação. "slides" = só estes slides podem ter gesto (None = todos). Na aula, a capa
 # e o fim também dizem "Você sabe o que é salvação?" e empurrariam o ponteiro antes do louvor começar.
+# 18/10 16h33 (Samuel, pela HD): A FONTE DAS FIGURAS É A COLETÂNEA que a casa fez para a Cris ("É para usar o que tá na
+# coletânea que a gente fez pra Cris"). Ela é a fonte dele: gerador/gestos_dados.py, uma linha por frase, com as figuras na
+# ordem, a palavra do gesto em **negrito** (cada figura começa num negrito) e as marcas #BIS/#FIMBIS. O 69 é o do CADERNO
+# (Apostila de Gestos 2022, p. 35), decisão de 10/10. O recorte do PDF da Cris de 2026 (COLET) deixou de ser a fonte.
+COLETANEA = Path(r"C:\Projetos\Coletanea-Ipero")
+
+
+def gestos_da_coletanea():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("gestos_dados_coletanea", COLETANEA / "gerador" / "gestos_dados.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m.GESTOS
+
+
+def figura_da_coletanea(f):
+    """"pasta/arquivo.png" (gerador/figs) ou "p198:NN" (pesquisa/dados/gestos_198/fig_NN.png)."""
+    if f.startswith("p198:"):
+        return COLETANEA / "pesquisa" / "dados" / "gestos_198" / ("fig_%s.png" % f.split(":", 1)[1])
+    return COLETANEA / "gerador" / "figs" / f
+
+
+def pedacos_do_negrito(md, n):
+    """A legenda de CADA figura: na coletânea cada figura começa num negrito ("**Fui lavado** no sangue **do Cordeiro**,"
+    -> "Fui lavado no sangue" | "do Cordeiro,"). Só reparte quando há um negrito por figura; senão, a frase inteira."""
+    inicios = [m.start() for m in re.finditer(r"\*\*", md)][0::2]
+    if n < 2 or len(inicios) != n:
+        return []
+    inicios[0] = 0
+    limpo = lambda t: " ".join(t.replace("**", "").split())
+    return [limpo(md[inicios[k]:(inicios[k + 1] if k + 1 < n else len(md))]) for k in range(n)]
+
+
 APRESENTACOES = {
     "Louvores da Evangelização de Outubro 2026": {
         "pasta": "evang_out2026", "slides": None,
@@ -38,9 +71,7 @@ LOUVORES = APRESENTACOES[APRES]["louvores"]
 SLIDES = APRESENTACOES[APRES]["slides"]
 # frases que VOLTAM nos slides sem estar repetidas no papel (o coro do 97 vem uma vez, "CORO 2x",
 # e volta depois de cada estrofe). Índice = posição no gestos.json da Coletânea.
-REPETEM = {"97": {4, 5},
-           # a aula (3.0.9): o "bis" do 69 e o coro do 249, que volta no slide 20
-           "69": {11, 12, 15}, "249": {8, 9, 10, 11}}
+REPETEM = {}   # 18/10: com a coletânea, o que pode repetir é o que está dentro de #BIS (frase["bis"])
 # figuras que o recorte da Coletânea NÃO pegou. 18/10: VAZIO. A mão levantada (imagem 48 do PDF) que
 # entrava aqui à mão em 3 frases era jogada fora pelo filtro de largura do extrai_gestos.py; com o filtro
 # consertado ela vem do próprio livro em 9 frases de 5 louvores, cada uma no lugar dela.
@@ -49,10 +80,10 @@ FALTAM = {}
 # vencedor. Estamos preparando, estamos preparando" numa frase só, e a figura 198_106 (= 198_108, md5
 # 18508e00) fica ao lado de "Estamos preparando" (pág. 3, y 470-522). Ela NÃO é do slide 25, e o
 # slide 26 já mostra esse mesmo gesto pela 198_108.
-TIRAR = {("198", 17)}
+TIRAR = set()   # era do recorte do PDF; a coletânea separa "Que me faz vencedor." e "Estamos preparando"
 # aula (3.0.9): o papel dos gestos diz "e entregue"; a apostila da Cris e o slide dizem "e entrega" (a versao
 # do caderno, a certa). Casa e escreve como a apostila. O slide 11 tem o texto colado ("ENTREGAA"): a 2a forma.
-CASA_COMO = {("69", 12): ["e entrega", "e entregaa"]}
+CASA_COMO = {("69", "e entrega"): ["e entrega", "e entregaa"]}   # o slide 11 tem "ENTREGAA" colado
 COBRE = 0.8           # reserva: fração das palavras DIFERENTES da frase presentes, juntas, no slide
 
 
@@ -63,21 +94,26 @@ def norm(t):
 
 
 def frases_do(louvor, gestos):
-    out = []
-    for i, it in enumerate(gestos[louvor]):
-        if it["tipo"] != "frase":
+    """As frases do louvor na ordem da COLETÂNEA. "bis": a frase está dentro de um #BIS (pode voltar no slide seguinte)."""
+    out, i, bis = [], 0, 0
+    for it in gestos[louvor]:
+        if isinstance(it[0], str):
+            if it[0] == "#BIS":
+                bis += 1
+            elif it[0] == "#FIMBIS":
+                bis = max(0, bis - 1)
             continue
-        txt = " ".join("".join(p[0] for p in it["ped"]).split())
-        figs = [] if (louvor, i) in TIRAR else it["figs"]
-        formas = CASA_COMO.get((louvor, i), [txt])
-        legs = pedacos(txt, it.get("legs"), len(it["figs"])) if figs else []
-        for forma in formas:
-            out.append({"i": i, "txt": formas[0] if (louvor, i) in CASA_COMO else txt, "pal": norm(forma),
-                        "figs": figs + FALTAM.get((louvor, i), []), "legs": legs})
+        figs, md = it
+        txt = " ".join(md.replace("**", "").split())
+        caminhos = [str(figura_da_coletanea(f)) for f in figs]
+        legs = pedacos_do_negrito(md, len(figs))
+        for forma in CASA_COMO.get((louvor, txt), [txt]):
+            out.append({"i": i, "txt": txt, "pal": norm(forma), "figs": caminhos, "legs": legs, "bis": bis > 0})
+        i += 1
     return out
 
 
-def pedacos(txt, legs, n):
+def pedacos(txt, legs, n):   # (o jeito do recorte do PDF, guardado; a coletânea usa pedacos_do_negrito)
     """O pedaço da letra de CADA figura, lido pelo extrator na posição do texto em volta dela no livro.
     Só vale onde muda alguma coisa: frase com 2+ figuras ("O Pai Celeste" | "que deseja a ti todo Bem.")
     ou frase que o extrator montou cruzando as duas colunas (249: "oportunidade," era a figura de
@@ -112,7 +148,7 @@ def casa_slide(texto, frases, ponteiro, louvor=""):
     seq = norm(texto)
     # 4) o Período anda para a frente: frase que já passou só volta se for REPETIÇÃO
     #    (tem outra ocorrência igual dali em diante: o coro, a 2ª volta)
-    adiante = {" ".join(f["pal"]) for f in frases if f["i"] >= ponteiro or f["i"] in REPETEM.get(louvor, ())}
+    adiante = {" ".join(f["pal"]) for f in frases if f["i"] >= ponteiro or f.get("bis")}
     frases = [f for f in frases if f["i"] >= ponteiro or " ".join(f["pal"]) in adiante]
     usados = set()                      # posições do slide já tomadas
     achadas = {}                        # chave da frase -> (posição no slide, frase)
@@ -191,7 +227,7 @@ def legenda(frase, texto):
 
 
 def monta_imagem(frases, louvor, destino, texto=""):
-    itens = [(Path(COLET, "figs", louvor, fig), leg_da_figura(f, j, texto)) for f in frases for j, fig in enumerate(f["figs"])]
+    itens = [(Path(fig), leg_da_figura(f, j, texto)) for f in frases for j, fig in enumerate(f["figs"])]
     itens = [(p, t) for p, t in itens if p.exists()]
     if not itens:
         return False
@@ -240,7 +276,7 @@ def exporta_figuras(frases, louvor, pasta, texto=""):
     for f in frases:
         for j, fig in enumerate(f["figs"]):
             leg = leg_da_figura(f, j, texto)
-            p = Path(COLET, "figs", louvor, fig)
+            p = Path(fig)
             if not p.exists():
                 continue
             nome = "%s_%s.webp" % (louvor, Path(fig).stem)
@@ -266,7 +302,7 @@ def exporta_figuras(frases, louvor, pasta, texto=""):
 
 def main():
     gravar = "--gravar" in sys.argv
-    gestos = json.load(open(COLET / "gestos.json", encoding="utf-8"))
+    gestos = gestos_da_coletanea()
     textos = json.load(open(APP / "apresentacoes" / APRES / "textos.json", encoding="utf-8"))
     frases = {k: frases_do(k, gestos) for k in LOUVORES}
     ponteiro = {k: 0 for k in LOUVORES}
