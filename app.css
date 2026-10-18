@@ -900,3 +900,28 @@ body.pb-on.pb-a2 #apr .apr-lado.ant{width:calc(var(--d) * .07)}
 /* o item da Lista no tom dos chips (o azul aceso destoava); no telão = a faixa de ouro */
 body.pb-on .fila-item{background:var(--painel2);border:1px solid var(--borda)}
 body.pb-on .fila-item.atual{background:#2a2410;border-color:var(--ouro);box-shadow:inset 3px 0 0 var(--ouro)}
+
+/* ===== 3.0.9: A GEOMETRIA DO PAINEL (HD 18/10 01h30; cores e fundo congelados, só posição e tamanho) =====
+   CENTRO: AGORA ~60% da largura útil; PRÓXIMO ~35% alinhado pelo topo; o ANTERIOR pequeno embaixo do próximo;
+   os louvores embaixo do AGORA; o bloco centralizado na vertical entre o cabeçalho e a faixa de baixo. */
+body.pb-on #apr .apr-palco{display:grid;grid-template-columns:60% 35%;
+  grid-template-areas:"g p" "g a" "c a";grid-template-rows:auto auto auto;column-gap:4%;row-gap:26px;
+  align-content:center;justify-content:center;padding:0 12px}
+body.pb-on #apr .apr-grande{grid-area:g;width:auto;align-self:start}
+body.pb-on #apr .apr-lado.px{grid-area:p;width:auto;align-self:start}
+body.pb-on #apr .apr-lado.ant{grid-area:a;width:60%;justify-self:center;align-self:start;margin-top:8px}
+body.pb-on #pb-louvores{grid-area:c;justify-content:flex-start}
+body.pb-on.pb-a2 #apr .apr-palco{grid-template-areas:"g p" "g a"}
+/* DIREITA com duas telas: ① e ② lado a lado, em meio tamanho; a Lista fica com o resto */
+/* (o painel vira grade de 2 colunas só com as duas telas; nada muda de lugar no DOM) */
+body.pb-on.pb-dupla #painel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);
+  align-content:stretch;column-gap:8px;row-gap:6px}
+body.pb-on.pb-dupla #painel > *{grid-column:1 / -1}
+body.pb-on.pb-dupla #painel > .preview-box:not(#pb-retorno){grid-column:1;grid-row:1}
+body.pb-on.pb-dupla #painel > #pb-retorno{grid-column:2;grid-row:1}
+body.pb-on.pb-dupla #painel > #pb-retorno{margin:0}
+body.pb-on.pb-dupla #painel > .preview-box .mini{width:100%}
+body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
+/* o cartão das duas telas abre no canto de baixo do CENTRO, nunca por cima da Lista */
+#dt-cartao{right:362px}
+body.pb-on #dt-cartao{bottom:78px}

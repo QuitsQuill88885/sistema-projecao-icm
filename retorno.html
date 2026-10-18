@@ -440,6 +440,16 @@ function slideCard(url, rotulo) {
   return { cls: 'slide', css: '', html: (url ? '<canvas class="gfundo" width="32" height="18"></canvas><img src="' + url + '" alt="" onload="desfoca(this)">' : '') +
     (rotulo ? '<div class="gsl">' + escH(rotulo) + '</div>' : '') };
 }
+const PRE = new Set();
+function preCarrega(urls) {
+  const fazer = () => urls.forEach(u => {
+    if (!u || PRE.has(u)) return;
+    PRE.add(u);
+    const im = new Image(); im.src = u;
+    if (im.decode) im.decode().catch(() => {});
+  });
+  if (window.requestIdleCallback) requestIdleCallback(fazer, { timeout: 1200 }); else setTimeout(fazer, 400);
+}
 function pintaApres(e, g) {
   const ap = apresNoAr(e), t = G()['apres:' + ap] || {}, sl = APRS[ap] || [], n = e.slidepp, total = sl.length || e.slides || 0;
   document.body.classList.add('gestos');
@@ -465,6 +475,9 @@ function pintaApres(e, g) {
   }
   $('#t-oque').textContent = g && g.louvor ? g.louvor : ap;
   ajustaRotulos();
+  // o slide +2 já vai sendo preparado em segundo plano
+  const dois = t[String(n + 2)];
+  preCarrega(dois && dois.figs ? dois.figs.map(f => f.img) : [sl[n + 2]]);
 }
 function soLouvor(nome) {
   const t = nome && G()['apres:' + nome]; if (!t) return false;
