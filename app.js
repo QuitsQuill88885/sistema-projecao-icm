@@ -4014,6 +4014,8 @@ function dtPilula() {
   p.innerHTML = lig ? '<span class="dt-bola"></span>' + ICO_2TELAS + '<span>2 telas · ' + dtEsc(lig.nome) + '</span>'
     : caiu ? '<span class="dt-bola"></span><span>reconectando · ' + dtEsc(caiu.nome) + '</span>'
     : fora ? ICO_2TELAS + '<span>Conectar a tela de retorno</span>' : '';
+  // 3.0.11: em tela estreita a pílula fica só com o desenho (CSS); o texto inteiro aparece ao passar o mouse
+  p.title = lig ? '2 telas · ' + lig.nome : caiu ? 'reconectando · ' + caiu.nome : fora ? 'Conectar a tela de retorno' : '';
 }
 function ligarDuasTelas() {
   const passo = async () => {
