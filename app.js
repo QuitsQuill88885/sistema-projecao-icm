@@ -2123,7 +2123,7 @@ function atualizarTamLabel() {
 function trocarEstilo() {
   est.estilo = est.estilo === 'limpo' ? 'mapa' : 'limpo';
   aplicarEstilo(); renderFundos();
-  $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
+  $('#estilo-nome').textContent = $('#btn-estilo').title = ESTILO_NOME[est.estilo];
   const l = est.live;
   if (l && l.tipo === 'louvor') projetarLouvor(est.louvorIdx, est.louvorSlide, false);
   else if (l && l.tipo === 'biblia' && est.bibPos) projetarVerso(est.bibPos.livro, est.bibPos.cap, est.bibPos.v);
@@ -2394,7 +2394,11 @@ function atualizarAgora() {
 }
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1800); }
 function trocarAba(aba) { est.aba = aba; $$('.tab').forEach(t => t.classList.toggle('ativo', t.dataset.aba === aba)); $$('.view').forEach(v => v.classList.toggle('ativo', v.dataset.aba === aba));
-  if (aba === 'slides') aprAtualizar(); }   // 3.0.5: de volta da Bíblia/louvor, o painel mostra o que está no ar
+  if (aba === 'slides') aprAtualizar();   // 3.0.5: de volta da Bíblia/louvor, o painel mostra o que está no ar
+  marcarModoApr(); }
+// 3.0.11 (ele, 23/10): "não tenho que mexer no estilo padrão no modo de apresentação" — com a apresentação aberta e na
+// frente, o botão do estilo some da barra de cima (o CSS lê a classe do body); nas outras abas ele volta.
+function marcarModoApr() { document.body.classList.toggle('modo-apr', aprAberto()); }
 
 function listaFundos() {
   return [{ arquivo: FB.descanso, nome: 'Descanso (Maranata)', cat: 'Cultos' },
@@ -2610,6 +2614,7 @@ function entrarApresentacao(a, pos) {
   aprNumLimpa();
   $('#apr').classList.remove('oculto');
   $('.view[data-aba="slides"]').classList.add('apr-on');
+  marcarModoApr();
   aprPintarCol();
   colocarNaFila(a.nome);
   projetarSlide(clamp(pos || 0, 0, a.slides.length - 1));
@@ -2620,6 +2625,7 @@ function entrarApresentacao(a, pos) {
 function sairApresentacao() {
   const a = $('#apr'); if (!a) return;
   a.classList.add('oculto'); $('.view[data-aba="slides"]').classList.remove('apr-on');
+  marcarModoApr();
   aprNumLimpa(); statusSlides('');
   renderApresentacoes();
 }
@@ -3073,7 +3079,7 @@ function aplicarReset(o) {
     renderFila();
     IGREJA = { nome: '', endereco: '', cultos: CULTOS_PADRAO.map(c => Object.assign({}, c)), moveis: {} };
     salvarIgreja(); aplicarNomeIgreja(); renderCultos(); renderAvisos();
-    est.estilo = 'limpo'; aplicarEstilo(); $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
+    est.estilo = 'limpo'; aplicarEstilo(); $('#estilo-nome').textContent = $('#btn-estilo').title = ESTILO_NOME[est.estilo];
     Guardar.gravar('icm_bemvindo_ok', false);
     // ATÉ AQUI só limpamos a memória desta tela. O que faz o Sistema voltar a
     // ser NOVO é apagar os arquivos do operador ao lado do programa e reabrir:
@@ -4150,7 +4156,7 @@ async function iniciar() {
   carregarDadosUsuario();
   const v = $('#ini-versao'); if (v) v.textContent = 'Versão ' + VERSAO;
   aplicarEstilo();
-  $('#estilo-nome').textContent = ESTILO_NOME[est.estilo];
+  $('#estilo-nome').textContent = $('#btn-estilo').title = ESTILO_NOME[est.estilo];
   const pf = $('#preview'); pf.addEventListener('load', () => { previews.length = 0; previews.push(pf.contentWindow); post(pf.contentWindow, est.ultimo); });
   if (pf.contentWindow) { previews.push(pf.contentWindow); }
   const ms = $('#marca-svg'); if (ms && window.Icones) ms.innerHTML = window.Icones.MARCA(30);

@@ -68,6 +68,12 @@ header .logo{font-weight:800;font-size:17px;color:#fff;letter-spacing:.5px;white
             background:var(--vermelho);color:#fff;font-size:14px;font-weight:700}
 .estilo-btn:hover{background:#c22}
 .estilo-btn .ico{font-size:17px}
+/* 3.0.11 (ele, 23/10): o botão do estilo nunca cresce em duas linhas nem tampa as abas (Fundos). Com a apresentação
+   aberta ele some; em tela estreita fica só o ícone (o nome aparece ao passar o mouse). */
+.estilo-btn{flex:none;white-space:nowrap}
+body.modo-apr #btn-estilo{display:none}
+@media (max-width:1100px){ #estilo-nome{display:none} .estilo-btn{padding:9px 11px} }
+@media (max-width:900px){ .tab{padding:8px 8px;gap:5px} }   /* 1024 com zoom de 125%: a aba Fundos ainda cabe */
 
 /* ---------- MAIN: conteúdo | painel ---------- */
 main{display:grid;grid-template-columns:1fr 348px;overflow:hidden;min-height:0}
