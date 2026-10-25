@@ -3997,6 +3997,63 @@ class Ponte:
 
 
 
+def motor_da_janela():
+    """3.0.12: "qt" quando o PySide6 (QtWebEngine) está no pacote; senão o WebView2 de antes. SISTEMA_MOTOR força um."""
+    pedido = (os.environ.get("SISTEMA_MOTOR") or "").strip().lower()
+    if pedido in ("qt", "edgechromium"):
+        return pedido
+    try:
+        import importlib.util
+        if importlib.util.find_spec("PySide6") and importlib.util.find_spec("PySide6.QtWebEngineWidgets"):
+            return "qt"
+    except Exception:
+        pass
+    return "edgechromium"
+
+
+def limpeza_de_memoria_qt(perfil):
+    """3.0.12, motor Qt — O VAZAMENTO DO QtWebEngine 6 (QTBUG-150562; github.com/JezerM/web-greeter/issues/93): o V8 do
+    QtWebEngine não dispara a coleta de lixo sozinho, e o que a página cria a cada atualização fica acumulado. Medido
+    aqui em 25/10: o painel foi de 116 para 813 MB em 40 slides; coletando a cada 10 slides parou em 270-289 MB (80
+    slides). Remédio do próprio relato: --js-flags=--expose-gc (em QTWEBENGINE_CHROMIUM_FLAGS, no início do programa) e
+    window.gc() a cada 8 s, injetado aqui em TODA página e quadro (painel, telão, retorno, prévias) sem mexer no HTML."""
+    try:
+        from PySide6.QtWebEngineCore import QWebEngineScript
+        s = QWebEngineScript()
+        s.setName("sistema-limpeza-de-memoria")
+        s.setSourceCode("(function(){if(window.__limpezaICM)return;window.__limpezaICM=1;"
+                        "if(typeof window.gc==='function')setInterval(function(){try{window.gc()}catch(e){}},8000);})();")
+        s.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
+        s.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
+        s.setRunsOnSubFrames(True)
+        perfil.scripts().insert(s)
+    except Exception:
+        pass
+
+
+def perfil_unico_qt():
+    """3.0.12, motor Qt: o pywebview 6.2.1 (platforms/qt.py, l.419-421) cria um QWebEngineProfile NOVO em cada janela.
+    Perfis diferentes não se enxergam: o canal BroadcastChannel('sistema-projecao'), por onde o painel manda cada slide
+    ao telão, não passa (medido 25/10: 0 mensagens). Aqui a fábrica de perfis devolve SEMPRE o mesmo perfil por nome:
+    painel, telão e retorno dividem armazenamento e canal, como no WebView2."""
+    try:
+        from webview.platforms import qt as wq
+        if getattr(wq, "_perfil_unico", False):
+            return
+        real, guardados = wq.QWebEngineProfile, {}
+        def perfil(*args):
+            chave = args[0] if args else ""
+            if chave not in guardados:
+                guardados[chave] = real(*args)
+                limpeza_de_memoria_qt(guardados[chave])
+            return guardados[chave]
+        wq.QWebEngineProfile = perfil
+        wq._perfil_unico = True
+        wq._perfis_guardados = guardados          # a referência fica viva até o fim do programa
+    except Exception:
+        pass
+
+
 def sem_vigia_de_pedidos():
     """3.0.12 — A RAIZ DO CRASH DA IGREJA (25/10). O pywebview 6.2.1 (edgechromium.py, on_webview_ready) põe o filtro
     AddWebResourceRequestedFilter('*') em TODA janela: cada pedido de cada tela (o painel pergunta várias vezes por
@@ -4519,7 +4576,11 @@ def main():
 
 
 
-    # JANELA PRÓPRIA DO SISTEMA (sem Edge, com o nosso ícone na barra de tarefas)
+    # JANELA PRÓPRIA DO SISTEMA, com o nosso ícone na barra de tarefas.
+    # ATÉ A 3.0.11 quem desenhava a janela era o Microsoft Edge WebView2 do Windows (o comentário antigo dizia "sem Edge":
+    # era meia verdade). 3.0.12 (ordem dele, 25/10, consulta 281: "pode meter em QT"): o motor é o Qt (QtWebEngine), que
+    # vai DENTRO do programa e não depende do que o Windows instalou. O WebView2 só entra se o Qt não estiver no pacote
+    # (ou com SISTEMA_MOTOR=edgechromium, para comparar).
 
     try:
 
@@ -4554,6 +4615,14 @@ def main():
                               "--disable-renderer-backgrounding "
 
                               "--disable-features=CalculateNativeWinOcclusion")
+        # as mesmas bandeiras para o motor Qt (ele é Chromium por dentro e lê esta variável) + --js-flags=--expose-gc,
+        # a metade do remédio do vazamento do QtWebEngine 6 (ver limpeza_de_memoria_qt)
+        os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS",
+                              "--disable-background-timer-throttling "
+                              "--disable-backgrounding-occluded-windows "
+                              "--disable-renderer-backgrounding "
+                              "--disable-features=CalculateNativeWinOcclusion "
+                              "--js-flags=--expose-gc")
 
         import webview
 
@@ -4645,8 +4714,12 @@ def main():
 
 
 
-        sem_vigia_de_pedidos()
-        webview.start(entrar, gui="edgechromium", debug=False)
+        motor = motor_da_janela()
+        if motor == "edgechromium":
+            sem_vigia_de_pedidos()
+        else:
+            perfil_unico_qt()
+        webview.start(entrar, gui=motor, debug=False)
 
         return
 
