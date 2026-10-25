@@ -2190,14 +2190,23 @@ function estenderNoFundo() {
 function esperarProjetor() {
   if (ESPERA_PROJ) return;
   const api = window.pywebview && window.pywebview.api;
-  const veu = document.createElement('div'); veu.id = 'pj-veu';
-  const c = document.createElement('div'); c.id = 'pj-cartao'; c.setAttribute('role', 'status');
-  c.innerHTML = '<div class="pj-roda"></div><div class="pj-corpo"><div class="pj-tit">Procurando o projetor…</div>' +
-    // 3.0.12 (ele, 25/10 15h41): o texto curto e os DOIS botões do cartão anterior; sem o link miúdo "ensaiar nesta tela"
-    '<div class="pj-txt">Conecte o cabo do projetor e pressione <span class="teclas"><kbd class="win">' + LOGO_WIN + '<span>Windows</span></kbd>' +
-    '<span class="mais">+</span><kbd>P</kbd></span>, escolhendo <b>Estender</b>.</div>' +
-    '<div class="pj-acoes"><button class="big-btn" data-a="procurar">Abrir as opções de projeção</button><button class="big-btn" data-a="aqui">Continuar assim mesmo</button></div></div>';
-  document.body.appendChild(veu); document.body.appendChild(c);
+  // 3.0.12 (ele, 25/10 15h50: "todo o mod já está pronto, não invente de novo"): o cartão ANTERIOR, mostrarAjudaProjecao() do
+  // commit 7a998dd~1, palavra por palavra; muda só o "Procurar novamente" de verde para DOURADO e a aura dourada do cartão novo.
+  const veu = document.createElement('div'); veu.className = 'ajuda-overlay';
+  veu.innerHTML =
+    '<div class="ajuda-box pj-aura" style="max-width:430px">' +
+      '<h3>Projetor não encontrado</h3>' +
+      '<p>Conecte o cabo do projetor (HDMI) ao computador.</p>' +
+      '<p>No teclado, pressione <span class="teclas"><kbd class="win">' + LOGO_WIN + '<span>Windows</span></kbd>' +
+        '<span class="mais">+</span><kbd>P</kbd></span> e escolha <b>Estender</b>.</p>' +
+      '<p>Depois, clique em <b>Procurar novamente</b> — a projeção será enviada automaticamente.</p>' +
+      '<div class="ajuda-btns">' +
+        '<button class="big-btn ouro" data-a="procurar">Procurar novamente</button>' +
+        '<button class="big-btn" data-a="aqui">Continuar assim</button>' +
+      '</div>' +
+    '</div>';
+  const c = veu;
+  document.body.appendChild(veu);
   const inicio = Date.now();
   let ultimoPedido = 0;
   const fecha = () => {
@@ -2224,7 +2233,11 @@ function esperarProjetor() {
   c.querySelector('[data-a=aqui]').onclick = () => { fecha(); projAquiMesmo = true; abrirProjecao(); };
   // SÓ quando o operador clica: abre a barrinha de projeção do Windows (a do Windows+P) para ele escolher; o cartão segue
   // esperando e, quando a 2ª tela aparecer, o telão vai para ela (ele, 25/10 15h46: "nada automático")
-  c.querySelector('[data-a=procurar]').onclick = async () => { try { if (api && api.estender) await api.estender(); } catch (e) {} };
+  c.querySelector('[data-a=procurar]').onclick = async ev => {
+    const b = ev.currentTarget; b.disabled = true; b.textContent = 'Procurando…';          // a "carregadinha" de antes
+    try { if (api && api.estender) await api.estender(); } catch (e) {}
+    setTimeout(() => { b.disabled = false; b.textContent = 'Procurar novamente'; }, 1500);
+  };
   veu.onmousedown = ev => ev.preventDefault();
   passo();
 }

@@ -979,3 +979,5 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
 #saude-selo.on{display:block}
 #saude-selo.atencao{background:#3a2f0b;color:#f5d76e;border:1px solid #f5d76e88}
 #saude-selo.perigo{background:#4a0f0f;color:#ffd5d5;border:1px solid #ff6b6b}
+/* 3.0.12 (ele): o cartão anterior do projetor com a aura dourada do cartão novo */
+.ajuda-box.pj-aura{border-color:#f5d76e88;box-shadow:0 0 0 1px #f5d76e33,0 0 18px #f5d76e40,0 18px 50px #000c}
