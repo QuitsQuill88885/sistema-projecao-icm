@@ -217,7 +217,7 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .prev-selo.espera{background:#0009;color:#cdd9ee}
 .estado-barra.congelado{background:#f5d76e1f;border-color:#f5d76e88;color:var(--ouro)}
 .estado-barra .dot{width:9px;height:9px;border-radius:50%;background:#556;flex:none}
-.estado-barra.aovivo .dot{background:#e23;box-shadow:0 0 9px #e23;animation:pulsa 1.6s ease-in-out infinite}
+.estado-barra.aovivo .dot{background:#e23;box-shadow:0 0 9px #e23}  /* 3.0.12: sem pulsar (animação infinita = quadro sem parar) */
 .estado-barra.congelado .dot{background:var(--ouro);box-shadow:0 0 8px var(--ouro)}
 @keyframes pulsa{0%,100%{opacity:1}50%{opacity:.35}}
 @media (prefers-reduced-motion: reduce){.estado-barra.aovivo .dot{animation:none}}
@@ -581,7 +581,7 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 .pulso{animation:pulso-btn .4s ease}
 /* cronômetro pausado: o número pisca devagar e o botão fica marcado */
 @keyframes pisca-pausa{0%,100%{opacity:1}50%{opacity:.42}}
-.timer-display.pausado{animation:pisca-pausa 1.25s ease-in-out infinite;color:#f5d76e}
+.timer-display.pausado{opacity:.75;  /* 3.0.12: parado, sem piscar sem fim */color:#f5d76e}
 .big-btn.ativo{background:#3a2f12;border-color:var(--ouro);color:#f5d76e}
 
 /* ---- o seletor de tempo do cronômetro ----
@@ -962,7 +962,7 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
   box-shadow:0 0 0 1px #f5d76e33,0 0 18px #f5d76e40,0 18px 50px #000c,inset 0 1px 0 #ffffff1a}
 /* 3.0.12 (ele, 24/10: "não pode usar o padrão de cores verdes ali, porque ali é o sistema ICM normal"): o verde é só do
    modo de duas telas; procurar o projetor é o Sistema normal, então o dourado do painel */
-#pj-cartao .pj-roda{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid #f5d76e44;border-top-color:var(--ouro);animation:pj-gira 1s linear infinite}
+#pj-cartao .pj-roda{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid #f5d76e44;border-top-color:var(--ouro)}  /* 3.0.12: sem girar sem fim */
 @keyframes pj-gira{to{transform:rotate(360deg)}}
 #pj-cartao .pj-corpo{flex:1;min-width:0}
 #pj-cartao .pj-tit{font-size:17px;font-weight:700;color:var(--ouro)}

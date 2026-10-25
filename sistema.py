@@ -10,7 +10,7 @@ import http.server, socketserver, threading, webbrowser, subprocess, os, sys, js
 
 
 
-VERSAO = "3.0.11"
+VERSAO = "3.0.12"
 # 0.0.0.0 = o celular controla pela rede. SISTEMA_SO_LOCAL=1 (so as PROVAS usam) abre so em 127.0.0.1: cada instalacao
 # de teste roda de uma pasta nova, e o Firewall do Windows perguntava "Permitir?" na tela da casa (11/10 14h11).
 ENDERECO_REDE = "127.0.0.1" if os.environ.get("SISTEMA_SO_LOCAL") else "0.0.0.0"
@@ -84,6 +84,7 @@ APOIOS = {}             # chave (nome do computador, ou o IP) -> o que se sabe d
 APOIO_ONLINE_SEG = 6    # sem notícia há mais que isto = desligou
 APOIO_IDENT_SEG = 3     # o "1" e o "2" gigantes ficam este tanto
 PORTA_ANUNCIO = 8766    # UDP: "existe um Sistema aqui" (o apoio acha sem varrer a rede)
+ANUNCIAR_JA = threading.Event()   # 3.0.12: o botão "Procurar telas" corta a espera de 2 s e grita na rede na hora
 ARQ_APOIOS = os.path.join(DADOS_USUARIO, "apoios.json")
 
 
@@ -2542,7 +2543,8 @@ def anunciar_na_rede(porta):
                 s.sendto(msg, (a, PORTA_ANUNCIO))
             except Exception:
                 pass
-        time.sleep(2)
+        ANUNCIAR_JA.wait(2)     # os mesmos 2 s de sempre; o "Procurar telas" acorda antes
+        ANUNCIAR_JA.clear()
 
 
 
@@ -3360,6 +3362,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                 return self._json({"ok": False, "erro": str(e)})
 
+        if self.path.startswith("/api/procurar_telas"):   # 3.0.12: o botão "Procurar telas" do painel
+            ANUNCIAR_JA.set()                              # grita na rede agora (o outro aparelho acha sem esperar)
+            try:
+                telas = len(monitores())
+            except Exception:
+                telas = 0
+            return self._json({"ok": True, "telas": telas, "apoios": apoios_lista()})
         if self.path.startswith("/api/apoio"):            # 3.0.9: a resposta do operador (do painel OU do próprio retorno)
             try:
                 n = int(self.headers.get("Content-Length", 0))
@@ -3998,17 +4007,10 @@ class Ponte:
 
 
 def motor_da_janela():
-    """3.0.12: "qt" quando o PySide6 (QtWebEngine) está no pacote; senão o WebView2 de antes. SISTEMA_MOTOR força um."""
+    """3.0.12: o WebView2 de sempre. O Qt foi ABORTADO por ordem dele (25/10 14h21; ver Conhecimento\\APRENDIZADO-QT-2510.md):
+    ele só entra se alguém pedir de propósito com SISTEMA_MOTOR=qt. Nunca escolher sozinho pelo que achar no pacote."""
     pedido = (os.environ.get("SISTEMA_MOTOR") or "").strip().lower()
-    if pedido in ("qt", "edgechromium"):
-        return pedido
-    try:
-        import importlib.util
-        if importlib.util.find_spec("PySide6") and importlib.util.find_spec("PySide6.QtWebEngineWidgets"):
-            return "qt"
-    except Exception:
-        pass
-    return "edgechromium"
+    return "qt" if pedido == "qt" else "edgechromium"
 
 
 def limpeza_de_memoria_qt(perfil):
@@ -4672,7 +4674,10 @@ def main():
 
         # projetor, sem nada que a comande, não serve para nada.
 
-        janela.events.closed += lambda: ponte.fechar_projecao()
+        # (sem devolver o dict: o pywebview guarda o retorno num set e o dict quebrava com erro no log)
+        def _fechou_painel():
+            ponte.fechar_projecao()
+        janela.events.closed += _fechou_painel
 
         marcar_splash(0.70)                    # janela montada
 

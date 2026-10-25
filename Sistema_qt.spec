@@ -82,6 +82,41 @@ a = Analysis(
 # Se um dia valer trocar 8 MB pela tela de carregamento, e so tirar o Splash
 # daqui, do EXE() e do COLLECT(). E decisao do Samuel, nao minha.
 
+# O QT ENXUTO (25/10 13h20). Os excludes acima NAO tiram as DLLs do Qt: o hook do PySide6 traz o Qt inteiro (649 MB).
+# Medido por Conhecimento\revisao_2210\dlls_usadas_qt.py (painel + telao + slides): o Sistema.exe e o QtWebEngineProcess
+# carregam 43 arquivos do Qt. Entra SO a lista abaixo; o resto (Qt3D, Charts, Graphs, Quick3D, Labs, a pasta qml, os
+# .debug do Chromium, 52 linguas) fica fora. Folga de proposito: os plugins pequenos e o opengl32sw (reserva de desenho
+# para placa velha sem OpenGL, o PC da igreja e Intel de 2017).
+_QT_DLLS = {'qt6core', 'qt6gui', 'qt6network', 'qt6opengl', 'qt6openglwidgets', 'qt6positioning', 'qt6printsupport',
+            'qt6qml', 'qt6qmlmeta', 'qt6qmlmodels', 'qt6qmlworkerscript', 'qt6quick', 'qt6quickwidgets', 'qt6webchannel',
+            'qt6webenginecore', 'qt6webenginewidgets', 'qt6widgets', 'qt6svg', 'opengl32sw', 'pyside6.abi3',
+            'msvcp140', 'msvcp140_1', 'msvcp140_2', 'vcruntime140', 'vcruntime140_1', 'concrt140'}
+_QT_PYD = {'qtcore', 'qtgui', 'qtnetwork', 'qtopengl', 'qtopenglwidgets', 'qtprintsupport', 'qtwebchannel',
+           'qtwebenginecore', 'qtwebenginewidgets', 'qtwidgets'}
+_QT_RES = {'icudtl.dat', 'qtwebengine_resources.pak', 'qtwebengine_resources_100p.pak', 'qtwebengine_resources_200p.pak',
+           'qtwebengine_devtools_resources.pak', 'v8_context_snapshot.bin'}
+def _qt_fica(dest):
+    p = dest.replace('\\', '/').lower().split('/')
+    if p[0] != 'pyside6' or len(p) == 1: return True
+    nome = p[-1]
+    if len(p) == 2:
+        base, ext = _os.path.splitext(nome)
+        if ext == '.dll': return base in _QT_DLLS
+        if ext == '.pyd': return base in _QT_PYD
+        return ext != '.exe' or nome == 'qtwebengineprocess.exe'
+    if p[1] == 'qml': return False
+    if p[1] == 'resources': return nome in _QT_RES
+    if p[1] == 'translations':
+        return nome in ('pt-br.pak', 'en-us.pak') or (nome.endswith('_pt_br.qm') or nome.endswith('_pt.qm'))
+    if p[1] == 'plugins': return p[2] not in ('qmltooling', 'sqldrivers', 'multimedia', 'designer', 'sensors',
+                                               'canbus', 'geoservices', 'position', 'renderers', 'sceneparsers',
+                                               'assetimporters', 'texttospeech', 'scxmldatamodel', 'help')
+    return True
+_antes = len(a.binaries) + len(a.datas)
+a.binaries = [x for x in a.binaries if _qt_fica(x[0])]
+a.datas = [x for x in a.datas if _qt_fica(x[0])]
+print('QT ENXUTO: %d arquivos sairam' % (_antes - len(a.binaries) - len(a.datas)))
+
 pyz = PYZ(a.pure)
 splash = Splash(
     'splash.png',

@@ -2038,7 +2038,9 @@ function anterior() {
 // já tinha escolhido o oficial (fica gravado em 'icm_espera'); numa instalação nova
 // caía no de Iperó — o Samuel viu no Vaio (26/09/2026). No Estilo Mapa-múndi a
 // espera continua a do mapa, e o que o operador escolher continua valendo.
-const ESPERA_ICM = 'fundos/galeria/cultos__maranata___o_senhor_jesus_vem.jpg';
+// 3.0.12 (ordem dele, 25/10): a de fábrica passa a ser a "Espera" que ele usa na igreja (a faixa vermelha
+// MARANATA / O SENHOR JESUS VEM! no azul em degradê), tirada da config de lá. Antes era a galeria acima.
+const ESPERA_ICM = 'fundos/espera.jpg';
 function esperaAtual() {
   return est.descansoFundo || (est.estilo === 'limpo' ? ESPERA_ICM : FB.descanso);
 }
@@ -2386,7 +2388,7 @@ function atualizarAgora() {
   else if (l && l.tipo === 'texto') t = 'Texto livre';
   else if (l && l.tipo === 'slide') t = 'Slide ' + (l.i + 1) + '/' + l.n + (SLIDES.nome ? ' — ' + SLIDES.nome : '');
   else if (l && l.tipo === 'fundo') t = 'Fundo';
-  else if (l && l.tipo === 'descanso') t = est.aguardando ? 'Fim do louvor — "Avançar" chama o próximo' : 'Descanso (Maranata)';
+  else if (l && l.tipo === 'descanso') t = est.aguardando ? 'Fim do louvor — "Avançar" chama o próximo' : 'Espera';
   else if (l && l.tipo === 'preto') t = 'Tela preta';
   $('#agora').textContent = t;
   atualizarTamLabel();
@@ -2401,7 +2403,9 @@ function trocarAba(aba) { est.aba = aba; $$('.tab').forEach(t => t.classList.tog
 function marcarModoApr() { document.body.classList.toggle('modo-apr', aprAberto()); }
 
 function listaFundos() {
-  return [{ arquivo: FB.descanso, nome: 'Descanso (Maranata)', cat: 'Cultos' },
+  // 3.0.12: a "Espera" em 1º, no lugar do "Descanso (Maranata)" (que é o mesmo arquivo da "Maranata… (faixa)" da
+  // galeria, que continua lá)
+  return [{ arquivo: ESPERA_ICM, nome: 'Espera', cat: 'Cultos' },
           { arquivo: FB.oracao, nome: 'Silêncio e Oração', cat: 'Oração' },
           { arquivo: FB.plano, nome: 'Fundo liso', cat: 'Base', liso: true }]
     .concat(GALERIA).concat(CUSTOM.map(f => Object.assign({ cat: 'Meus fundos', liso: true }, f)))
@@ -2834,6 +2838,11 @@ function carregarDadosUsuario() {
   MEUS = Guardar.ler('icm_meus_louvores', []) || [];
   CUSTOM = Guardar.ler('icm_fundos', []) || [];
   OCULTOS = Guardar.ler('icm_ocultos', []) || [];
+  // 3.0.12: na igreja a espera escolhida é o fundo que ele cadastrou com o nome "espera" (imagem embutida de 77 KB,
+  // a mesma que agora vem de fábrica). Passa a usar o arquivo de fábrica; o cadastro dele NÃO é apagado.
+  if (typeof est.descansoFundo === 'string' && est.descansoFundo.startsWith('data:') &&
+      CUSTOM.some(f => f.arquivo === est.descansoFundo && String(f.nome || '').trim().toLowerCase() === 'espera'))
+    est.descansoFundo = ESPERA_ICM;
   cifraFonte = clamp(parseInt(Guardar.ler('icm_cifra_fonte', 14), 10) || 14, 10, 30);
   if (!IGREJA.cultos) IGREJA.cultos = CULTOS_PADRAO.map(c => Object.assign({}, c));
 }
@@ -3547,6 +3556,7 @@ function ligarEventos() {
   };
   $('#btn-proximo').onclick = proximo; $('#btn-anterior').onclick = anterior; ligarApresentador();
   $('#btn-menor').onclick = () => ajustarTam(-0.3); $('#btn-maior').onclick = () => ajustarTam(+0.3);
+  const bpt = $('#btn-procurar-telas'); if (bpt) { bpt.innerHTML = ICO_2TELAS; bpt.onclick = procurarTelas; }
   $('#tam-label').onclick = tamPadrao;                      // clicar no rótulo volta ao padrão
   $('#btn-congelar').onclick = toggleFreeze;   // "Parar de projetar" já faz o papel da espera
   const bcf = $('#btn-cifra'); if (bcf) bcf.onclick = abrirCifra;
@@ -3986,6 +3996,34 @@ function dtCartao(a, modo) {
       dtPilula();
     };
   });
+}
+// 3.0.12 — "PROCURAR TELAS" (pedido dele, 24-25/10: "nenhuma tela acha a outra e ninguém fala nada"; e nenhum aparelho preso
+// para sempre a um papel gravado). Usa SÓ o pareamento que já existe: grita na rede na hora (/api/procurar_telas), espera o
+// outro aparelho se apresentar, e abre o cartão de sempre: ligado = "como" (trocar, modo, desligar); dispensado = pergunta de novo.
+let PROCURANDO = false;
+async function procurarTelas() {
+  if (PROCURANDO) return;
+  PROCURANDO = true;
+  const b = $('#btn-procurar-telas'); if (b) b.disabled = true;
+  try {
+    toast('Procurando outras telas… avisando a rede');
+    let r = null;
+    try { r = await fetch('/api/procurar_telas', { method: 'POST', cache: 'no-store' }).then(x => x.json()); } catch (e) {}
+    const achou = () => DT.lista.find(x => x.online);
+    for (let i = 0; i < 12 && !achou(); i++) await new Promise(ok => setTimeout(ok, 500));   // até 6 s; a lista anda a cada 1,5 s
+    const lig = DT.lista.find(x => x.estado === 'aceito' && x.online);
+    if (lig) { dtCartao(lig, 'como'); return; }
+    const fora = DT.lista.find(x => x.online);
+    if (fora) {
+      const rr = await dtAcao(fora.chave, 'pedir');
+      dtCartao(Object.assign({}, fora, rr || {}), 'pergunta'); dtPilula(); return;
+    }
+    const n = (r && r.telas) || 0;
+    toast((n >= 2 ? 'Este computador tem ' + n + ' telas ligadas. ' : '') +
+          'Nenhum outro aparelho respondeu. No outro computador, abra o Sistema ICM na mesma rede (Wi-Fi ou cabo).');
+  } finally {
+    PROCURANDO = false; if (b) b.disabled = false;
+  }
 }
 function dtPilula() {
   let p = $('#dt-pilula');

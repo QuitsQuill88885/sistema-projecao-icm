@@ -5,7 +5,7 @@
 <link rel="apple-touch-icon" href="sistema.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2f5e">
-<link rel="stylesheet" href="app.css?v=59">
+<link rel="stylesheet" href="app.css?v=60">
 </head><body>
 <div id="app">
   <header>
@@ -183,7 +183,7 @@
         <span class="dot" id="dot"></span>
         <span class="estado-txt" id="est-proj">Projeção fechada</span>
       </div>
-      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=59"></iframe>
+      <div class="preview-box"><div class="mini"><iframe id="preview" src="projecao.html?v=60"></iframe>
         <span class="prev-selo" id="prev-selo">O QUE ESTÁ NO TELÃO</span></div></div>
       <div class="agora" id="agora">Pronto.</div>
       <div class="nav2">
@@ -197,6 +197,8 @@
         <button class="ff mini" id="btn-menor" title="Diminuir a letra">A−</button>
         <button class="ff mini tam-label" id="tam-label" title="Voltar ao tamanho padrão">Padrão</button>
         <button class="ff mini" id="btn-maior" title="Aumentar a letra">A+</button>
+        <span class="sep"></span>
+        <button class="ff mini" id="btn-procurar-telas" title="Procurar outras telas (o outro computador, o projetor, a TV)"></button>
       </div>
       <!-- Só aparecem quando o louvor no ar TEM o recurso. Sem louvor com cifra
            ou sem versão animada, a fileira inteira some e o painel fica limpo. -->
@@ -213,7 +215,7 @@
             <span class="cifra-zoom">
               <button id="cifra-menor" title="Letra menor">A−</button>
               <button id="cifra-maior" title="Letra maior">A+</button>
-              <button id="cifra-telao" title="Projetar a cifra no telão (ensaio do grupo)">▶ Telão</button>
+              <button id="cifra-telao" title="Projetar a cifra no telão (ensaio do grupo)"><span class="ico" data-i="play"></span> Telão</button>
             </span>
             <button class="cifra-x" id="cifra-x" title="Fechar (Esc)">✕</button>
           </div>
@@ -313,13 +315,9 @@
           <h3 class="menu-h3">De onde vem a cifra</h3>
           <div class="mus-bloco">
             <p>O Sistema não guarda figuras de cifra: ele guarda <b>o acorde e a coluna da letra em que ele cai</b>. Por isso a cifra pode ser transposta, aumentada e reescrita em qualquer tom sem perder o alinhamento.</p>
-            <p>O material vem das coletâneas cifradas oficiais da ICM, lidas página a página:</p>
-            <ul class="mus-lista">
-              <li><b>Nível 2</b> — Coletânea de Hinos Cifrados, edição 2018. É a completa, com as sétimas, as novenas e os baixos invertidos.</li>
-              <li><b>Nível 1</b> — a mesma coletânea com <b>acordes simplificados</b>, para quem está começando. O mesmo louvor que no Nível 2 pede <code>Am7</code>, <code>G/B</code> e <code>C9</code>, aqui pede só <code>Am</code>, <code>G</code> e <code>C</code>.</li>
-              <li><b>Avulsos</b> — a coletânea de louvores avulsos cifrada, e a edição de 2025 com o que está no site oficial.</li>
-            </ul>
           </div>
+          <!-- 3.0.12 (ele, 25/10): saiu a lista "de onde vem o material" (Nível 2 / Nível 1 / Avulsos): "não é mais a verdade" -->
+
 
           <h3 class="menu-h3">Cada instrumento lê o seu</h3>
           <div class="mus-bloco">
@@ -469,13 +467,13 @@
 </div>
 
 <script src="dados/biblia.js"></script>
-<script src="dados/louvores.js?v=59"></script>
-<script src="dados/repetidos.js?v=59"></script>
-<script src="dados/repeticoes.js?v=59"></script>
+<script src="dados/louvores.js?v=60"></script>
+<script src="dados/repetidos.js?v=60"></script>
+<script src="dados/repeticoes.js?v=60"></script>
 <script src="dados/fundos.js"></script>
-<script src="dados/galeria.js?v=59"></script>
+<script src="dados/galeria.js?v=60"></script>
 <!-- sugestões de louvor por versículo: tabela pronta, o Sistema só consulta -->
 <script src="dados/sugestoes.js"></script>
-<script src="icones.js?v=59"></script>
-<script src="app.js?v=59"></script>
+<script src="icones.js?v=60"></script>
+<script src="app.js?v=60"></script>
 </body></html>
