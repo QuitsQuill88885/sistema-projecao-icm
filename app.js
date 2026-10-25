@@ -2193,8 +2193,10 @@ function esperarProjetor() {
   const veu = document.createElement('div'); veu.id = 'pj-veu';
   const c = document.createElement('div'); c.id = 'pj-cartao'; c.setAttribute('role', 'status');
   c.innerHTML = '<div class="pj-roda"></div><div class="pj-corpo"><div class="pj-tit">Procurando o projetor…</div>' +
-    '<div class="pj-txt">Ligue o cabo do projetor neste computador. Assim que ele aparecer, o telão abre sozinho nele — esta tela continua sua. Se ele não aparecer em alguns segundos, o telão abre nesta tela.</div>' +
-    '<div class="pj-acoes"><a href="#" class="pj-ensaio">ensaiar nesta tela</a><button class="big-btn" data-a="cancelar">Cancelar</button></div></div>';
+    // 3.0.12 (ele, 25/10 15h41): o texto curto e os DOIS botões do cartão anterior; sem o link miúdo "ensaiar nesta tela"
+    '<div class="pj-txt">Conecte o cabo do projetor e pressione <span class="teclas"><kbd class="win">' + LOGO_WIN + '<span>Windows</span></kbd>' +
+    '<span class="mais">+</span><kbd>P</kbd></span>, escolhendo <b>Estender</b>.</div>' +
+    '<div class="pj-acoes"><button class="big-btn" data-a="procurar">Abrir as opções de projeção</button><button class="big-btn" data-a="aqui">Continuar assim mesmo</button></div></div>';
   document.body.appendChild(veu); document.body.appendChild(c);
   const inicio = Date.now();
   let ultimoPedido = 0;
@@ -2204,23 +2206,25 @@ function esperarProjetor() {
   };
   const passo = async () => {
     const agora = Date.now();
-    // estende já e repete de tempos em tempos (o cabo pode chegar depois; em Duplicar o Windows não mostra a 2ª tela)
-    if (agora - ultimoPedido >= (agora - inicio < 60000 ? 5000 : 15000)) {
-      ultimoPedido = agora;
-      try { if (api && api.estender) await api.estender(); } catch (e) {}
-    }
+    // pede "estender" UMA VEZ só (ele, 25/10 15h45: repetir abria o painel lateral do Windows+P de novo e de novo, piscando
+    // e roubando o clique). Se a 2ª tela vier depois, quem leva o telão para ela é o vigia do sistema.py (só olha).
+    // 3.0.12 (ordem dele, de 18/10 e de novo 25/10 15h43): o Sistema NUNCA chama o "estender" do Windows sozinho; o cartão
+    // ENSINA o Windows+P -> Estender e espera. Quando a 2ª tela aparece, o telão vai para ela.
     let telas = null;
     try { telas = await api.monitores(); } catch (e) {}
     if (ESPERA_PROJ && Array.isArray(telas) && telas.length >= 2) { fecha(); abrirProjecao(); return; }
     // SAÍDA AUTOMÁTICA (HD 18h05): se em 12 s a 2ª tela não veio (driver velho, divisor), projeta NESTA tela, como a
     // 3.0.9 fazia, e segue tentando de leve no fundo; quando a 2ª tela surgir, o vigia do sistema.py leva o telão para
     // ela. O pior caso da 3.0.10 fica igual à 3.0.9 que rodou com o Kevin: o operador nunca fica preso esperando.
-    if (ESPERA_PROJ && agora - inicio >= ESPERA_LIMITE_MS) { fecha(); projAquiMesmo = 'auto'; abrirProjecao(); estenderNoFundo(); }
+    // 3.0.12 (ele): sem a saída automática de 12 s (a projeção caía por cima da tela dele); o cartão fica até ele escolher
   };
   ESPERA_PROJ = { t: setInterval(passo, 1000), tecla: e => { if (e.key === 'Escape') { e.preventDefault(); fecha(); } } };
   document.addEventListener('keydown', ESPERA_PROJ.tecla, true);
-  c.querySelector('[data-a=cancelar]').onclick = fecha;
-  c.querySelector('.pj-ensaio').onclick = ev => { ev.preventDefault(); fecha(); projAquiMesmo = true; abrirProjecao(); };
+  // o "Continuar assim" do cartão anterior: projeta NESTA tela (em Duplicar, o projetor mostra o mesmo). Esc cancela.
+  c.querySelector('[data-a=aqui]').onclick = () => { fecha(); projAquiMesmo = true; abrirProjecao(); };
+  // SÓ quando o operador clica: abre a barrinha de projeção do Windows (a do Windows+P) para ele escolher; o cartão segue
+  // esperando e, quando a 2ª tela aparecer, o telão vai para ela (ele, 25/10 15h46: "nada automático")
+  c.querySelector('[data-a=procurar]').onclick = async () => { try { if (api && api.estender) await api.estender(); } catch (e) {} };
   veu.onmousedown = ev => ev.preventDefault();
   passo();
 }

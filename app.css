@@ -431,11 +431,11 @@ textarea{width:100%;min-height:130px;resize:vertical;line-height:1.6}
 /* teclas desenhadas: nunca quebram no meio do comando */
 .teclas{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;vertical-align:-2px}
 .teclas .mais{color:#8fa8cf;font-weight:600}
-.ajuda-box kbd{display:inline-block;background:#0b1729;border:1px solid #43587d;border-bottom-width:2px;
+.ajuda-box kbd,#pj-cartao kbd{display:inline-block;background:#0b1729;border:1px solid #43587d;border-bottom-width:2px;
      border-radius:5px;padding:2px 8px;font-family:inherit;font-size:12.5px;font-weight:700;color:#fff;line-height:1.5}
-.ajuda-box kbd.win{display:inline-flex;align-items:center;gap:5px;padding:3px 9px}
-.ajuda-box kbd.win svg{display:block;color:#cfe0ff}
-.ajuda-box kbd.win span{font-size:11.5px;letter-spacing:.2px}
+.ajuda-box kbd.win,#pj-cartao kbd.win{display:inline-flex;align-items:center;gap:5px;padding:3px 9px}
+.ajuda-box kbd.win svg,#pj-cartao kbd.win svg{display:block;color:#cfe0ff}
+.ajuda-box kbd.win span,#pj-cartao kbd.win span{font-size:11.5px;letter-spacing:.2px}
 .ajuda-box ol{margin:0 0 18px 20px;color:#cdd9ee;line-height:1.7}
 .ajuda-box ol b{color:var(--ouro)}
 .ajuda-btns{display:flex;gap:10px;flex-wrap:wrap}
@@ -825,7 +825,10 @@ input,textarea,.item-trecho small,.cifra-folha,#cifra-folha pre{
 #dt-cartao .dt-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
 #dt-cartao .dt-acoes .big-btn{padding:7px 13px}
 /* as escolhas SEM palavras: duas TVs com o selo 1 e 2; a escolhida com borda de ouro */
-#dt-cartao.como{width:470px}
+#dt-cartao.como{width:470px;flex-direction:column;align-items:center;text-align:center}  /* 3.0.12 (ele): tudo centralizado */
+#dt-cartao.como .dt-corpo{width:100%}
+#dt-cartao.como .dt-par{justify-content:center}
+#dt-cartao.como .dt-acoes{justify-content:center}
 #dt-cartao .dt-ops{display:flex;gap:8px;margin-top:10px}
 #dt-cartao .dt-op{flex:1 1 0;min-width:0;padding:8px 5px 6px;border-radius:10px;background:var(--painel);border:1.5px solid var(--borda);
   display:flex;justify-content:center;transition:border-color .15s,background .15s}
@@ -967,7 +970,8 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
 #pj-cartao .pj-corpo{flex:1;min-width:0}
 #pj-cartao .pj-tit{font-size:17px;font-weight:700;color:var(--ouro)}
 #pj-cartao .pj-txt{font-size:13.5px;color:#cdd9ee;margin:6px 0 14px;line-height:1.5}
-#pj-cartao .pj-acoes{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#pj-cartao .pj-acoes{display:flex;align-items:center;justify-content:center;gap:10px}
+#pj-cartao .pj-acoes .big-btn{flex:1 1 0}  /* 3.0.12 (ele): DOIS botoes do mesmo tamanho, sem o link miudo */
 #pj-cartao .pj-ensaio{font-size:12px;color:#7f90ad;text-decoration:underline}
 /* 3.0.12: o selo do vigia de saúde (só aparece quando precisa) */
 #saude-selo{display:none;position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:110;max-width:min(92vw,620px);
