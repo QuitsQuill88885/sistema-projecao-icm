@@ -3190,6 +3190,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             q = parse_qs(urlparse(self.path).query)
             return self._json(apoio_ola((q.get("nome") or [""])[0], self.client_address[0],
                                         denovo=bool(q.get("denovo"))))
+        if self.path.startswith("/api/saude"):           # 3.0.12: o vigia de saúde (memória, CPU, bateria)
+            try:
+                import saude
+                return self._json(dict(saude.ESTADO, ok=True))
+            except Exception as e:
+                return self._json({"ok": False, "erro": str(e)})
         if self.path.startswith("/api/estado"):          # o celular pergunta o que está no telão
 
             with TRAVA:
@@ -3991,6 +3997,31 @@ class Ponte:
 
 
 
+def sem_vigia_de_pedidos():
+    """3.0.12 — A RAIZ DO CRASH DA IGREJA (25/10). O pywebview 6.2.1 (edgechromium.py, on_webview_ready) põe o filtro
+    AddWebResourceRequestedFilter('*') em TODA janela: cada pedido de cada tela (o painel pergunta várias vezes por
+    segundo) atravessa o Sistema.exe com o corpo inteiro, e os objetos COM/.NET só se soltam quando o .NET coleta.
+    Na igreja (tela de espera embutida de 77 KB no aviso de 1 s) isso deu 1 GB no Sistema.exe em 1h35, e o PC de 4 GB
+    parou. O Sistema nunca usou esse vigia (os eventos request_sent/response_received): aqui ele é desligado logo que
+    o WebView2 fica pronto."""
+    try:
+        from webview.platforms import edgechromium as ec
+        if getattr(ec.EdgeChrome, "_sem_vigia", False):
+            return
+        original = ec.EdgeChrome.on_webview_ready
+        def pronto(self, sender, args):
+            original(self, sender, args)
+            try:
+                from Microsoft.Web.WebView2.Core import CoreWebView2WebResourceContext
+                sender.CoreWebView2.RemoveWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All)
+            except Exception:
+                pass
+        ec.EdgeChrome.on_webview_ready = pronto
+        ec.EdgeChrome._sem_vigia = True
+    except Exception:
+        pass
+
+
 def escolher_arquivo():
 
     """Abre a janelinha do Windows para o operador escolher o arquivo."""
@@ -4443,6 +4474,12 @@ def main():
 
     threading.Thread(target=limpar_baixados, daemon=True).start()
 
+    # 3.0.12: o vigia de saúde (o crash da igreja em 25/10 foi falta de memória e não deixou registro nenhum)
+    try:
+        import saude; saude.ligar(DADOS_USUARIO)
+    except Exception:
+        pass
+
     os.makedirs(SAIDA, exist_ok=True)
 
     porta = PORTA
@@ -4608,6 +4645,7 @@ def main():
 
 
 
+        sem_vigia_de_pedidos()
         webview.start(entrar, gui="edgechromium", debug=False)
 
         return

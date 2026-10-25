@@ -3809,7 +3809,10 @@ function ligarControleCelular() {
         projetando: est.projetando, congelado: est.freeze,
         slides: (SLIDES.lista || []).length,
         // o que o celular precisa para ter as MESMAS telas do computador
-        estilo: est.estilo, espera: esperaAtual(), fundos, plano: FB.plano,   // 3.0.9: o relógio da tela de retorno
+        // 3.0.12 (o CRASH da igreja, 25/10): a tela de espera de lá é uma imagem EMBUTIDA de 77 KB, e ia INTEIRA aqui,
+        // de segundo em segundo, ao motor (e dele a cada TV/celular que pergunta) sem ninguém usar este campo: o
+        // Sistema.exe e o navegador cresciam até faltar memória no PC de 4 GB. Imagem embutida vai só como marca.
+        estilo: est.estilo, espera: /^data:/.test(esperaAtual() || '') ? 'embutida' : esperaAtual(), fundos, plano: FB.plano,   // 3.0.9: o relógio da tela de retorno
         tipo: est.live && est.live.tipo,
         timer: { rot: est.timerRotulo, fim: est.timerFim, parado: est.timerParadoMs },
         // OS AVISOS VÃO PRONTOS PARA O CELULAR. Quatro deles (Próximo culto,
@@ -4017,6 +4020,23 @@ function dtPilula() {
   // 3.0.11: em tela estreita a pílula fica só com o desenho (CSS); o texto inteiro aparece ao passar o mouse
   p.title = lig ? '2 telas · ' + lig.nome : caiu ? 'reconectando · ' + caiu.nome : fora ? 'Conectar a tela de retorno' : '';
 }
+// 3.0.12 — O VIGIA DE SAÚDE no painel (ordem dele, 25/10): o motor mede memória, processador e bateria (saude.py);
+// aqui um selo discreto aparece SÓ quando precisa (atenção = amarelo, perigo = vermelho) e diz o que fazer.
+function ligarSaude() {
+  const selo = document.createElement('div'); selo.id = 'saude-selo'; selo.setAttribute('role', 'status');
+  document.body.appendChild(selo);
+  const passo = async () => {
+    let s = null;
+    try { s = await fetch('/api/saude', { cache: 'no-store' }).then(r => r.json()); } catch (e) { return; }
+    if (!s || !s.ok || !s.nivel || s.nivel === 'ok') { selo.className = ''; selo.textContent = ''; return; }
+    const memoria = /mem/.test(s.motivo || '');
+    selo.className = 'on ' + s.nivel;
+    selo.textContent = (s.nivel === 'perigo' ? '⚠ ' : '') + s.motivo +
+      (memoria ? (s.nivel === 'perigo' ? ' — feche e abra o Sistema entre um louvor e outro' : ' — feche outros programas') : '');
+    selo.title = 'Sistema: ' + s.sistema_mb + ' MB · RAM livre ' + s.ram_livre + ' de ' + s.ram_total + ' MB · processador ' + (s.cpu == null ? '-' : s.cpu + '%');
+  };
+  passo(); setInterval(passo, 10000);
+}
 function ligarDuasTelas() {
   const passo = async () => {
     try {
@@ -4173,6 +4193,7 @@ async function iniciar() {
   previews.forEach(w => post(w, est.ultimo));
   ligarEventos(); atualizarProjBtn(); atualizarAgora();
   carregarEspeciais(); ligarDuasTelas(); ligarPainelB();   // 3.0.9
+  ligarSaude();                                            // 3.0.12
   abrirBemVindo(false);   // primeira vez: apresentação + configuração da igreja
 }
 document.addEventListener('DOMContentLoaded', iniciar);

@@ -969,3 +969,9 @@ body.pb-on.pb-dupla #painel .prev-selo{font-size:9.5px}
 #pj-cartao .pj-txt{font-size:13.5px;color:#cdd9ee;margin:6px 0 14px;line-height:1.5}
 #pj-cartao .pj-acoes{display:flex;align-items:center;justify-content:space-between;gap:10px}
 #pj-cartao .pj-ensaio{font-size:12px;color:#7f90ad;text-decoration:underline}
+/* 3.0.12: o selo do vigia de saúde (só aparece quando precisa) */
+#saude-selo{display:none;position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:110;max-width:min(92vw,620px);
+  padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.35;text-align:center;box-shadow:0 6px 20px #000a;pointer-events:auto}
+#saude-selo.on{display:block}
+#saude-selo.atencao{background:#3a2f0b;color:#f5d76e;border:1px solid #f5d76e88}
+#saude-selo.perigo{background:#4a0f0f;color:#ffd5d5;border:1px solid #ff6b6b}
