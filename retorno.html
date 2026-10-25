@@ -67,8 +67,9 @@
   /* 3.0.11 (23/10, ele): na troca, o cartão BRANCO fica; só o conteúdo (figuras e legendas) apaga e volta. Antes o cartão
      inteiro ia a opacidade 0 e a TV mostrava o fundo escuro com a grade vazia. Só opacidade: escala obriga o Vaio (sem
      placa) a redesenhar o cartão a cada quadro. */
-  .gcard > * { transition:opacity .25s ease-out; }
-  .gcard.troca > * { opacity:0; }
+  .gcard > * { transition:opacity .2s ease-out; }
+  /* 3.0.12: o conteúdo novo nasce a 45% (nunca vazio) e acende; o velho fica inteiro até o novo estar pronto */
+  .gcard.acende > * { opacity:.45; transition:none; }
   .ggrade { flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:space-evenly; gap:1.4vh 1vw; }
   .gtitulo { flex:none; margin:0 0 1.2vh; padding:0 0 1vh; border-bottom:.35vh solid var(--ouro); text-align:center;
     font:800 4.4vh/1.1 "Sistema A3", "Segoe UI", Arial, sans-serif; color:#0f2f5e; text-transform:uppercase; }
@@ -464,21 +465,19 @@ function pinta(el, chave, monta) {
   el.dataset.k = chave;
   const aplica = () => { GRADE_EL = el; const r = monta(); GRADE_EL = null; el.className = 'gcard ' + (r.cls || ''); el.style.cssText = r.css || ''; el.innerHTML = r.html; ajustaLegendas(); ajustaTitulos(); ajustaGrade(); };
   if (primeira) { aplica(); return; }
-  // 3.0.11: as figuras novas são preparadas (baixadas e decodificadas) ANTES da troca, com teto de 0,7 s: o conteúdo
-  // novo entra inteiro, nunca aos pedaços. Se outro slide chegar no meio da espera, esta troca é abandonada.
-  el.classList.add('troca');
-  const t0 = Date.now(), imgs = [];
+  // 3.0.12 (o cartão branco do Vaio, 24/10: 1,2-1,6 s vazio por troca): o gesto VELHO fica na tela enquanto as figuras
+  // novas baixam e decodificam (teto 0,7 s). Só quando estão prontas o conteúdo troca, de uma vez e já montado (o Vaio
+  // não pinta no meio do aplica), e acende de 45% a 100%: o cartão nunca fica vazio. Antes o velho apagava ANTES da
+  // espera. Se outro slide chegar no meio da espera, esta troca é abandonada.
+  const imgs = [];
   try { GRADE_EL = el; (monta().html || '').replace(/<img src="([^"]+)"/g, (m, u) => { imgs.push(u); return m; }); } catch (e) {}
   GRADE_EL = null;
   figurasProntas(imgs, 700).then(() => {
     if (el.dataset.k !== chave) return;
-    setTimeout(() => {
-      if (el.dataset.k !== chave) return;
-      aplica();                                   // o aplica reescreve a classe: o conteúdo novo nasce apagado e acende
-      el.classList.add('troca');
-      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('troca')));
-      setTimeout(() => el.classList.remove('troca'), 80);
-    }, Math.max(0, 180 - (Date.now() - t0)));
+    aplica();                                     // o aplica reescreve a classe: o conteúdo novo nasce a 45% e acende
+    el.classList.add('acende');
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('acende')));
+    setTimeout(() => el.classList.remove('acende'), 80);
   });
 }
 function figurasProntas(urls, ms) {
