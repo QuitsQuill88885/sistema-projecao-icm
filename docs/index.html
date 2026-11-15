@@ -39,6 +39,7 @@
   "description": "Sistema de projeção gratuito para a igreja: louvores da coletânea Maranata, Bíblia completa, avisos, cronômetro e slides da Escola Bíblica, com controle pelo celular. Funciona sem internet.",
   "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Windows, Linux",
+  "softwareVersion": "4.0.2",
   "inLanguage": "pt-BR",
   "url": "https://quitsquill88885.github.io/sistema-projecao-icm/",
   "downloadUrl": "https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest",
@@ -126,7 +127,7 @@ h1 em{color:var(--ouro-claro);font-style:normal}
 .bt-menor:hover{background:#16233a;color:#dce6f5}
 
 /* ---------- o resto ---------- */
-section{padding:56px 0}
+section,section.faixa{padding-top:56px;padding-bottom:56px}
 /* a linha entre as secoes NAO vai de ponta a ponta da tela: ela respeita a
    mesma margem do texto. Encostada nas bordas, e ainda colada embaixo do
    quadro anterior, dava aquela sensacao de desalinhado no celular. */
@@ -144,8 +145,8 @@ h2{font-family:'Bebas',sans-serif;font-size:32px;letter-spacing:1px;margin-botto
 /* o respiro extra embaixo descola os cards da linha divisoria da proxima
    secao — a sombra do card em destaque encostava nela */
 #versoes{padding-bottom:82px}
-.versoes{display:grid;gap:18px;grid-template-columns:1fr;align-items:stretch}
-@media(min-width:880px){.versoes{grid-template-columns:1fr 1fr 1fr}}
+.versoes{display:grid;gap:22px;grid-template-columns:1fr;align-items:stretch;max-width:860px;margin-left:auto;margin-right:auto}
+@media(min-width:880px){.versoes{grid-template-columns:1fr 1fr}}
 .ver{border:1px solid var(--borda);border-radius:13px;padding:22px 21px 19px;
      display:flex;flex-direction:column;gap:0;background:transparent;position:relative}
 .ver.destaque{border-color:var(--ouro);box-shadow:0 10px 34px #0002}
@@ -217,7 +218,7 @@ ol.passos small{display:block;color:var(--suave);font-size:14px;margin-top:2px}
 }
 
 .recursos{display:grid;gap:17px;grid-template-columns:repeat(auto-fit,minmax(233px,1fr))}
-.rec{border:1px solid var(--borda);border-radius:11px;padding:18px 19px;background:transparent}
+.rec{border:1px solid #dde3ec;border-top:3px solid var(--ouro);border-radius:12px;padding:20px 21px;background:#fff;box-shadow:0 8px 22px rgba(11,21,38,.06);transition:transform .2s,box-shadow .2s}.rec:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(11,21,38,.10)}.recursos.escuro .rec{background:var(--tinta);border-color:var(--borda);border-top-color:var(--ouro-claro)}.recursos.escuro .rec b{color:var(--ouro-claro)}.recursos.escuro .rec p{color:#b9c6da}.recursos.escuro .rec .num{display:flex;align-items:baseline;gap:6px;height:46px;font-family:'Bebas',sans-serif;font-size:42px;letter-spacing:.5px;color:var(--ouro-claro);line-height:1;margin-bottom:12px;border-bottom:1px solid rgba(245,215,110,.18);padding-bottom:10px}.recursos.escuro .rec .num small{font-size:20px;color:#c9d4e6;letter-spacing:.3px}.recursos.escuro .rec .num i{font-style:normal;font-size:24px;color:#8fa2bf}.recursos.escuro .rec b{color:#fff}@media(min-width:880px){.recursos.escuro{grid-template-columns:repeat(3,1fr)}}
 .rec b{display:block;font-size:16px;font-weight:600;margin-bottom:5px}
 .rec p{color:var(--suave);font-size:14.5px;line-height:1.55}
 
@@ -256,7 +257,7 @@ a{color:var(--ouro)}
 
       <div class="baixar">
         <a class="bt forte" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema-completo.exe">
-          <b>Baixar o Sistema completo</b><small>381 MB · com as animações, cifras e melodias · instala sem internet</small></a>
+          <b>Baixar o Sistema completo</b><small>1,1 GB · com os louvores infantis animados e as cifras · instala sem internet</small></a>
         <a class="bt-menor" href="#versoes">Ver as outras versões</a>
       </div>
     </div>
@@ -269,7 +270,7 @@ a{color:var(--ouro)}
 
 <section class="faixa" id="versoes">
   <h2>Qual eu baixo?</h2><div class="linha-ouro"></div>
-  <p class="sub">Os três instalam o mesmo programa. A diferença é o que vem junto —
+  <p class="sub">Os dois instalam o mesmo programa. A diferença é o que vem junto,
      e a listinha de cada um diz tudo.</p>
 
   <div class="versoes">
@@ -277,59 +278,38 @@ a{color:var(--ouro)}
     <div class="ver destaque">
       <span class="selo">Recomendado para a igreja</span>
       <h3>Sistema completo</h3>
-      <div class="tam">381 MB</div>
+      <div class="tam">1,1 GB</div>
       <p class="para">Para o computador que vai projetar o culto. Um arquivo só,
          dois cliques: ele se abre e se instala sozinho, sem depender de internet.</p>
       <ul>
         <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
         <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
-        <li><span class="ok">✓</span>Animações das CIAS</li>
+        <li><span class="ok">✓</span>Os louvores infantis animados (205 louvores)</li>
+        <li><span class="ok">✓</span>Os gestos das crianças na tela de retorno</li>
         <li><span class="ok">✓</span>Cifras para violão e cadernos de melodia</li>
         <li><span class="ok">✓</span>Cifra projetada no telão para o ensaio do grupo</li>
         <li><span class="ok">✓</span>Afinador no celular do músico, do baixo ao violino</li>
         <li><span class="ok">✓</span>Instala sem conexão com a internet</li>
-        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
       </ul>
       <a class="acao verde" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema-completo.exe">Baixar o completo</a>
     </div>
 
     <div class="ver">
       <h3>Sistema essencial</h3>
-      <div class="tam">68 MB</div>
+      <div class="tam">110 MB</div>
       <p class="para">O programa para projetar, com as cifras junto. Falta
-         só a animação das CIAS — que é o único conteúdo realmente pesado.</p>
+         só a animação dos louvores infantis, que é o único conteúdo realmente pesado.</p>
       <ul>
         <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
         <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
         <li><span class="ok">✓</span>Cifras para violão e cadernos de melodia</li>
         <li><span class="ok">✓</span>Afinador no celular do músico</li>
-        <li><span class="nao">✕</span>Animações das CIAS</li>
-        <li class="nota">A animação pode ser trazida depois: pelo botão
-            <b>Completar o Sistema</b>, dentro do próprio programa (com
-            internet), ou por pendrive.</li>
+        <li><span class="nao">✕</span>Louvores infantis animados</li>
+        <li class="nota">A animação pode vir depois: é só instalar o
+            <b>completo</b> por cima, sem perder nada.</li>
         <li><span class="ok">✓</span>Instala sem conexão com a internet</li>
-        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
       </ul>
       <a class="acao escura" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Instalar-o-Sistema.exe">Baixar o essencial</a>
-    </div>
-
-    <div class="ver">
-      <h3>Instalador</h3>
-      <div class="tam">20 MB</div>
-      <p class="para">É só o arquivo instalador — por isso é tão pequeno: ele
-         baixa o Sistema da nuvem na hora de instalar. Cabe no WhatsApp.</p>
-      <ul>
-        <li><span class="ok">✓</span>Louvores, Bíblia inteira e fundos</li>
-        <li><span class="ok">✓</span>Controle e cifras no celular do músico</li>
-        <li><span class="ok">✓</span>Animações das CIAS</li>
-        <li><span class="ok">✓</span><span class="tx">Cifras de violão e cadernos de melodia
-          <small>na hora de instalar, você escolhe: o completo ou só o essencial</small></span></li>
-        <li><span class="nao">✕</span><span class="tx">Instala sem conexão com a internet
-          <small>precisa estar conectado para a instalação inicial; também grava
-          pendrive para instalar na igreja sem internet</small></span></li>
-        <li><span class="ok">✓</span>Exporta tudo para um pendrive depois</li>
-      </ul>
-      <a class="acao escura" href="https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest/download/Baixar-o-Sistema.exe">Baixar o instalador</a>
     </div>
 
   </div>
@@ -379,6 +359,32 @@ a{color:var(--ouro)}
     <div class="rec"><b>Atualiza sozinho</b>
       <p>Quando sai versão nova, o programa avisa e se atualiza com um clique —
          baixando só o programa, nunca o conteúdo pesado de novo.</p></div>
+  </div>
+</section>
+
+<section class="faixa">
+  <h2>Novo na versão 4</h2><div class="linha-ouro"></div>
+  <p class="sub">O Sistema foi reescrito para desenhar tudo direto pela placa de vídeo, sem navegador dentro.
+     Ficou mais leve justamente no computador mais simples, que é o que muita igreja tem.</p>
+  <div class="recursos escuro">
+    <div class="rec"><span class="num">8<i>→</i>1</span><b>Um programa no lugar de oito</b>
+      <p>A versão anterior abria um navegador escondido com sete processos. Agora é um só,
+         usando de 203 a 248 MB de memória, onde antes passava de 500 MB.</p></div>
+    <div class="rec"><span class="num">20<small>ms</small></span><b>Resposta na hora</b>
+      <p>O clique chega ao telão em cerca de 20 milésimos de segundo; na versão anterior
+         eram 354. Do celular ao telão, cerca de 0,1 segundo num notebook de 2011.</p></div>
+    <div class="rec"><span class="num">205<small>louvores</small></span><b>Louvores infantis animados</b>
+      <p>205 louvores com a tela 16:9 animada, a letra que entra e as figurinhas que mexem,
+         tocados pela placa de vídeo para não pesar.</p></div>
+    <div class="rec"><span class="num">2<small>telas</small></span><b>Tela de retorno com os gestos</b>
+      <p>Uma segunda tela para quem está à frente das crianças: o gesto de agora, o próximo e o
+         aviso do próximo louvor. Outro computador na mesma rede vira essa tela sozinho.</p></div>
+    <div class="rec"><span class="num">1<small>slide por vez</small></span><b>O clique não atropela</b>
+      <p>Segurou o botão? O Sistema só avança quando o telão já mostrou o slide, sem pular
+         nada pelo caminho.</p></div>
+    <div class="rec"><span class="num">2<small>sistemas</small></span><b>Windows e Linux</b>
+      <p>Roda nos dois. No Linux, o notebook pode ficar de tampa fechada e continuar
+         projetando pelo HDMI, com o controle no celular.</p></div>
   </div>
 </section>
 
