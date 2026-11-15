@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Sistema Nativo
+GenericName=Sistema ICM (versão nova, sem navegador)
+Comment=O Sistema de Projeção novo, em teste (a 3.0.12 segue no Sistema ICM)
+Exec=/home/USUARIO/sistema-nativo.sh
+Icon=/home/USUARIO/Sistema-ICM/sistema.png
+Terminal=false
+Categories=AudioVideo;Presentation;
+StartupNotify=false

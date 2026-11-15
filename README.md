@@ -1,96 +1,102 @@
-# Sistema — projeção para a igreja
+# Sistema — projeção para a igreja (louvores, Bíblia e slides infantis animados)
 
-Programa de projeção para o culto: louvores, Bíblia, avisos, cronômetro e
-apresentações da Escola Bíblica. Roda em Windows, **sem internet**, e é operado
-por quem não é da área de informática.
+Programa de projeção para o culto: letras de louvores, Bíblia, avisos, cronômetro, cifras e as apresentações animadas
+das crianças. Roda em **Windows e Linux**, **sem internet**, em **computador fraco**, e é operado por quem não é da
+área de informática. O celular vira o controle remoto.
 
-Feito para a Igreja Cristã Maranata de Iperó, mas serve a qualquer igreja que
-queira usá-lo.
+Feito para a Igreja Cristã Maranata de Iperó (SP). Serve a qualquer igreja que queira usá-lo.
 
-> *"Escreve a visão e torna-a bem legível sobre tábuas,
-> para que a possa ler quem passa correndo."* — Habacuque 2:2
+**[Baixar a versão mais nova](https://github.com/QuitsQuill88885/sistema-projecao-icm/releases/latest)**
+
+---
+
+## A versão 4.0: sem navegador dentro
+
+A série 3.0 desenhava o telão como uma página web, dentro do navegador embutido do Windows. A 4.0 é um programa só,
+que desenha tudo direto pela placa de vídeo (Python + Qt Quick). O motivo foram dois cultos de verdade em que a versão
+antiga caiu num computador de 4 GB de memória.
+
+| O que | 3.0.12 | 4.0 |
+|---|---|---|
+| Processos abertos | 8 | 1 |
+| Memória em uso | 549 a 705 MB | 203 a 248 MB |
+| Resposta ao clique | 354 ms | 19 a 23 ms |
+| Processador, só texto | 6,5 s por minuto | 1,4 s por minuto |
+| Do celular ao telão, num notebook AMD E-450 | não medido | 119 ms (meio) |
+
+Prova de resistência num notebook de 2011 (AMD E-450, Radeon HD 6320, Linux) ligado a um projetor 1920x1080: 60
+louvores animados em fila, 480 trocas pelo celular, memória entre 326 e 518 MB, nenhuma falha.
+
+Cada número, com onde e como foi medido, está em [docs/motor-nativo.md](docs/motor-nativo.md).
 
 ---
 
 ## O que ele faz
 
-**Louvores.** A coletânea inteira, buscável por número, por nome ou por um trecho
-da letra — com ou sem acento, com ou sem vírgula. A busca traz primeiro o louvor
-cujo **título** bate, e só depois os que citam aquilo no meio da letra.
+**Louvores.** 2.778 letras em seis coletâneas, buscáveis por número, por nome ou por um trecho da letra, com ou sem
+acento. O mesmo número em coletâneas diferentes aparece separado, cada um debaixo do nome da sua coletânea.
 
-**Coletâneas convivendo.** O mesmo número existe em coletâneas diferentes com
-letras diferentes: o 60 da Coletânea 2018 e o 60 das CIAS são louvores distintos.
-Procurando por número, o Sistema mostra os dois, cada um debaixo do nome da sua
-coletânea. Não há sigla para decorar.
+**Bíblia.** Um clique projeta, dois guardam na lista. Avança sozinho de capítulo e de livro e projeta vários
+versículos juntos.
 
-**Bíblia.** Um clique projeta, dois guardam na lista. Avança sozinho de capítulo
-e de livro, e projeta vários versículos juntos numa tela só.
+**Louvores infantis animados.** 205 louvores com a tela 16:9 animada (a letra que entra, as notinhas que mexem),
+tocados como vídeo H.264 pela placa de vídeo, que é o que a máquina fraca aguenta. Dá para desligar a animação num
+toque.
 
-**Lista de projeção.** Monte a ordem do culto antes de começar. Louvores e
-versículos ficam em grupos separados e **não se misturam** na navegação: uma hora
-é a hora do louvor, outra é a hora da palavra. O que já passou fica riscado.
+**Celular como controle.** Uma página que abre no navegador do celular, pela rede da igreja ou pelo roteador do
+próprio celular, com prévia do telão. Não instala nada. O clique segurado não atropela: só avança quando o telão já
+mostrou o slide.
 
-**Celular como controle.** Uma página que abre no navegador do celular, pelo
-hotspot ou pelo wi-fi da igreja, com prévia ao vivo do telão. Sem instalar nada.
+**Tela de retorno com os gestos.** Uma segunda tela para quem está à frente das crianças: o gesto de agora, o próximo
+e o aviso do próximo louvor. Outro computador com o Sistema, na mesma rede, vira essa tela sozinho.
 
-**Cifras.** Ligadas a cada louvor: um botão abre a cifra na página certa, para
-quem está tocando.
+**Lista de projeção.** Monte a ordem do culto antes de começar. Louvores e versículos ficam em grupos separados; o que
+já passou fica riscado.
 
-**Louvores de CIAS com animação.** Quando existe a versão animada, ela substitui
-o texto — e dá para desligar num toque.
+**Cifras.** Ligadas a cada louvor, com transposição de tom.
+
+**Notebook de tampa fechada (Linux).** Continua projetando pelo HDMI, com o controle no celular.
 
 ---
 
 ## Instalação
 
-Baixe o instalador e execute. Ele cria o atalho na Área de Trabalho e no menu
-Iniciar. Para atualizar, basta instalar por cima: **suas configurações, seus
-fundos e seus louvores próprios não são tocados** — eles ficam em
-`%APPDATA%\Sistema Projecao`.
+**Windows.** Baixe `Instalar-o-Sistema-completo.exe` e dê dois cliques. Ele instala por cima da versão anterior e não
+apaga configurações, louvores próprios, fundos nem o histórico. Se o Windows perguntar se permite o acesso à rede,
+responda que sim: é isso que deixa o celular controlar o telão.
 
----
-
-## Sobre o conteúdo — leia antes de clonar
-
-**Este repositório tem o PROGRAMA, não o conteúdo.** Ficam de fora, de propósito:
-
-| O que | Por quê |
+| Arquivo | Para quem |
 |---|---|
-| Louvores e Bíblia | material da Igreja Cristã Maranata |
-| Fundos de tela | idem |
-| Fonte de projeção | tipografia comercial, licenciada |
-| Animações das CIAS | pacote oficial da igreja |
-| Cifras | coletâneas publicadas pela ICM |
+| `Instalar-o-Sistema-completo.exe` | todo mundo: tem tudo dentro, inclusive os louvores infantis animados |
+| `Instalar-o-Sistema.exe` | quem já tem os vídeos e quer só atualizar o programa |
+| arquivos `sistema-linux-*` | Linux (Mint, Ubuntu e parentes) |
 
-Nada disso é nosso para redistribuir. Quem clonar precisa trazer o próprio
-conteúdo — o Sistema importa tudo pelo menu, e funciona normalmente sem nada
-disso (os botões correspondentes apenas não aparecem).
-
-O material oficial da ICM está em <https://louvoricm.org.br>, no aplicativo
-oficial da igreja e na Livraria ICM.
+**Linux.** Os três arquivos `sistema-linux-*` e o roteiro de instalação estão na página da versão.
 
 ---
 
-## Para quem quiser compilar
+## Documentação técnica
 
-Precisa de Python 3 no Windows, com `pyinstaller`, `pywebview`, `pywin32`,
-`qrcode`, `pypdf` e `pillow`.
+Notas de campo, escritas para quem tiver o mesmo problema:
 
-```
-python -m PyInstaller --noconfirm "Sistema.spec"
-```
-
-Detalhes em [COMO-COMPILAR.md](COMO-COMPILAR.md), inclusive por que o programa é
-empacotado em pasta e não em arquivo único (arquivo único descompactava 28 MB a
-cada abertura e demorava 8 segundos para abrir).
-
-Ferramentas auxiliares ficam em `ferramentas/`: leitura do pacote de animações,
-conversão para WebP e indexação das cifras por louvor.
+- [Vídeo pela placa num notebook AMD antigo (Radeon HD 6320, driver radeon, UVD)](docs/notebook-amd-radeon-uvd.md):
+  quadro verde, quadro preto, `crossing 256MB boundary`, a causa no driver e o conserto.
+- [Da página web ao motor nativo](docs/motor-nativo.md): por que a 4.0 existe e o que foi medido.
+- [O defeito do filmador](docs/defeito-do-filmador.md): 637 animações que saíam congeladas, e a linha que consertou.
 
 ---
 
-## Créditos
+## Sobre o conteúdo
 
-Escrito por Samuel, para a igreja dele, com ajuda do Claude (Anthropic).
+O código deste repositório é o **programa**. As letras, a Bíblia, as cifras e os slides infantis são material da
+Igreja Cristã Maranata; eles vão dentro do instalador para a igreja usar, e não são nossos para relicenciar. O material
+oficial está em <https://louvoricm.org.br>, no aplicativo oficial da igreja e na Livraria ICM.
 
-O nome veio de Provérbios 31:28.
+---
+
+## Licença
+
+- Código: [MIT](LICENSE).
+- Conteúdo original do projeto (textos, telas, documentação): [Creative Commons Atribuição 4.0](LICENSE-CONTEUDO.md).
+
+Autor: Samuel Mariano Ribeiro. Quem ajudou está em [CREDITOS.md](CREDITOS.md).

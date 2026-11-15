@@ -1,0 +1,5 @@
+Painel ICM — a letra do painel do Sistema Nativo (07/11/2026).
+É a Selawik 1.01 (Microsoft, SIL Open Font License 1.1) com UMA alteração: o J maiúsculo pousa na linha de base
+(o gancho sobe 457 unidades; a haste encurta), como o da Segoe UI, nos 4 pesos.
+A licença da Selawik reserva o nome "Selawik"; por isso a versão alterada se chama "Painel ICM" (OFL, item 3).
+Gerada por Nativo/ferramentas/fonte_painel.py a partir dos arquivos originais. Licença: OFL-Selawik.txt.
