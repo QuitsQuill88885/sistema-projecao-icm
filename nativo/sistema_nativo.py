@@ -135,6 +135,21 @@ PASTAS_LEVE = [x for x in (os.environ.get("NATIVO_LEVE"), os.path.join(AQUI, "le
 FMT_PARADO = os.environ.get("NATIVO_LEVE_PARADO", "jpg")      # "ktx" = a textura da placa (DXT1), para a medida no Vaio
 
 
+def _linhas_da_tela(linhas):
+    """A letra de uma tela 16:9 (textos.json) para a prévia: a linha "CORO" vira rótulo, e pedaço curto (a palavra que
+    entra sozinha na animação: "NAQUELE / QUE / ME / FORTALECE") se junta à seguinte. Devolve (linhas, tem_coro)."""
+    coro = any(l.strip(" :.").upper() == "CORO" for l in linhas)
+    ls = [l for l in linhas if l.strip(" :.").upper() != "CORO"]
+    out, acc = [], ""
+    for l in ls:
+        acc = (acc + " " + l).strip()
+        if len(acc) >= 12:
+            out.append(acc); acc = ""
+    if acc:
+        out.append(acc)
+    return out, coro
+
+
 def leve(p, ext):
     """O arquivo leve (.mp4/.jpg/.ktx) do slide `p`, se já foi feito; "" se não."""
     if not p:
@@ -1350,9 +1365,14 @@ class Controle(QObject):
         c169 = self.A.cias169(p) if self.anim_ligada else None
         if c169:                      # as telas 16:9 da fonte: a miniatura é o slide inteiro do PowerPoint
             n = len(c169)
-            return [{"rot": "Tela %d de %d · animada" % (k + 1, n), "txt": "",
-                     "img": QUrl.fromLocalFile(leve(t["src"], "jpg") or t["src"]).toString()}      # o .jpg leve (09/11)
-                    for k, t in enumerate(c169)]
+            # 15/11 (ele na EBD): a prévia ESCRITA também, como nos outros louvores: as 2 primeiras linhas da tela
+            out = []
+            for k, t in enumerate(c169):
+                ls, coro = _linhas_da_tela(t.get("linhas") or [])
+                out.append({"rot": "Tela %d de %d · %s" % (k + 1, n, "coro" if coro else "animada"),
+                            "txt": "\n".join(ls[:2]) + ("…" if len(ls) > 2 else ""),
+                            "img": QUrl.fromLocalFile(leve(t["src"], "jpg") or t["src"]).toString()})      # o .jpg leve (09/11)
+            return out
         an = self.A.animacao(p) if self.anim_ligada else None
         if an:
             n = len(an)
@@ -1361,7 +1381,7 @@ class Controle(QObject):
                     for k, a in enumerate(an)]
         out = []
         for sl in self.A.louvores[p]["slides"]:
-            ls = [l.replace("\x01", "") for l in sl.get("linhas") or []]
+            ls = [l.replace("\x01", "") for l in cerebro.visiveis(sl.get("linhas") or [])]
             out.append({"rot": sl.get("label") or "", "txt": "\n".join(ls[:2]) + ("…" if len(ls) > 2 else ""), "img": ""})
         return out
 
@@ -3635,6 +3655,14 @@ def main():
                     painel.showMinimized(); painel.setOpacity(1.0)
                 else:
                     painel.setOpacity(1.0); painel.requestActivate()
+                    if sys.platform == "win32" and not os.environ.get("NATIVO_SEM_EMPURRAO"):
+                        # 15/11 (4.0.2 no PC da igreja, Win10, tela MACROSILICON): o conteúdo nascia ~30 px para CIMA (a
+                        # faixa de cima atrás da barra de título, faixa preta embaixo). O painel é posto no lugar ainda
+                        # invisível (opacidade 0, moldura_312) e o Qt fica com a superfície velha (QTBUG-113444; o remédio
+                        # conhecido é maximizar/restaurar). Um empurrão de 1 px depois de opaco refaz a superfície.
+                        _w = painel.width()
+                        painel.setWidth(_w + 1)
+                        QTimer.singleShot(60, lambda: painel.setWidth(_w))
                 splash.close(); splash.deleteLater()
         painel.frameSwapped.connect(lambda: QTimer.singleShot(0, _fecha_carregando))
         QTimer.singleShot(4000, _fecha_carregando)    # garantia: nunca fica para trás

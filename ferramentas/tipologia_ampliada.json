@@ -6805,6 +6805,143 @@
    ],
    "base": "Levítico 1:4",
    "confianca": "tradicional"
+  },
+  {
+   "termo": "coxo",
+   "variantes": [
+    "coxos",
+    "aleijado",
+    "aleijados",
+    "paralitico",
+    "paraliticos",
+    "paralitica",
+    "entrevado",
+    "entrevados",
+    "coxo de nascenca",
+    "levanta-te e anda",
+    "toma o teu leito",
+    "andando e saltando",
+    "saltando",
+    "os seus pes e artelhos"
+   ],
+   "significado": "O homem que não podia andar e se levanta pelo nome de Jesus: a cura e a salvação que tiram o pecador do chão, à porta do templo ou à beira do caminho.",
+   "temas": [
+    "levanta",
+    "levantar",
+    "levantou",
+    "anda",
+    "andar",
+    "saltar",
+    "cura",
+    "curar",
+    "curou",
+    "milagre",
+    "milagres",
+    "nazareno",
+    "toque",
+    "leito",
+    "bartimeu",
+    "beira",
+    "misericordia",
+    "alegria"
+   ],
+   "base": "Atos 3:1-10; Atos 14:8-10; Marcos 2:1-12; João 5:1-9; Isaías 35:6",
+   "confianca": "forte"
+  },
+  {
+   "termo": "cego",
+   "variantes": [
+    "cegos",
+    "cegueira",
+    "cego de nascenca",
+    "bartimeu",
+    "recobrou a vista",
+    "recuperou a vista",
+    "abriu os olhos",
+    "abrir os olhos",
+    "os olhos dos cegos",
+    "filho de timeu"
+   ],
+   "significado": "O cego que clama ao Filho de Davi e recebe a vista: a luz de Cristo que abre os olhos de quem estava à beira do caminho.",
+   "temas": [
+    "cego",
+    "cegos",
+    "bartimeu",
+    "vista",
+    "olhos",
+    "luz",
+    "beira",
+    "caminho",
+    "clamar",
+    "clamou",
+    "misericordia",
+    "davi",
+    "cura",
+    "curou",
+    "milagre",
+    "levanta"
+   ],
+   "base": "Marcos 10:46-52; João 9:1-41; Mateus 9:27-31; Mateus 20:29-34; Isaías 35:5",
+   "confianca": "forte"
+  },
+  {
+   "termo": "enfermo",
+   "variantes": [
+    "enfermos",
+    "enfermidade",
+    "enfermidades",
+    "doente",
+    "doentes",
+    "febre",
+    "fluxo de sangue",
+    "sarou",
+    "sarados",
+    "curados",
+    "curava",
+    "curou-os",
+    "toda a enfermidade"
+   ],
+   "significado": "O enfermo curado pelo toque e pela palavra de Jesus: a fé que toca as vestes e recebe a cura.",
+   "temas": [
+    "cura",
+    "curar",
+    "curou",
+    "sarar",
+    "milagre",
+    "milagres",
+    "toque",
+    "vestes",
+    "enfermo",
+    "enfermos",
+    "doente",
+    "fe"
+   ],
+   "base": "Marcos 5:25-34; Mateus 4:23-24; Mateus 8:16-17; Tiago 5:14-15",
+   "confianca": "forte"
+  },
+  {
+   "termo": "leproso",
+   "variantes": [
+    "leprosos",
+    "lepra",
+    "ficou limpo",
+    "purificado da lepra",
+    "se queres podes tornar-me limpo"
+   ],
+   "significado": "O leproso que Jesus toca e limpa: o pecado que só o sangue purifica.",
+   "temas": [
+    "cura",
+    "curou",
+    "limpo",
+    "lavar",
+    "purificar",
+    "toque",
+    "milagre",
+    "sangue",
+    "misericordia"
+   ],
+   "base": "Mateus 8:1-4; Lucas 17:11-19; Marcos 1:40-45",
+   "confianca": "forte"
   }
  ]
 }

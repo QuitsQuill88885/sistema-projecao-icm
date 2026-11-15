@@ -27,7 +27,7 @@ def itens():
         p = os.path.join(C169, n)
         if os.path.isdir(p) and os.path.exists(os.path.join(p, "pronto.json")):
             nums169.add(n)
-            for j in ("pronto.json", "movimento.json"):
+            for j in ("pronto.json", "movimento.json", "textos.json"):   # textos: a letra da prévia (15/11)
                 if os.path.exists(os.path.join(p, j)):
                     out.append((os.path.join(p, j), "cias169/%s/%s" % (n, j)))
     out.append((ANIM_IND, "animacoes/indice.json"))

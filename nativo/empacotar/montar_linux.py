@@ -23,7 +23,10 @@ FORA = ("__pycache__",)
 # parada no git para envelhecer). No Vaio ficam em <programa>/dados e o cerebro.dado() os prefere. 2,4 MB.
 APP_313 = os.environ.get("SISTEMA_APP", r"C:\Projetos\Sistema\App\ICM Ipero Projecao")
 DADOS = ["louvores.js", "repeticoes.js", "cifras_ocultas.json",
-         "gestos.js"]         # 14/11: os gestos por louvor (gestos_dos_louvores.py); as figuras seguem na pasta da 3.0.12
+         "gestos.js",         # 14/11: os gestos por louvor (gestos_dos_louvores.py); as figuras seguem na pasta da 3.0.12
+         # 15/11 (EBD): as SUGESTÕES regeneradas (pontes de cura, Avulsos 2024, vaga sem a mesma letra 2x); sem elas o
+         # Linux lia as de 05/09 da pasta da 3.0.12
+         "sugestoes.js", "temas.js", "tipologia.js"]
 # e o controle.html do celular da 3.0.13 (os consertos do culto de 08/11): no Vaio o servidor é o da pasta da 3.0.12, que
 # não se mexe; o rede.py serve este no lugar daquele.
 WEB = ["controle.html"]
@@ -52,6 +55,11 @@ def arquivos_dados():
     out = ["dados/" + d for d in DADOS if os.path.exists(os.path.join(APP_313, "dados", d))]
     if os.path.exists(fonte(CIFRA)):
         out.append(CIFRA)
+    # 15/11: a letra de cada tela das CIAS 16:9 (a prévia escrita; textos_cias169.py), poucos KB por louvor
+    c169 = os.path.join(NAT, "cache_cias169")
+    for n in sorted(os.listdir(c169)) if os.path.isdir(c169) else []:
+        if os.path.exists(os.path.join(c169, n, "textos.json")):
+            out.append("cache_cias169/%s/textos.json" % n)
     return out + _das_pastas(PASTAS_DADOS)
 
 

@@ -186,6 +186,18 @@ def pontuar_louvor(tit, letra, sons, alvo, palavras, alvo_som):
     return 0
 
 
+# INSTRUÇÃO de quem canta escrita como linha da letra ("(1ª ESTROFE 2X NO COMEÇO)" no 15 AV 24, que foi ao telão na EBD
+# de 15/11): não se projeta. Só a linha INTEIRA entre parênteses que fala de estrofe/começo/repetir; as linhas cantadas
+# entre parênteses ("(SIM, ELE VOLTARÁ)", 561 no acervo) ficam. O dado não muda (a 1ª linha é a chave da cifra).
+RE_INSTRUCAO = re.compile(r"^\(.*\b(ESTROFE|NO COME[CÇ]O|REPETI\w*|REPITA)\b.*\)$", re.I)
+
+
+def visiveis(linhas):
+    """As linhas de uma tela que vão para o telão e para a prévia (sem a instrução de quem canta; nunca vazia)."""
+    ls = [l for l in linhas if not RE_INSTRUCAO.match(l.replace("\x01", "").strip())]
+    return ls or list(linhas)
+
+
 class Acervo:
     def __init__(self, adiar=False):
         # adiar=True (o programa, 08/11/2026): os textos da busca só começam em preparar_busca(), com o painel já de pé.
@@ -319,6 +331,10 @@ class Acervo:
         except Exception:
             return None
         arq = lambda r: os.path.join(pasta, *r.split("/"))
+        try:                                     # a letra de cada tela (textos_cias169.py, 15/11): a prévia escrita
+            tx = json.load(open(os.path.join(pasta, "textos.json"), encoding="utf-8"))
+        except Exception:
+            tx = {}
         telas = []
         for n in pr.get("slides", []):
             src = os.path.join(pasta, "Slide%04d.webp" % n)
@@ -327,7 +343,7 @@ class Acervo:
             m = mov.get(str(n))
             if m:
                 m = dict(m, base=arq(m["base"]), camadas=[dict(c, src=arq(c["src"])) for c in m.get("camadas", [])])
-            telas.append({"src": src, "mov": m})
+            telas.append({"src": src, "mov": m, "linhas": tx.get(str(n)) or []})
         return telas or None
 
     def tem_telas_cias(self, i):
@@ -379,7 +395,7 @@ class Acervo:
             "num2": (nums.split() + ["", ""])[1] if prim and nums else "",
             "tituloSo": s["titulo"] if prim else "",
             "selo": (self.selos.get(self.chaves[i]) or {}).get(str(k), ""),
-            "label": sl.get("label") or "", "linhas": list(sl.get("linhas") or []),
+            "label": sl.get("label") or "", "linhas": visiveis(sl.get("linhas") or []),
             "tam": TAM_LOUVOR, "escala": escala,
             "linhasRef": max(len(x.get("linhas") or []) + (1 if x.get("label") else 0) for x in s["slides"]),
             "fim": k == len(s["slides"]) - 1, "fade": ESMAECER,

@@ -146,6 +146,11 @@ def main():
             ident_cache[i] = d
         return d
 
+    def ident_letra(i):
+        s = louvores[i] if i < len(louvores) else {}
+        letra = " ".join(l for sl in s.get("slides") or [] for l in (sl or {}).get("linhas") or [])
+        return "L|" + so_letras(letra).replace(" ", "")[:60]
+
     # índice invertido: palavra -> [(louvor, peso)] — sem isto seriam 63 milhões
     # de multiplicações por versículo, e a máquina da igreja não é de brincadeira
     invertido = defaultdict(list)
@@ -270,9 +275,11 @@ def main():
                         # puxando dos vizinhos. Aqui a vaga volta a ser útil.
                         # A chave é a MESMA do app (`identTitulo`): título +
                         # começo da primeira linha.
-                        if ident(i) in vistos:
+                        # 15/11: e a LETRA também (a 2ª chave do app, IDENT_LETRA = 60): "É TÃO TRISTE NÃO VER A
+                        # LUZ" (CIA 62) e "... (O CEGO BARTIMEU)" (Antiga 9023) têm título diferente e a mesma letra
+                        if ident(i) in vistos or ident_letra(i) in vistos:
                             continue
-                        vistos.add(ident(i))
+                        vistos.add(ident(i)); vistos.add(ident_letra(i))
                         escolha.append((i, s))
                         if len(escolha) >= POR_VERSICULO:
                             break

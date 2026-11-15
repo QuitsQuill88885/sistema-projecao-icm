@@ -24,6 +24,14 @@ Item {
     signal guardar(string livro, int cap, int v)
 
     readonly property real wEsq: 210                    // grid-template-columns: 210px 1fr
+
+    // 15/11 (ele na EBD): o versículo achado na busca "não vai direto pra caixa de versículos": 1 ou 2 cliques no
+    // resultado também abrem o livro e o capítulo à direita, com o versículo marcado (o próximo segue dali)
+    function abrirAoLado(l, c, v) {
+        if (vb.livro !== l) vb.escolherLivro(l)
+        if (vb.cap !== c) vb.escolherCap(c)
+        vb.alvoV = v
+    }
     readonly property var sCol: T.estilo([".col"], false)
 
     // ---- os livros (.col.col-livros)
@@ -99,8 +107,8 @@ Item {
                         text: modelData.livro + " " + modelData.cap + ":" + modelData.v }
                 Letra { id: txL; x: tr.pad[3]; y: refL.y + refL.alturaLinha + tr.sb["margin-bottom"]; width: tr.width - tr.pad[1] - tr.pad[3]
                         px: tr.ss["font-size"]; color: tr.ss.color; linha: tr.ss["line-height"]; quebra: Text.WordWrap; text: modelData.txt }
-                onClicado: vb.projetar(modelData.livro, modelData.cap, modelData.v)
-                onDuploClique: vb.guardar(modelData.livro, modelData.cap, modelData.v)
+                onClicado: { vb.abrirAoLado(modelData.livro, modelData.cap, modelData.v); vb.projetar(modelData.livro, modelData.cap, modelData.v) }
+                onDuploClique: { vb.abrirAoLado(modelData.livro, modelData.cap, modelData.v); vb.guardar(modelData.livro, modelData.cap, modelData.v) }
             }
         }
     }

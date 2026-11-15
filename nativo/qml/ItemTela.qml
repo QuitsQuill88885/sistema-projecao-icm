@@ -15,7 +15,7 @@ Caixa {
     texto: ""
     readonly property real px: tamLetra
     readonly property real lh: 1.3 * px                     // .item{line-height:1.3}: a linha do item
-    readonly property real conteudoH: tela.img ? 54 + 2 : (tela.rot ? lh : 0) + linhas.implicitHeight
+    readonly property real conteudoH: tela.img ? Math.max(54 + 2, ladoAnim.implicitHeight) : (tela.rot ? lh : 0) + linhas.implicitHeight
     implicitHeight: pad[0] + conteudoH + pad[2] + (st["border-bottom"] ? st["border-bottom"].w : 0)
 
     // animada: a miniatura e o rótulo, lado a lado (flex, gap 10, centro)
@@ -29,7 +29,21 @@ Caixa {
             Image { anchors.fill: parent; anchors.margins: 1; source: tl.tela.img || ""; fillMode: Image.Stretch
                     sourceSize.width: 96; sourceSize.height: 54; asynchronous: true; cache: false }
         }
-        Letra { px: tl.px / 1.2; color: "#f5d76e"; text: tl.tela.rot || ""; anchors.verticalCenter: parent.verticalCenter }
+        // 15/11 (ele na EBD: "tem que ter o detalhamento da letra igual aos outros"): o rótulo e as 2 primeiras linhas
+        Column {
+            id: ladoAnim
+            anchors.verticalCenter: parent.verticalCenter
+            width: tl.width - tl.pad[1] - tl.pad[3] - 96 - 10
+            spacing: 2
+            Letra { px: tl.px / 1.2; color: "#f5d76e"; text: tl.tela.rot || "" }
+            Letra {
+                visible: !!tl.tela.txt
+                width: parent.width
+                px: tl.px; color: tl.corLetra; weight: tl.numOu(tl.st["font-weight"], 400)
+                linha: 1.3; quebra: Text.WordWrap
+                text: tl.tela.txt || ""
+            }
+        }
     }
     // texto: o rótulo (CORO, FINAL...) numa linha, e as linhas da letra
     Item {

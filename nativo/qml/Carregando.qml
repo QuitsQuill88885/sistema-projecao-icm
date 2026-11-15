@@ -21,7 +21,10 @@ Item {
     // a máscara do canto redondo precisa da placa; no desenho por software (testes sem tela) o cartão fica quadrado
     readonly property bool temPlaca: GraphicsInfo.api !== GraphicsInfo.Software && GraphicsInfo.api !== GraphicsInfo.Unknown
     property real progresso: 0                       // 0..1, mandado pelo Python a cada etapa da subida
-    onProgressoChanged: { enche.stop(); enche.from = cheio.x; enche.to = -c.larg * (1 - Math.max(0, Math.min(1, progresso))); enche.start() }
+    readonly property bool linux: Qt.platform.os === "linux"
+    onProgressoChanged: { var alvo = -c.larg * (1 - Math.max(0, Math.min(1, progresso)))
+        if (linux) { cheio.x = alvo; return }              // no Linux: a barra enche direto (a animação não andaria)
+        enche.stop(); enche.from = cheio.x; enche.to = alvo; enche.start() }
     readonly property real k: 1.032                  // a Painel ICM no tamanho da Segoe (o mesmo encaixe do Letra.qml)
 
     // A SOMBRA: camadas de preto bem leve, cada uma 3 px maior e mais redonda (sem efeito: desenha em qualquer placa e
@@ -68,11 +71,13 @@ Item {
             property int atraso: 0
             implicitWidth: dentro.childrenRect.width; implicitHeight: dentro.childrenRect.height
             Item {
-                id: dentro; width: s.width; height: s.height; y: 10; opacity: 0
+                // 15/11 (ele no Vaio: "a barra de carregamento não está aparecendo"): no Linux do Vaio a animação de entrada
+                // não anda enquanto o Python monta o painel; só o símbolo (sem atraso) chegava a aparecer. Lá as peças nascem visíveis.
+                id: dentro; width: s.width; height: s.height; y: c.linux ? 0 : 10; opacity: c.linux ? 1 : 0
                 // ANIMATORS (08/11 17h30, filmado): com NumberAnimation a entrada CONGELAVA enquanto o Python monta o painel
                 // e a janelinha ficou 1,5 s vazia; o Animator roda na linha de desenho e entra na hora
                 SequentialAnimation {
-                    id: anim; running: true
+                    id: anim; running: !c.linux
                     // a PAUSA também tem de ser Animator (a PauseAnimation congelava junto: "Sistema" e a barra só aos 2,7 s)
                     OpacityAnimator { target: dentro; from: 0; to: 0; duration: Math.max(1, s.atraso) }
                     ParallelAnimation {

@@ -53,7 +53,25 @@ Rectangle {
             font.hintingPreference: Font.PreferNoHinting
             selectByMouse: true; clip: true
             selectionColor: "#3b5680"
-            cursorDelegate: Rectangle { width: 1 / en.k; color: campo.color; visible: campo.activeFocus && campo.cursorVisible }
+            // o cursor PISCA (15/11, ele na EBD: "era para ficar piscando, igual quando você vai digitar alguma coisa"): com
+            // cursorDelegate próprio o Qt não pisca sozinho; o ritmo é o do Windows, e digitar/mover deixa aceso
+            cursorDelegate: Rectangle {
+                id: cur
+                property bool aceso: true
+                width: 1 / en.k; color: campo.color; visible: campo.activeFocus && campo.cursorVisible && aceso
+                Timer {
+                    id: pisca
+                    interval: Qt.styleHints.cursorFlashTime > 0 ? Qt.styleHints.cursorFlashTime / 2 : 530
+                    running: campo.activeFocus; repeat: true
+                    onTriggered: cur.aceso = !cur.aceso
+                    onRunningChanged: cur.aceso = true
+                }
+                Connections {
+                    target: campo
+                    function onCursorPositionChanged() { cur.aceso = true; pisca.restart() }
+                    function onTextChanged() { cur.aceso = true; pisca.restart() }
+                }
+            }
             onAccepted: en.aceito()
             Keys.onDownPressed: en.teclaBaixo()
         }
