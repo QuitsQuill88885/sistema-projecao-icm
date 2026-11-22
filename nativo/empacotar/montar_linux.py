@@ -27,7 +27,8 @@ DADOS = ["louvores.js", "repeticoes.js", "cifras_ocultas.json",
          # 15/11 (EBD): as SUGESTÕES regeneradas (pontes de cura, Avulsos 2024, vaga sem a mesma letra 2x); sem elas o
          # Linux lia as de 05/09 da pasta da 3.0.12
          "sugestoes.js", "temas.js", "tipologia.js",
-         "previa_cias43.json"]   # 20/11: a letra na prévia das CIAS só 4:3 (ferramentas/previa_cias43.py)
+         "previa_cias43.json",
+         "galeria.js"]   # 22/11: a galeria de fundos (os da igreja do Glorifica e o convite da EBD); as imagens vão em fundos/galeria   # 20/11: a letra na prévia das CIAS só 4:3 (ferramentas/previa_cias43.py)
 # e o controle.html do celular da 3.0.13 (os consertos do culto de 08/11): no Vaio o servidor é o da pasta da 3.0.12, que
 # não se mexe; o rede.py serve este no lugar daquele.
 WEB = ["controle.html"]
@@ -44,6 +45,8 @@ def fonte(r):
         return os.path.join(APP_313, r[4:])
     if r == CIFRA:
         return os.path.join(APP_313, "conteudo_leve", "cifras", "acordes.json")
+    if r.startswith("fundos/galeria/"):          # 22/11: as imagens da galeria (da pasta da 3.0.13)
+        return os.path.join(APP_313, *r.split("/"))
     return os.path.join(NAT, *r.split("/"))
 
 
@@ -61,6 +64,9 @@ def arquivos_dados():
     for n in sorted(os.listdir(c169)) if os.path.isdir(c169) else []:
         if os.path.exists(os.path.join(c169, n, "textos.json")):
             out.append("cache_cias169/%s/textos.json" % n)
+    # 22/11: as imagens da galeria de fundos (o galeria.js aponta para fundos/galeria/...); no Vaio vencem as da pasta da 3.0.12
+    gal = os.path.join(APP_313, "fundos", "galeria")
+    out += ["fundos/galeria/" + f for f in sorted(os.listdir(gal))] if os.path.isdir(gal) else []
     return out + _das_pastas(PASTAS_DADOS)
 
 

@@ -11,7 +11,7 @@ As regras são as da 3.0.13 (sistema.versao_mais_nova e _atualizar_thread); o do
   NATIVO_ATU_SEM_RODAR=1   baixa mas NÃO roda o instalador (grava os argumentos em NATIVO_ATU_ARGS, se houver)"""
 import os, re, subprocess, sys, tempfile, time
 
-VERSAO = "4.0.3.3"
+VERSAO = "4.0.3.4"
 DONO, REPO = "QuitsQuill88885", "sistema-projecao-icm"        # os mesmos DONO_GITHUB e REPO_GITHUB da 3.0.13
 ARQ_INSTALADOR = "Instalar-o-Sistema.exe"                      # o mesmo nome que a 3.0.x baixa
 ARQ_LINUX = "SistemaNativo-linux.zip"                          # no Linux (o Vaio): só o CÓDIGO, ~1 MB (montar_linux.py)
@@ -19,7 +19,7 @@ ARQ_LINUX = "SistemaNativo-linux.zip"                          # no Linux (o Vai
 # só se baixa quando algum mudou. Nunca saem da pasta numa troca de código.
 ARQ_LINUX_DADOS = "SistemaNativo-linux-dados.zip"
 ARQ_LINUX_INDICE = "SistemaNativo-linux-dados.json"
-PREFIXOS_DADOS = ("dados/", "cifras/", "fontes/", "fontes_linux/", "ferramentas/radeon_uvd/")     # as fontes também: quase nunca mudam. 22/11: o conserto da placa (radeon_uvd) viaja com os dados e a troca de código o APAGAVA (10 arquivos no Vaio, restaurados do tar)
+PREFIXOS_DADOS = ("dados/", "cifras/", "fontes/", "fontes_linux/", "ferramentas/radeon_uvd/", "fundos/", "cache_cias169/")     # as fontes também: quase nunca mudam. 22/11: o conserto da placa (radeon_uvd) viaja com os dados e a troca de código o APAGAVA (10 arquivos no Vaio, restaurados do tar) 22/11 14h40: e os textos.json das CIAS (cache_cias169/, no pacote de dados desde a 4.0.3): a troca de código tirava os 206
 
 
 def linux():

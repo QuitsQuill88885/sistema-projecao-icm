@@ -416,6 +416,11 @@ class Acervo:
         """'fundos/x.jpg' (de fábrica) ou o arquivo de um fundo do usuário -> caminho no disco."""
         if os.path.isabs(arq):
             return arq
+        # 22/11 (a galeria nova com os fundos da igreja): no Linux o pacote traz <programa>/fundos/galeria; esse vence a pasta
+        # da 3.0.12, como o dado() faz com os dados. No pacote do Windows (frozen) o APP já é o de dentro.
+        meu = os.path.join(os.path.dirname(os.path.abspath(__file__)), arq.replace("/", os.sep))
+        if not getattr(_sys, "frozen", False) and os.path.isfile(meu):
+            return meu
         return os.path.join(APP, arq.replace("/", os.sep))
 
     def lista_fundos(self, estilo="limpo"):
@@ -506,6 +511,17 @@ class Acervo:
                 return na - nb
             return a - b
         chave = functools.cmp_to_key(comparar)
+        if f in ("cias", "cia", "cias 2018", "cia 2018", "criancas"):
+            # 22/11 (ele na igreja: "quando alguém procurar por 'cias' (...) deve exibir os louvores de cias do primeiro ao
+            # último e os avulsos"): toda a coleção CIA, os numerados em ordem e depois os avulsos das CIAS (num "AV").
+            cias = [i for i in range(len(self.louvores)) if self.louvores[i].get("col") == "CIA 2018" and i not in self.principal_de]
+            achados = sorted(cias, key=lambda i: (num_int(i) is None, num_int(i) or 0, i))
+            out = []
+            for i in achados:
+                s = self.louvores[i]
+                out.append({"i": i, "nums": self.numeros(i) or "—", "tit": s["titulo"], "cias": True,
+                            "grp": "CIAS" if num_int(i) is not None else "AVULSOS DAS CIAS", "sigla": ""})
+            return out
         if not f:
             achados = sorted((i for i in range(len(self.louvores)) if i not in self.principal_de), key=chave)
             agrupar = True

@@ -42,6 +42,19 @@ class _Handler(S.Handler):
             meu = os.path.join(_PROG, "dados", limpo[7:])
         if meu and not getattr(sys, "frozen", False) and os.path.isfile(meu):
             return meu
+        # 22/11: no Linux os fundos NOVOS da galeria vêm no pacote (<programa>/fundos/...): esses vencem os da pasta de sempre
+        if limpo.startswith("/fundos/") and ".." not in limpo and not getattr(sys, "frozen", False):
+            p = os.path.join(_PROG, *limpo[1:].split("/"))
+            if os.path.isfile(p):
+                return p
+        # 22/11: o fundo que o usuário acrescentou (publicar_tela manda /nativo_fundos/<arquivo>); só o NOME do arquivo,
+        # nada de subpasta nem '..': não sai da pasta. Vale também no pacote (frozen).
+        if limpo.startswith("/nativo_fundos/"):
+            nome = limpo[len("/nativo_fundos/"):]
+            if nome and "/" not in nome and "\\" not in nome and ".." not in nome:
+                p = os.path.join(cerebro.DADOS_USUARIO, "nativo_fundos", nome)
+                if os.path.isfile(p):
+                    return p
         return super().translate_path(path)
 
 
@@ -108,7 +121,21 @@ def publicar_tela(t):
     """A prévia do celular é o projecao.html de lá: o fundo e a tela das CIAS vão como endereço do servidor."""
     w = dict(t)
     if w.get("fundo"):
-        w["fundo"] = os.path.relpath(w["fundo"], cerebro.APP).replace(os.sep, "/")
+        # 22/11 (ele na igreja: "aparece sendo projetada nos fundos e não aparece igual na prévia de quem está usando pelo
+        # celular"): o fundo que o USUÁRIO acrescentou mora em <dados do usuário>/nativo_fundos, fora da pasta do programa;
+        # o relpath dava '../../..' e o servidor recusava. Esse vai pela rota /nativo_fundos/<arquivo> (translate_path).
+        # a ordem: a pasta de sempre (APP), a do programa (no Linux os fundos novos da galeria vêm no pacote) e, fora das duas,
+        # a dos fundos do usuário.
+        for base in (cerebro.APP, _PROG):
+            try:
+                rel = os.path.relpath(w["fundo"], base)
+            except ValueError:                  # outro disco no Windows
+                continue
+            if not rel.startswith(".."):
+                w["fundo"] = rel.replace(os.sep, "/")
+                break
+        else:
+            w["fundo"] = "/nativo_fundos/" + os.path.basename(w["fundo"])
     if w.get("modo") == "apres":       # apresentação: o mesmo "slide" da 3.0.12 (src, mov e passo pelo endereço do servidor)
         w = {"modo": "slide", "src": t.get("url", ""), "transicao": t.get("fade", 700) > 0, "fade": t.get("fade", 700)}
         if t.get("movUrl"):
