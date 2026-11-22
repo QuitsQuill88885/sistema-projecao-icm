@@ -11,7 +11,7 @@ As regras são as da 3.0.13 (sistema.versao_mais_nova e _atualizar_thread); o do
   NATIVO_ATU_SEM_RODAR=1   baixa mas NÃO roda o instalador (grava os argumentos em NATIVO_ATU_ARGS, se houver)"""
 import os, re, subprocess, sys, tempfile, time
 
-VERSAO = "4.0.3.2"
+VERSAO = "4.0.3.3"
 DONO, REPO = "QuitsQuill88885", "sistema-projecao-icm"        # os mesmos DONO_GITHUB e REPO_GITHUB da 3.0.13
 ARQ_INSTALADOR = "Instalar-o-Sistema.exe"                      # o mesmo nome que a 3.0.x baixa
 ARQ_LINUX = "SistemaNativo-linux.zip"                          # no Linux (o Vaio): só o CÓDIGO, ~1 MB (montar_linux.py)
