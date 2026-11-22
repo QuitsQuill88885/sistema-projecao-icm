@@ -1376,7 +1376,13 @@ class Controle(QObject):
         an = self.A.animacao(p) if self.anim_ligada else None
         if an:
             n = len(an)
-            return [{"rot": "Tela %d de %d · animada" % (k + 1, n), "txt": "",
+            # 20/11 (pedido dele): as CIAS só 4:3 também mostram o pedacinho da letra, como um louvor normal
+            # (ferramentas/previa_cias43.py: o OCR escolheu a tela do louvores.js de cada quadro; o texto é o limpo)
+            if not hasattr(self, "_previa43"):
+                try: self._previa43 = json.load(open(cerebro.dado("previa_cias43.json"), encoding="utf-8"))
+                except Exception: self._previa43 = {}
+            pv = lambda a: (lambda ls: "\n".join(ls[:2]) + ("…" if len(ls) > 2 else ""))(self._previa43.get(a) or [])
+            return [{"rot": "Tela %d de %d · animada" % (k + 1, n), "txt": pv(a),
                      "img": QUrl.fromLocalFile(os.path.join(cerebro.ANIM, a)).toString() if os.path.exists(os.path.join(cerebro.ANIM, a)) else ""}
                     for k, a in enumerate(an)]
         out = []

@@ -31,7 +31,8 @@ for pasta in ("fundos", "fontes", "gestos", "apresentacoes"):   # apresentacoes:
     datas.append((os.path.join(APP, pasta), pasta))
 # A PASTA dados VAI ARQUIVO POR ARQUIVO, NUNCA INTEIRA (a lição de 31/08: 44 MB de backups pegavam carona)
 for nome in ("biblia.js", "fundos.js", "galeria.js", "louvores.js", "repeticoes.js", "repetidos.js", "sugestoes.js",
-             "temas.js", "tipologia.js", "gestos.js", "cifras_ocultas.json"):
+             "temas.js", "tipologia.js", "gestos.js", "cifras_ocultas.json",
+             "previa_cias43.json"):   # 20/11: a letra na prévia das CIAS só 4:3 (ferramentas/previa_cias43.py)
     cam = os.path.join(APP, "dados", nome)
     if not os.path.isfile(cam):
         raise SystemExit("falta o arquivo de dados: %s" % cam)

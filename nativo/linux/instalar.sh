@@ -11,7 +11,7 @@ sudo apt-get install -y libxcb-cursor0 wmctrl python3-venv
 #    (o AMD E-450 do Vaio) morre com "invalid opcode" no libshiboken6. pypdfium2 = abrir PDF como apresentação.
 mkdir -p "$HOME/.sistema-nativo"
 [ -x "$VENV/bin/python" ] || python3 -m venv "$VENV"
-"$VENV/bin/python" -m pip install -q "PySide6-Essentials==6.9.3" "PySide6-Addons==6.9.3" pypdfium2
+"$VENV/bin/python" -m pip install -q "PySide6-Essentials==6.9.3" "PySide6-Addons==6.9.3" pypdfium2 "qrcode==8.2"   # 22/11: sem ele o QR do celular saía vazio no Vaio (qr_png engole o erro)
 # 3. o lançador e o menu ("Sistema Nativo")
 cp "$HOME/Sistema-ICM/nativo/linux/sistema-nativo.sh" "$HOME/sistema-nativo.sh"; chmod +x "$HOME/sistema-nativo.sh"
 mkdir -p "$HOME/.local/share/applications"

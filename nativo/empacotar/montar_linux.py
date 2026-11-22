@@ -26,7 +26,8 @@ DADOS = ["louvores.js", "repeticoes.js", "cifras_ocultas.json",
          "gestos.js",         # 14/11: os gestos por louvor (gestos_dos_louvores.py); as figuras seguem na pasta da 3.0.12
          # 15/11 (EBD): as SUGESTÕES regeneradas (pontes de cura, Avulsos 2024, vaga sem a mesma letra 2x); sem elas o
          # Linux lia as de 05/09 da pasta da 3.0.12
-         "sugestoes.js", "temas.js", "tipologia.js"]
+         "sugestoes.js", "temas.js", "tipologia.js",
+         "previa_cias43.json"]   # 20/11: a letra na prévia das CIAS só 4:3 (ferramentas/previa_cias43.py)
 # e o controle.html do celular da 3.0.13 (os consertos do culto de 08/11): no Vaio o servidor é o da pasta da 3.0.12, que
 # não se mexe; o rede.py serve este no lugar daquele.
 WEB = ["controle.html"]

@@ -2,6 +2,7 @@
 // as 2 primeiras linhas (… se tiver mais). Animada (CIAS): a miniatura 96x54 e "Tela k de n · animada".
 // A tela no ar fica marcada (.item.sel). 1 clique projeta; 2 cliques põem o louvor na lista.
 import QtQuick
+import QtQuick.Effects
 import "Tema.js" as T
 
 Caixa {
@@ -25,9 +26,19 @@ Caixa {
         Rectangle {
             readonly property var s: T.estilo(["#lista-slides .anim-mini"], false)
             width: s.width; height: s.height; radius: s["border-radius"]; color: s.background
-            border.width: s.border.w; border.color: s.border.cor
-            Image { anchors.fill: parent; anchors.margins: 1; source: tl.tela.img || ""; fillMode: Image.Stretch
-                    sourceSize.width: 96; sourceSize.height: 54; asynchronous: true; cache: false }
+            // 20/11 (ele: "nos 4 cantos arredondados aparece um pixelzinho jogado para fora; é o RECORTE"): a imagem era um
+            // retângulo reto por cima da moldura redonda. Agora é RECORTADA na mesma curva (máscara, como o LadoApr de 11/11)
+            // 20/11 23h40 (ele: "parece um quadrado nas bordas, uma malhinha ao redor meio quadrada"): a foto ficava 1 px para
+            // dentro com curva MENOR que a da moldura, e nos cantos sobrava uma cunha da cor da borda = canto quadrado.
+            // Agora a foto ocupa a caixa inteira na MESMA curva e a borda de 1 px vem POR CIMA (como o CSS da 3.0.12 desenha).
+            Image { id: mini; anchors.fill: parent; source: tl.tela.img || ""; fillMode: Image.Stretch
+                    sourceSize.width: 96; sourceSize.height: 54; asynchronous: true; cache: false
+                    layer.enabled: true
+                    layer.effect: MultiEffect { maskEnabled: true; maskSource: mascMini; maskThresholdMin: 0.5; maskSpreadAtMin: 1.0 } }
+            Item { id: mascMini; anchors.fill: mini; layer.enabled: true; visible: false
+                   Rectangle { anchors.fill: parent; radius: mini.parent.radius; color: "black" } }
+            Rectangle { anchors.fill: parent; radius: parent.radius; color: "transparent"
+                        border.width: parent.s.border.w; border.color: parent.s.border.cor }
         }
         // 15/11 (ele na EBD: "tem que ter o detalhamento da letra igual aos outros"): o rótulo e as 2 primeiras linhas
         Column {
